@@ -1,115 +1,108 @@
 #include "game.h"
 #include "player.h"
-#include "level.h"
 #include <SDL3/SDL_image.h>
 
-bool game_init(Game *g) {
-    if (!SDL_Init(SDL_INIT_VIDEO)) {
-        SDL_Log("SDL_Init failed: %s", SDL_GetError());
+bool GameInitialize(Game *game)
+{
+    if (SDL_Init(SDL_INIT_VIDEO) != 0)
+    {
+        SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
         return false;
     }
-
-    if (!IMG_Init(IMG_INIT_PNG)) {
-        SDL_Log("IMG_Init failed: %s", SDL_GetError());
+    if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG)
+    {
+        SDL_Log("Unable to initialize SDL_image: %s", IMG_GetError());
         SDL_Quit();
         return false;
     }
-
-    g->window = SDL_CreateWindow("Sarabot Movement Test Room", SCREEN_WIDTH, SCREEN_HEIGHT, 0);
-    if (!g->window) {
-        SDL_Log("Window creation failed: %s", SDL_GetError());
+    game->gameWindow = SDL_CreateWindow("SDL3 - Robot Hero Moby", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_SHOWN);
+    if (game->gameWindow == NULL)
+    {
+        SDL_Log("Unable to create window: %s", SDL_GetError());
+        IMG_Quit();
+        SDL_Quit();
         return false;
     }
-
-    g->renderer = SDL_CreateRenderer(g->window, NULL);
-    if (!g->renderer) {
-        SDL_Log("Renderer creation failed: %s", SDL_GetError());
+    game->gameRenderer = SDL_CreateRenderer(game->gameWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    if (game->gameRenderer == NULL)
+    {
+        SDL_Log("Unable to create renderer: %s", SDL_GetError());
+        SDL_DestroyWindow(game->gameWindow);
+        IMG_Quit();
+        SDL_Quit();
         return false;
     }
-
-    /* Load sprite sheet - try multiple paths for Linux Mint */
-    const char *paths[] = {
-        "sarabot-alpha.png",
-        "./sarabot-alpha.png",
-        "../sarabot-alpha.png",
-        "assets/sarabot-alpha.png",
-        "/usr/local/share/sarabot_test/sarabot-alpha.png",
-        NULL
-    };
-
-    SDL_Surface *sheet_surface = NULL;
-    for (int i = 0; paths[i] != NULL; i++) {
-        sheet_surface = IMG_Load(paths[i]);
-        if (sheet_surface) {
-            SDL_Log("Loaded sprite sheet from: %s", paths[i]);
-            break;
-        }
+    SDL_Surface *spriteSheetSurface = IMG_LOAD(SARABOT_ASSET_PATH);
+    if (spriteSheetSurface == NULL)
+    {
+        SDL_Log("Unable to load sprite sheet: %s", IMG_GetError());
+        SDL_DestroyRenderer(game->gameRenderer);
+        SDL_DestroyWindow(game->gameWindow);
+        IMG_Quit();
+        SDL_Quit();
+        return false;
     }
-
-    if (!sheet_surface) {
-        SDL_Log("Failed to load sprite sheet: %s", IMG_GetError());
-        SDL_Log("Falling back to colored rectangles.");
-        g->sprite_sheet = NULL;
-    } else {
-        g->sprite_sheet = SDL_CreateTextureFromSurface(g->renderer, sheet_surface);
-        SDL_DestroySurface(sheet_surface);
-        if (!g->sprite_sheet) {
-            SDL_Log("Failed to create texture from surface: %s", SDL_GetError());
-        }
+    else
+    {
+        SDL_Log("Sprite sheet loaded successfully from: %s", SARABOT_ASSET_PATH);
     }
-
-    /* Initialize player - spawn in the basic movement zone */
-    g->player = (Player){
-        .x = 160, .y = 500,
-        .w = 32, .h = 40,
-        .facing_right = true,
-        .health = 16,
-        .style_row = STYLE_GBA,
-        .state = STATE_IDLE
-    };
-
-    level_generate_test_room(&g->level);
-
-    g->camera_x = 0;
-    g->camera_y = 0;
-    g->running = true;
-    g->last_time = SDL_GetTicks();
-
-    memset(g->keys, 0, sizeof(g->keys));
+    game->spriteSheetTexture = SDL_CreateTextureFromSurface(game->gameRenderer, spriteSheetSurface);
+    SDL_DestroySurface(spriteSheetSurface);
+    return true;
+    if (game->spriteSheetTexture == NULL)
+    {
+        SDL_Log("Unable to create texture from surface: %s", SDL_GetError());
+    }
+    game->player = (Player){
+        .x = 160, .y = 500, .w = 32, .h = 40, .facing_right = true, .health = 16, .style_row = STYLE_GBA, .state = STATE_IDLE};
+    LevelGenerateTestRoom(&game->level);
+    game->cameraX = 0;
+    game->cameraY = 0;
+    game->isRunning = true;
+    game->lastFrameTime = SDL_GetTicks();
+    memset(game->keys, 0, sizeof(game->keys));
     return true;
 }
-
-void game_shutdown(Game *g) {
-    if (g->sprite_sheet) SDL_DestroyTexture(g->sprite_sheet);
-    level_free(&g->level);
-    SDL_DestroyRenderer(g->renderer);
-    SDL_DestroyWindow(g->window);
+void GameShutdown(Game *game)
+{
+    if (game->spriteSheetTexture)
+    {
+        SDL_DestroyTexture(game->spriteSheetTexture);
+    }
+    LevelFree(&game->level);
+    SDL_DestroyRenderer(game->gameRenderer);
+    SDL_DestroyWindow(game->gameWindow);
     IMG_Quit();
     SDL_Quit();
 }
+void GameUpdate(Game *game, float *deltaTime)
+{
+    PlayerUpdate(&game->player, game->keys, &game->level, deltaTime);
+    float targetCameraX = game->player.x - SCREEN_WIDTH / 2.0f;
+    float targetCameraY = game->player.y - SCREEN_HEIGHT / 2.0f;
+    float maxCameraX = game->level.width * TILE_SIZE - SCREEN_WIDTH;
+    float maxCameraY = game->level.height * TILE_SIZE - SCREEN_HEIGHT;
+    int clampMaxX = maxCameraX;
+    if (clampMaxX < 0)
+    {
+        clampMaxX = 0;
+    }
 
-void game_update(Game *g, float dt) {
-    player_update(&g->player, g->keys, &g->level, dt);
-
-    float target_cam_x = g->player.x - SCREEN_WIDTH / 2.0f;
-    float target_cam_y = g->player.y - SCREEN_HEIGHT / 2.0f;
-
-    float max_cam_x = g->level.width * TILE_SIZE - SCREEN_WIDTH;
-    float max_cam_y = g->level.height * TILE_SIZE - SCREEN_HEIGHT;
-
-    target_cam_x = SDL_clamp(target_cam_x, 0, max_cam_x > 0 ? max_cam_x : 0);
-    target_cam_y = SDL_clamp(target_cam_y, 0, max_cam_y > 0 ? max_cam_y : 0);
-
-    g->camera_x += (target_cam_x - g->camera_x) * 10.0f * dt;
-    g->camera_y += (target_cam_y - g->camera_y) * 10.0f * dt;
+    int clampMaxY = maxCameraY;
+    if (clampMaxY < 0)
+    {
+        clampMaxY = 0;
+    }
+    targetCameraX = SDL_clamp(targetCameraX, 0, clampMaxX);
+    targetCameraY = SDL_clamp(targetCameraY, 0, clampMaxY);
+    game->cameraX += (targetCameraX - game->cameraX) * 10.0f * (*deltaTime);
+    game->cameraY += (targetCameraY - game->cameraY) * 10.0f * (*deltaTime);
 }
-
-void game_render(Game *g) {
-    SDL_SetRenderDrawColor(g->renderer, 25, 25, 35, 255);
-    SDL_RenderClear(g->renderer);
-
-    level_render(&g->level, g->renderer, g->camera_x, g->camera_y);
-    player_render(&g->player, g->renderer, g->camera_x, g->camera_y, g->sprite_sheet);
-
-    SDL_RenderPresent(g->renderer);
+void GameRender(Game *game)
+{
+    SDL_SetRenderDrawColor(game->gameRenderer, 147, 204, 234, 255);
+    SDL_RenderClear(game->gameRenderer);
+    LevelRender(&game->level, game->gameRenderer, game->spriteSheetTexture, game->cameraX, game->cameraY);
+    PlayerRender(&game->player, game->gameRenderer, game->spriteSheetTexture, game->cameraX, game->cameraY);
+    SDL_RenderPresent(game->gameRenderer);
 }

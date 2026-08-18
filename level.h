@@ -1,11 +1,9 @@
 #ifndef LEVEL_H
 #define LEVEL_H
-
 #include "game.h"
-
-void level_generate_test_room(Level *l);
-void level_free(Level *l);
-void level_render(const Level *l, SDL_Renderer *renderer, float cam_x,
-                  float cam_y);
-
+#include <stdlib.h>
+#include <string.h>
+void LevelGenerateTestRoom(Level *level);
+void LevelFree(Level *level);
+void LevelRender(const Level *level, SDL_Renderer *renderer, float cameraX, float cameraY);
 #endif
