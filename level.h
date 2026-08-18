@@ -5,5 +5,6 @@
 #include <string.h>
 void LevelGenerateTestRoom(Level *level);
 void LevelFree(Level *level);
-void LevelRender(const Level *level, SDL_Renderer *renderer, float cameraX, float cameraY);
+void LevelRender(const Level *level, SDL_Renderer *renderer, float cameraX,
+                 float cameraY);
 #endif
