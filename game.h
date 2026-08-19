@@ -74,6 +74,9 @@ typedef struct Level {
   int width;
   int height;
   int *tiles;
+  float playerSpawnX;
+  float playerSpawnY;
+  bool hasPlayerSpawn;
 } Level;
 typedef struct Game {
   SDL_Window *gameWindow;
