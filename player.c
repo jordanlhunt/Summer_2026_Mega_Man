@@ -47,33 +47,25 @@ void PlayerUpdate(Player *player, const bool *keys, const Level *level,
   bool moveRightKeyDown = keys[SDL_SCANCODE_RIGHT] || keys[SDL_SCANCODE_D];
   static bool dashKeyWasDown = false;
   static bool jumpKeyWasDown = false;
-
   bool dashKeyJustPressed = dashKeyDown && !dashKeyWasDown;
   bool jumpKeyJustPressed = jumpKeyDown && !jumpKeyWasDown;
-
   dashKeyWasDown = dashKeyDown;
   jumpKeyWasDown = jumpKeyDown;
-
   static float jumpBuffer = 0.0f;
   static float coyoteTimer = 0.0f;
-
   if (jumpKeyJustPressed) {
     jumpBuffer = JUMP_BUFFER_TIME;
   }
-
   if (jumpBuffer > 0.0f) {
     jumpBuffer -= deltaTime;
-
     if (jumpBuffer < 0.0f) {
       jumpBuffer = 0.0f;
     }
   }
-
   if (player->isOnGround) {
     coyoteTimer = COYOTE_TIME;
   } else if (coyoteTimer > 0.0f) {
     coyoteTimer -= deltaTime;
-
     if (coyoteTimer < 0.0f) {
       coyoteTimer = 0.0f;
     }
@@ -84,13 +76,11 @@ void PlayerUpdate(Player *player, const bool *keys, const Level *level,
     player->isDashing = true;
     player->dashTimer = DASH_DURATION;
     player->dashCooldown = DASH_COOLDOWN;
-
     if (player->isFacingRight) {
       player->velocityX = DASH_SPEED;
     } else {
       player->velocityX = -DASH_SPEED;
     }
-
     player->velocityY = 0.0f;
     player->currentPlayerState = STATE_DASHING;
   }
@@ -110,7 +100,6 @@ void PlayerUpdate(Player *player, const bool *keys, const Level *level,
   } else {
     if (player->dashCooldown > 0.0f) {
       player->dashCooldown -= deltaTime;
-
       if (player->dashCooldown < 0.0f) {
         player->dashCooldown = 0.0f;
       }
@@ -173,36 +162,29 @@ void PlayerUpdate(Player *player, const bool *keys, const Level *level,
       player->isFacingRight = false;
     }
   }
-
   if (player->isWallSliding) {
     player->velocityY = fminf(player->velocityY, WALL_SLIDE_SPEED);
-
     player->wallSlideTimer += deltaTime;
     player->canWallJump = true;
   } else {
     player->wallSlideTimer = 0.0f;
   }
-
   /* Jumping */
   if (jumpBuffer > 0.0f && (player->isOnGround || coyoteTimer > 0.0f)) {
     player->velocityY = -JUMP_FORCE;
     jumpBuffer = 0.0f;
     coyoteTimer = 0.0f;
     player->isOnGround = false;
-
     player->currentPlayerState = STATE_JUMPING;
   }
   /* Wall Jumping */
   if (jumpBuffer > 0.0f && player->canWallJump) {
     player->velocityY = -WALL_JUMP_FORCE_Y;
-
     player->velocityX = -player->wallDirection * WALL_JUMP_FORCE_X;
-
     player->isWallSliding = false;
     player->canWallJump = false;
     jumpBuffer = 0.0f;
     player->currentPlayerState = STATE_JUMPING;
-
     if (player->velocityX > 0.0f) {
       player->isFacingRight = true;
     } else {
@@ -286,7 +268,6 @@ void PlayerRender(const Player *player, SDL_Renderer *renderer, float cameraX,
     SDL_FRect sourceFRect = {frameCol * SPRITE_WIDTH, frameRow * SPRITE_HEIGHT,
                              SPRITE_WIDTH, SPRITE_HEIGHT};
     SDL_FlipMode flip;
-
     if (player->isFacingRight) {
       flip = SDL_FLIP_NONE;
     } else {

@@ -24,21 +24,21 @@
 #define STYLE_NES 4
 /* Animation frame indices (column within a style block) */
 typedef enum ANIMATION_INDEX {
-  ANIMATION_IDLE_1 = 0,
-  ANIMATION_TURN = 1,
-  ANIMATION_JUMP = 2,
-  ANIMATION_SHOOT = 3,
-  ANIMATION_SHOOT_FLASH = 4,
-  ANIMATION_SHOOT_END = 5,
+  ANIMATION_IDLE_1,
+  ANIMATION_TURN,
+  ANIMATION_JUMP,
+  ANIMATION_SHOOT,
+  ANIMATION_SHOOT_FLASH,
+  ANIMATION_SHOOT_END,
   /* Row 1 */
-  ANIMATION_RUN_1 = 0,
-  ANIMATION_RUN_2 = 1,
-  ANIMATION_RUN_3 = 2,
-  ANIMATION_RUN_4 = 3,
-  ANIMATION_RUN_5 = 4,
-  ANIMATION_RUN_6 = 5,
-  ANIMATION_SLIDE_1 = 6,
-  ANIMATION_SLIDE_2 = 7
+  ANIMATION_RUN_1,
+  ANIMATION_RUN_2,
+  ANIMATION_RUN_3,
+  ANIMATION_RUN_4,
+  ANIMATION_RUN_5,
+  ANIMATION_RUN_6,
+  ANIMATION_SLIDE_1,
+  ANIMATION_SLIDE_2
 } AnimationIndex;
 typedef enum PLAYER_STATE {
   STATE_IDLE,
@@ -69,11 +69,15 @@ typedef struct Player {
   int hitPoints;
   PlayerState currentPlayerState;
   int styleRow;
+  bool dashKeyWasDown;
+  bool jumpKeyWasDown;
+  float jumpBufferTimer;
+  float coyoteTimer;
 } Player;
 typedef struct Level {
   int width;
   int height;
-  int *tiles;
+  unsigned char *tiles;
   float playerSpawnX;
   float playerSpawnY;
   bool hasPlayerSpawn;

@@ -1,8 +1,9 @@
 #include "game.h"
+#include "level.h"
 #include "player.h"
-#include <SDL3/SDL_image.h>
+#include <SDL3_image/SDL_image.h>
 bool GameInitialize(Game *game) {
-  if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+  if (!SDL_Init(SDL_INIT_VIDEO)) {
     SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
     return false;
   }
@@ -11,18 +12,18 @@ bool GameInitialize(Game *game) {
     SDL_Quit();
     return false;
   }
-  game->gameWindow = SDL_CreateWindow(
-      "SDL3 - Robot Hero Moby", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-      SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+  game->gameWindow = SDL_CreateWindow("SDL3 - Robot Hero Moby", SCREEN_WIDTH,
+                                      SCREEN_HEIGHT, 0);
   if (game->gameWindow == NULL) {
     SDL_Log("Unable to create window: %s", SDL_GetError());
     IMG_Quit();
     SDL_Quit();
     return false;
   }
-  game->gameRenderer =
-      SDL_CreateRenderer(game->gameWindow, -1,
-                         SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+  game->gameRenderer = SDL_CreateRenderer(game->gameWindow, NULL);
+  if (!SDL_SetRenderVSync(game->gameRenderer, 1)) {
+    SDL_Log("Warning: VSync not enabled: %s", SDL_GetError());
+  }
   if (game->gameRenderer == NULL) {
     SDL_Log("Unable to create renderer: %s", SDL_GetError());
     SDL_DestroyWindow(game->gameWindow);
@@ -79,11 +80,11 @@ void GameUpdate(Game *game, float deltaTime) {
   float targetCameraY = game->player.y - SCREEN_HEIGHT / 2.0f;
   float maxCameraX = game->level.width * TILE_SIZE - SCREEN_WIDTH;
   float maxCameraY = game->level.height * TILE_SIZE - SCREEN_HEIGHT;
-  int clampMaxX = maxCameraX;
+  float clampMaxX = maxCameraX;
   if (clampMaxX < 0) {
     clampMaxX = 0;
   }
-  int clampMaxY = maxCameraY;
+  float clampMaxY = maxCameraY;
   if (clampMaxY < 0) {
     clampMaxY = 0;
   }

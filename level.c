@@ -97,17 +97,17 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
     SDL_Log("Could not open level file: %s", filePath);
     return false;
   }
-  int levelWidth = 0;
-  int levelHeight = 0;
   if (fscanf(levelFile, "%d %d", &levelWidth, &levelHeight) != 2) {
     SDL_Log("Could not read level dimensions from %s", filePath);
     fclose(levelFile);
     return false;
   }
-  size_t tileCount = (size_t)levelWidth * (size_t)levelHeight;
-  unsigned char *tiles = calloc(tileCount, sizeof(*tiles));
-  if (tiles == NULL) {
+  size_t tileCount = (size_t)level->width * (size_t)level->height;
+  level->tiles = calloc(tileCount, sizeof(*level->tiles));
+  if (level->tiles == NULL) {
     SDL_Log("Could not allocate memory for level: %s", filePath);
+    level->width = 0;
+    level->height = 0;
     fclose(levelFile);
     return false;
   }

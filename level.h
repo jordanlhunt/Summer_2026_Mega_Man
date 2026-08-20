@@ -9,5 +9,5 @@ void LevelGenerateTestRoom(Level *level);
 void LevelFree(Level *level);
 void LevelRender(const Level *level, SDL_Renderer *renderer, float cameraX,
                  float cameraY);
-bool LevelLoadFromFile(Level *level, const char filepath);
+bool LevelLoadFromFile(Level *level, const char *filepath);
 #endif

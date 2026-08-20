@@ -26,7 +26,7 @@ if(SDL3_IMAGE_FOUND)
     target_link_libraries(sdl_man PkgConfig::SDL3_IMAGE)
     target_compile_definitions(sdl_man PRIVATE HAS_SDL3_IMAGE)
 else()
-    # Fallback: try linking directly
+    message(WARNING "SDL3_image not found via pkg-config, trying direct link")
     target_link_libraries(sdl_man SDL3_image)
 endif()
 
