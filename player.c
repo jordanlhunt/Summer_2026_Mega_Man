@@ -1,42 +1,44 @@
 #include "player.h"
 static void PlayerResolveCollision(Player *player, const Level *level,
                                    bool xAxis) {
-  int startTileX = (int)(player->x / TILE_SIZE);
-  int startTileY = (int)(player->y / TILE_SIZE);
-  int endTileX = (int)((player->x + player->width) / TILE_SIZE);
-  int endTileY = (int)((player->y + player->height) / TILE_SIZE);
+  int startTileX = (int)floorf(player->x / TILE_SIZE);
+  int startTileY = (int)floorf(player->y / TILE_SIZE);
+  int endTileX = (int)floorf((player->x + player->width - 0.01f) / TILE_SIZE);
+  int endTileY = (int)floorf((player->y + player->height - 0.01f) / TILE_SIZE);
   for (int tileY = startTileY; tileY <= endTileY; tileY++) {
     for (int tileX = startTileX; tileX <= endTileX; tileX++) {
+      // 1. Check map bounds
       if (tileX < 0 || tileX >= level->width || tileY < 0 ||
           tileY >= level->height) {
         continue;
       }
+      // 2. Ignore empty tiles
       if (level->tiles[tileY * level->width + tileX] == 0) {
         continue;
       }
-      float tile_x = tileX * TILE_SIZE;
-      float tile_y = tileY * TILE_SIZE;
+      float tileXPosition = tileX * TILE_SIZE;
+      float tileYPosition = tileY * TILE_SIZE;
+      // 3. Resolve X-Axis Collisions
       if (xAxis) {
-        if (player->velocityX > 0) {
-          player->x = tile_x - player->width - 0.01f;
-        } else if (player->velocityX < 0) {
-          player->x = tile_x + TILE_SIZE + 0.01f;
+        if (player->velocityX > 0.0f) {
+          player->x = tileXPosition - player->width - 0.01f;
+        } else if (player->velocityX < 0.0f) {
+          player->x = tileXPosition + TILE_SIZE + 0.01f;
         }
-        player->velocityX = 0;
-      } else {
-        if (player->velocityY > 0) {
-          player->y = tile_y - player->height - 0.01f;
-          player->isOnGround = true;
-        } else if (player->velocityY < 0) {
-          player->y = tile_y + TILE_SIZE + 0.01f;
+        player->velocityX = 0.0f;
+      }
+      // 4. Resolve Y-Axis Collisions
+      else {
+        if (player->velocityY > 0.0f) { // Falling and hit a floor
+          player->y = tileYPosition - player->height - 0.01f;
+          player->isOnGround = true; // Corrected: the player is now grounded
+        } else if (player->velocityY < 0.0f) { // Jumping and hit a ceiling
+          player->y = tileYPosition + TILE_SIZE + 0.01f;
         }
-        player->velocityY = 0;
+        player->velocityY = 0.0f;
       }
       return;
     }
-  }
-  if (!xAxis && player->velocityY > 0) {
-    player->isOnGround = false;
   }
 }
 void PlayerUpdate(Player *player, const bool *keys, const Level *level,
@@ -45,29 +47,25 @@ void PlayerUpdate(Player *player, const bool *keys, const Level *level,
   bool jumpKeyDown = keys[SDL_SCANCODE_SPACE] || keys[SDL_SCANCODE_J];
   bool moveLeftKeyDown = keys[SDL_SCANCODE_LEFT] || keys[SDL_SCANCODE_A];
   bool moveRightKeyDown = keys[SDL_SCANCODE_RIGHT] || keys[SDL_SCANCODE_D];
-  static bool dashKeyWasDown = false;
-  static bool jumpKeyWasDown = false;
-  bool dashKeyJustPressed = dashKeyDown && !dashKeyWasDown;
-  bool jumpKeyJustPressed = jumpKeyDown && !jumpKeyWasDown;
-  dashKeyWasDown = dashKeyDown;
-  jumpKeyWasDown = jumpKeyDown;
-  static float jumpBuffer = 0.0f;
-  static float coyoteTimer = 0.0f;
+  bool dashKeyJustPressed = dashKeyDown && !player->dashKeyWasDown;
+  bool jumpKeyJustPressed = jumpKeyDown && !player->jumpKeyWasDown;
+  player->dashKeyWasDown = dashKeyDown;
+  player->jumpKeyWasDown = jumpKeyDown;
   if (jumpKeyJustPressed) {
-    jumpBuffer = JUMP_BUFFER_TIME;
+    player->jumpBufferTimer = JUMP_BUFFER_TIME;
   }
-  if (jumpBuffer > 0.0f) {
-    jumpBuffer -= deltaTime;
-    if (jumpBuffer < 0.0f) {
-      jumpBuffer = 0.0f;
+  if (player->jumpBufferTimer > 0.0f) {
+    player->jumpBufferTimer -= deltaTime;
+    if (player->jumpBufferTimer < 0.0f) {
+      player->jumpBufferTimer = 0.0f;
     }
   }
   if (player->isOnGround) {
-    coyoteTimer = COYOTE_TIME;
-  } else if (coyoteTimer > 0.0f) {
-    coyoteTimer -= deltaTime;
-    if (coyoteTimer < 0.0f) {
-      coyoteTimer = 0.0f;
+    player->coyoteTimer = COYOTE_TIME;
+  } else if (player->coyoteTimer > 0.0f) {
+    player->coyoteTimer -= deltaTime;
+    if (player->coyoteTimer < 0.0f) {
+      player->coyoteTimer = 0.0f;
     }
   }
   /* Dash handling   */
@@ -92,11 +90,17 @@ void PlayerUpdate(Player *player, const bool *keys, const Level *level,
     }
     player->velocityY += GRAVITY * deltaTime * 0.2f;
     player->animationTimer += deltaTime;
+
     player->x += player->velocityX * deltaTime;
     PlayerResolveCollision(player, level, true);
+
+    // 1. ADD THIS: Reset ground state before Y-movement
+    player->isOnGround = false;
+
     player->y += player->velocityY * deltaTime;
     PlayerResolveCollision(player, level, false);
-    return;
+
+    // 2. REMOVE THE early 'return;' that used to be here!
   } else {
     if (player->dashCooldown > 0.0f) {
       player->dashCooldown -= deltaTime;
@@ -132,10 +136,12 @@ void PlayerUpdate(Player *player, const bool *keys, const Level *level,
   player->canWallJump = false;
   player->wallDirection = 0;
   if (!player->isOnGround && player->velocityY > 0) {
-    int tileXLeft = (int)(player->x / TILE_SIZE);
-    int tileXRight = (int)((player->x + player->width - 1.0f) / TILE_SIZE);
-    int tileYTop = (int)(player->y / TILE_SIZE);
-    int tileYBottom = (int)((player->y + player->height - 1.0f) / TILE_SIZE);
+    int tileXLeft = (int)floorf((player->x - 1.0f) / TILE_SIZE);
+    int tileXRight =
+        (int)floorf((player->x + player->width + 1.0f) / TILE_SIZE);
+    int tileYTop = (int)floorf((player->y + 2.0f) / TILE_SIZE);
+    int tileYBottom =
+        (int)floorf((player->y + player->height - 2.0f) / TILE_SIZE);
     bool isWallOnLeft = false;
     bool isWallOnRight = false;
     for (int tileY = tileYTop; tileY <= tileYBottom && tileY < level->height;
@@ -170,20 +176,21 @@ void PlayerUpdate(Player *player, const bool *keys, const Level *level,
     player->wallSlideTimer = 0.0f;
   }
   /* Jumping */
-  if (jumpBuffer > 0.0f && (player->isOnGround || coyoteTimer > 0.0f)) {
+  if (player->jumpBufferTimer > 0.0f &&
+      (player->isOnGround || player->coyoteTimer > 0.0f)) {
     player->velocityY = -JUMP_FORCE;
-    jumpBuffer = 0.0f;
-    coyoteTimer = 0.0f;
+    player->jumpBufferTimer = 0.0f;
+    player->coyoteTimer = 0.0f;
     player->isOnGround = false;
     player->currentPlayerState = STATE_JUMPING;
   }
   /* Wall Jumping */
-  if (jumpBuffer > 0.0f && player->canWallJump) {
+  if (player->jumpBufferTimer > 0.0f && player->canWallJump) {
     player->velocityY = -WALL_JUMP_FORCE_Y;
     player->velocityX = -player->wallDirection * WALL_JUMP_FORCE_X;
     player->isWallSliding = false;
     player->canWallJump = false;
-    jumpBuffer = 0.0f;
+    player->jumpBufferTimer = 0.0f;
     player->currentPlayerState = STATE_JUMPING;
     if (player->velocityX > 0.0f) {
       player->isFacingRight = true;
@@ -225,12 +232,19 @@ void PlayerUpdate(Player *player, const bool *keys, const Level *level,
   } else {
     player->currentPlayerState = STATE_IDLE;
   }
+  /* Move and resolve collisions */
+  player->x += player->velocityX * deltaTime;
+  PlayerResolveCollision(player, level, true);
+  // RESET ground state before checking Y collisions!
+  player->isOnGround = false;
+  player->y += player->velocityY * deltaTime;
+  PlayerResolveCollision(player, level, false);
   player->animationTimer += deltaTime;
 }
 void PlayerRender(const Player *player, SDL_Renderer *renderer, float cameraX,
                   float cameraY, SDL_Texture *sheet) {
-  float drawX = player->x - cameraX - (SPRITE_WIDTH - player->width) / 2.0f;
-  float drawY = player->y - cameraY - (SPRITE_HEIGHT - player->height);
+  float drawX = player->x - cameraX - (SPRITE_WIDTH - player->width);
+  float drawY = player->y - cameraY - (SPRITE_HEIGHT - player->height) * 2.0f;
   SDL_FRect destinationFRect = {drawX, drawY, SPRITE_WIDTH * 2.0f,
                                 SPRITE_HEIGHT * 2.0f};
   if (sheet) {
@@ -243,8 +257,7 @@ void PlayerRender(const Player *player, SDL_Renderer *renderer, float cameraX,
       break;
     case STATE_RUNNING:
       animSpeed = 12.0f;
-      frameCol =
-          ANIMATION_RUN_1 + ((int)(player->animationTimer * animSpeed) % 6);
+      frameCol = ((int)(player->animationTimer * animSpeed) % 6);
       frameRow = player->styleRow + 1;
       break;
     case STATE_JUMPING:
@@ -257,11 +270,8 @@ void PlayerRender(const Player *player, SDL_Renderer *renderer, float cameraX,
       frameCol = ANIMATION_TURN;
       break;
     case STATE_DASHING:
-      frameCol = ANIMATION_SLIDE_1;
-      frameRow = player->styleRow + 1;
-      break;
     case STATE_SLIDING:
-      frameCol = ANIMATION_SLIDE_1;
+      frameCol = 6;
       frameRow = player->styleRow + 1;
       break;
     }
@@ -315,6 +325,6 @@ void PlayerRender(const Player *player, SDL_Renderer *renderer, float cameraX,
       SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);
       break;
     }
-    SDL_RenderFillRectF(renderer, &renderRect);
+    SDL_RenderFillRect(renderer, &renderRect);
   }
 }

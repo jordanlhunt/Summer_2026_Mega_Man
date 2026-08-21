@@ -2,9 +2,9 @@
 #define GAME_H
 
 #include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
 #include <stdbool.h>
 #include <string.h>
-
 #define SARABOT_ASSET_PATH "sarabot-alpha.png"
 
 #define SCREEN_WIDTH 1280
@@ -59,6 +59,7 @@ typedef struct Player {
   bool isOnGround;
   bool isFacingRight;
   bool isDashing;
+  bool isWallSliding;
   bool canWallJump;
   int wallDirection;
   float dashTimer;

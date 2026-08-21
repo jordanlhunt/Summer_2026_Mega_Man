@@ -1,42 +1,39 @@
 #include "game.h"
 #include "level.h"
 #include "player.h"
-#include <SDL3_image/SDL_image.h>
+
 bool GameInitialize(Game *game) {
   if (!SDL_Init(SDL_INIT_VIDEO)) {
     SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
     return false;
   }
-  if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG) {
-    SDL_Log("Unable to initialize SDL_image: %s", IMG_GetError());
-    SDL_Quit();
-    return false;
-  }
+
   game->gameWindow = SDL_CreateWindow("SDL3 - Robot Hero Moby", SCREEN_WIDTH,
                                       SCREEN_HEIGHT, 0);
   if (game->gameWindow == NULL) {
     SDL_Log("Unable to create window: %s", SDL_GetError());
-    IMG_Quit();
+
     SDL_Quit();
     return false;
   }
   game->gameRenderer = SDL_CreateRenderer(game->gameWindow, NULL);
-  if (!SDL_SetRenderVSync(game->gameRenderer, 1)) {
-    SDL_Log("Warning: VSync not enabled: %s", SDL_GetError());
-  }
   if (game->gameRenderer == NULL) {
     SDL_Log("Unable to create renderer: %s", SDL_GetError());
     SDL_DestroyWindow(game->gameWindow);
-    IMG_Quit();
+    game->gameWindow = NULL;
     SDL_Quit();
     return false;
   }
+
+  if (!SDL_SetRenderVSync(game->gameRenderer, 1)) {
+    SDL_Log("Warning: VSync not enabled: %s", SDL_GetError());
+  }
   SDL_Surface *spriteSheetSurface = IMG_Load(SARABOT_ASSET_PATH);
   if (spriteSheetSurface == NULL) {
-    SDL_Log("Unable to load sprite sheet: %s", IMG_GetError());
+    SDL_Log("Unable to load sprite sheet: %s", SDL_GetError());
     SDL_DestroyRenderer(game->gameRenderer);
     SDL_DestroyWindow(game->gameWindow);
-    IMG_Quit();
+
     SDL_Quit();
     return false;
   } else {
@@ -56,9 +53,19 @@ bool GameInitialize(Game *game) {
                           .hitPoints = 16,
                           .styleRow = STYLE_GBA,
                           .currentPlayerState = STATE_IDLE};
-  LevelGenerateTestRoom(&game->level);
+  if (!LevelLoadFromFile(&game->level, "assets/levels/testroom.txt")) {
+    SDL_Log("Failed to load level file.");
+    // Clean up anything created so far:
+    SDL_DestroyRenderer(game->gameRenderer);
+    SDL_DestroyWindow(game->gameWindow);
+
+    SDL_Quit();
+    return false;
+  }
   game->cameraX = 0;
   game->cameraY = 0;
+  game->player.x = game->level.playerSpawnX;
+  game->player.y = game->level.playerSpawnY;
   game->isRunning = true;
   game->previousTime = SDL_GetTicks();
   memset(game->keys, 0, sizeof(game->keys));
@@ -71,7 +78,7 @@ void GameShutdown(Game *game) {
   LevelFree(&game->level);
   SDL_DestroyRenderer(game->gameRenderer);
   SDL_DestroyWindow(game->gameWindow);
-  IMG_Quit();
+
   SDL_Quit();
 }
 void GameUpdate(Game *game, float deltaTime) {
