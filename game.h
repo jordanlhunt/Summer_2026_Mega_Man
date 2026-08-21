@@ -1,18 +1,15 @@
 #ifndef GAME_H
 #define GAME_H
-
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <stdbool.h>
 #include <string.h>
-#define SARABOT_ASSET_PATH "sarabot-alpha.png"
-
+#define SARABOT_ASSET_PATH "assets/sarabot-alpha.png"
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 #define TILE_SIZE 32
 #define GRAVITY 2200.0f
 #define MAX_FALL_SPEED 900.0f
-
 /* Sprite sheet: 52x44 per frame, 8 cols x 6 rows */
 #define SPRITE_WIDTH 52
 #define SPRITE_HEIGHT 44
