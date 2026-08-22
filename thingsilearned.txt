@@ -1,0 +1,1 @@
+AABB collision - I'm pretty familiar with basic 2D object collision, but I never actually knew how it really actually worked. Axis-aligned bounding box (AABB) is the more computer science-y way of doing it. I like that.
