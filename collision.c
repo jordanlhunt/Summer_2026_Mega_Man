@@ -6,7 +6,7 @@ bool CollisionIsSolidTile(const Level *level, int tileX, int tileY) {
       tileY >= level->height) {
     return false;
   }
-  return level->tiles[tileY * level->width + tileX] == 0;
+  return level->tiles[tileY * level->width + tileX] != 0;
 }
 void CollisionResolveTileAxis(AxisAlignedBoundingBox *boundingBox,
                               const Level *level, bool *isXAxis) {

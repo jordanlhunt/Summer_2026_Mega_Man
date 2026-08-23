@@ -83,8 +83,12 @@ void GraphicsRenderLevel(const Level *level, SDL_Renderer *renderer,
 }
 void GraphicsRenderPlayer(const Player *player, SDL_Renderer *renderer,
                           const Camera *camera, SDL_Texture *sheet) {
-  float drawX = player->x - camera->x - (SPRITE_WIDTH - player->width);
-  float drawY = player->y - camera->y - (SPRITE_HEIGHT - player->height) * 2.0f;
+  float drawX =
+      player->x - camera->x -
+      (SPRITE_WIDTH * 2.0f - player->width) / 2.0f; // center horizontally
+  float drawY =
+      player->y - camera->y -
+      (SPRITE_HEIGHT * 2.0f - player->height); // align feet to hitbox bottom
   SDL_FRect destinationFRect = {drawX, drawY, SPRITE_WIDTH * 2.0f,
                                 SPRITE_HEIGHT * 2.0f};
   if (sheet) {
