@@ -1,5 +1,7 @@
-#include "game.h"
+#include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+
+#include "game.h"
 
 int main(int argc, char *argv[]) {
   (void)argc;
@@ -22,19 +24,11 @@ int main(int argc, char *argv[]) {
       if (sdlEvent.type == SDL_EVENT_QUIT) {
         game.isRunning = false;
       }
-      if (sdlEvent.type == SDL_EVENT_KEY_DOWN) {
-        if (sdlEvent.key.scancode < SDL_SCANCODE_COUNT) {
-          game.keys[sdlEvent.key.scancode] = true;
-        }
-        if (sdlEvent.key.scancode == SDL_SCANCODE_ESCAPE) {
-          game.isRunning = false;
-        }
+      if (sdlEvent.type == SDL_EVENT_KEY_DOWN &&
+          sdlEvent.key.scancode == SDL_SCANCODE_ESCAPE) {
+        game.isRunning = false;
       }
-      if (sdlEvent.type == SDL_EVENT_KEY_UP) {
-        if (sdlEvent.key.scancode < SDL_SCANCODE_COUNT) {
-          game.keys[sdlEvent.key.scancode] = false;
-        }
-      }
+      InputHandleEvent(&game.input, &sdlEvent);
     }
     accumulator += frameTime;
     while (accumulator >= FIXED_DELTATIME) {

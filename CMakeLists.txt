@@ -29,6 +29,9 @@ add_executable(sdl_man
     game.c
     player.c
     level.c
+    input.c
+    collision.c
+    graphics.c
 )
 
 target_compile_options(sdl_man PRIVATE
