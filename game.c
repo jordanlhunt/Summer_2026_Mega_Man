@@ -1,4 +1,5 @@
 #include "game.h"
+#include "input.h"
 #include "level.h"
 #include "player.h"
 
@@ -33,7 +34,6 @@ bool GameInitialize(Game *game) {
     SDL_Log("Unable to load sprite sheet: %s", SDL_GetError());
     SDL_DestroyRenderer(game->gameRenderer);
     SDL_DestroyWindow(game->gameWindow);
-
     SDL_Quit();
     return false;
   } else {
@@ -45,8 +45,8 @@ bool GameInitialize(Game *game) {
   if (game->spriteSheetTexture == NULL) {
     SDL_Log("Unable to create texture from surface: %s", SDL_GetError());
   }
-  game->player = (Player){.x = 160,
-                          .y = 500,
+  game->player = (Player){.x = 0,
+                          .y = 0,
                           .width = 32,
                           .height = 40,
                           .isFacingRight = true,
@@ -56,19 +56,19 @@ bool GameInitialize(Game *game) {
   if (!LevelLoadFromFile(&game->level, "assets/levels/testroom.txt")) {
     SDL_Log("Failed to load level file.");
     // Clean up anything created so far:
+    SDL_DestroyTexture(game->spriteSheetTexture);
     SDL_DestroyRenderer(game->gameRenderer);
     SDL_DestroyWindow(game->gameWindow);
-
     SDL_Quit();
     return false;
   }
-  game->cameraX = 0;
-  game->cameraY = 0;
+  game->camera.x = 0;
+  game->camera.y = 0;
   game->player.x = game->level.playerSpawnX;
   game->player.y = game->level.playerSpawnY;
   game->isRunning = true;
   game->previousTime = SDL_GetTicks();
-  memset(game->keys, 0, sizeof(game->keys));
+  InputIntialize(&game->input);
   return true;
 }
 void GameShutdown(Game *game) {
@@ -78,33 +78,21 @@ void GameShutdown(Game *game) {
   LevelFree(&game->level);
   SDL_DestroyRenderer(game->gameRenderer);
   SDL_DestroyWindow(game->gameWindow);
-
   SDL_Quit();
 }
 void GameUpdate(Game *game, float deltaTime) {
-  PlayerUpdate(&game->player, game->keys, &game->level, deltaTime);
+  InputUpdate(&game->input);
+  PlayerUpdate(&game->player, &game->input, &game->level, deltaTime);
+
   float targetCameraX = game->player.x - SCREEN_WIDTH / 2.0f;
   float targetCameraY = game->player.y - SCREEN_HEIGHT / 2.0f;
-  float maxCameraX = game->level.width * TILE_SIZE - SCREEN_WIDTH;
-  float maxCameraY = game->level.height * TILE_SIZE - SCREEN_HEIGHT;
-  float clampMaxX = maxCameraX;
-  if (clampMaxX < 0) {
-    clampMaxX = 0;
-  }
-  float clampMaxY = maxCameraY;
-  if (clampMaxY < 0) {
-    clampMaxY = 0;
-  }
-  targetCameraX = SDL_clamp(targetCameraX, 0, clampMaxX);
-  targetCameraY = SDL_clamp(targetCameraY, 0, clampMaxY);
-  game->cameraX += (targetCameraX - game->cameraX) * 10.0f * (deltaTime);
-  game->cameraY += (targetCameraY - game->cameraY) * 10.0f * (deltaTime);
+  CameraUpdate(&game->camera, targetCameraX, targetCameraY, &game->level,
+               deltaTime);
 }
 void GameRender(Game *game) {
-  SDL_SetRenderDrawColor(game->gameRenderer, 147, 204, 234, 255);
-  SDL_RenderClear(game->gameRenderer);
-  LevelRender(&game->level, game->gameRenderer, game->cameraX, game->cameraY);
-  PlayerRender(&game->player, game->gameRenderer, game->cameraX, game->cameraY,
-               game->spriteSheetTexture);
-  SDL_RenderPresent(game->gameRenderer);
+  GraphicsClear(game->gameRenderer);
+  GraphicsRenderLevel(&game->level, game->gameRenderer, &game->camera);
+  GraphicsRenderPlayer(&game->player, game->gameRenderer, &game->camera,
+                       game->spriteSheetTexture);
+  GraphicsPresent(game->gameRenderer);
 }

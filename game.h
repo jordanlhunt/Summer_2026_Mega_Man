@@ -15,11 +15,10 @@ typedef struct Game {
   SDL_Texture *spriteSheetTexture;
   Player player;
   Level level;
-  float cameraX;
-  float cameraY;
+  Camera camera;
+  Input input;
   bool isRunning;
   Uint64 previousTime;
-  bool keys[SDL_SCANCODE_COUNT];
 } Game;
 bool GameInitialize(Game *game);
 void GameShutdown(Game *game);
