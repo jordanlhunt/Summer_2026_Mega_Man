@@ -1,1 +1,29 @@
-build/*
+# CMake output
+build/
+out/
+cmake-build-*/
+.cache/*
+
+# Compiled files
+*.o
+*.obj
+*.a
+*.so
+*.dll
+*.dylib
+*.exe
+
+# Debugging
+*.core
+core
+vgcore.*
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Operating-system files
+.DS_Store
+Thumbs.db
