@@ -1,5 +1,4 @@
 #include "level.h"
-#include "game.h"
 void LevelFree(Level *level) {
   if (level) {
     free(level->tiles);
@@ -9,41 +8,7 @@ void LevelFree(Level *level) {
     level->hasPlayerSpawn = false;
   }
 }
-void LevelRender(const Level *level, SDL_Renderer *renderer, float cameraX,
-                 float cameraY) {
-  int startX = (int)floorf(cameraX / TILE_SIZE) - 1;
-  int startY = (int)floorf(cameraY / TILE_SIZE) - 1;
-  int endX = startX + (SCREEN_WIDTH / TILE_SIZE) + 3;
-  int endY = startY + (SCREEN_HEIGHT / TILE_SIZE) + 3;
-  for (int y = startY; y < endY; y++) {
-    for (int x = startX; x < endX; x++) {
-      if (x < 0 || y < 0) {
-        continue;
-      }
-      if (x >= level->width || y >= level->height) {
-        continue;
-      }
-      if (level->tiles[y * level->width + x] == 0) {
-        continue;
-      }
-      SDL_FRect tile = {.x = x * TILE_SIZE - cameraX,
-                        .y = y * TILE_SIZE - cameraY,
-                        .w = TILE_SIZE,
-                        .h = TILE_SIZE};
-      bool isFloor = (y >= level->height - 3);
-      bool isWall = (x == 0 || x == level->width - 1);
-      if (y + 1 < level->height &&
-          level->tiles[(y + 1) * level->width + x] == 0 && isFloor == false) {
-        SDL_SetRenderDrawColor(renderer, 80, 70, 60, 255);
-      } else if (isWall) {
-        SDL_SetRenderDrawColor(renderer, 60, 55, 50, 255);
-      } else {
-        SDL_SetRenderDrawColor(renderer, 45, 40, 35, 255);
-      }
-      SDL_RenderFillRect(renderer, &tile);
-    }
-  }
-}
+
 bool LevelLoadFromFile(Level *level, const char *filePath) {
   if (level == NULL || filePath == NULL) {
     return false;
