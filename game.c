@@ -1,4 +1,5 @@
 #include "game.h"
+#include "config.h"
 #include "input.h"
 #include "level.h"
 #include "player.h"
@@ -51,7 +52,7 @@ bool GameInitialize(Game *game) {
                           .height = 40,
                           .isFacingRight = true,
                           .hitPoints = 16,
-                          .styleRow = STYLE_GBA,
+                          .styleRow = STYLE_NES,
                           .currentPlayerState = STATE_IDLE};
   if (!LevelLoadFromFile(&game->level, "assets/levels/testroom.txt")) {
     SDL_Log("Failed to load level file.");
