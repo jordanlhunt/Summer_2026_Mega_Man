@@ -1,20 +1,13 @@
 #include "game.h"
-#include "config.h"
-#include "input.h"
-#include "level.h"
-#include "player.h"
-
 bool GameInitialize(Game *game) {
   if (!SDL_Init(SDL_INIT_VIDEO)) {
     SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
     return false;
   }
-
   game->gameWindow = SDL_CreateWindow("SDL3 - Robot Hero Moby", SCREEN_WIDTH,
                                       SCREEN_HEIGHT, 0);
   if (game->gameWindow == NULL) {
     SDL_Log("Unable to create window: %s", SDL_GetError());
-
     SDL_Quit();
     return false;
   }
@@ -26,7 +19,6 @@ bool GameInitialize(Game *game) {
     SDL_Quit();
     return false;
   }
-
   if (!SDL_SetRenderVSync(game->gameRenderer, 1)) {
     SDL_Log("Warning: VSync not enabled: %s", SDL_GetError());
   }
@@ -84,7 +76,6 @@ void GameShutdown(Game *game) {
 void GameUpdate(Game *game, float deltaTime) {
   InputUpdate(&game->input);
   PlayerUpdate(&game->player, &game->input, &game->level, deltaTime);
-
   float targetCameraX = game->player.x - SCREEN_WIDTH / 2.0f;
   float targetCameraY = game->player.y - SCREEN_HEIGHT / 2.0f;
   CameraUpdate(&game->camera, targetCameraX, targetCameraY, &game->level,

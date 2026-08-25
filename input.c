@@ -1,6 +1,6 @@
 #include "input.h"
 
-void InputIntialize(Input *input) { memset(input, 0, sizeof(*input)); }
+void InputInitialize(Input *input) { memset(input, 0, sizeof(*input)); }
 void InputHandleEvent(Input *input, const SDL_Event *event) {
   if (event->type == SDL_EVENT_KEY_DOWN) {
     if (event->key.scancode < SDL_SCANCODE_COUNT) {

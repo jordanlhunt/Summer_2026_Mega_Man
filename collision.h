@@ -1,6 +1,7 @@
 #ifndef COLLISION_H
 #define COLLISION_H
 #include "config.h"
+#include "game.h"
 #include "level.h"
 #include <math.h>
 #include <stdbool.h>

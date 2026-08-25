@@ -1,18 +1,11 @@
 #ifndef PLAYER_H
 #define PLAYER_H
-#include <stdbool.h>
-
+#include "collision.h"
+#include "config.h"
 #include "input.h"
 #include "level.h"
 #include <math.h>
 #include <stdbool.h>
-
-#include "collision.h"
-#include "config.h"
-
-#include "collision.h"
-#include "config.h"
-
 /* Tuning constants */
 #define PLAYER_SPEED 220.0f
 #define JUMP_FORCE 520.0f
@@ -30,7 +23,6 @@
 #define VARIABLE_JUMP_MULTIPLIER 0.88f
 #define WALL_SLIDE_GRAVITY_SCALE 0.3f
 #define DASH_GRAVITY_SCALE 0.2f
-
 /* Animation frame indices (column within a style block) */
 typedef enum ANIMATION_INDEX {
   ANIMATION_IDLE_1,

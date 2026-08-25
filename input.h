@@ -24,7 +24,7 @@ typedef struct Input {
   bool dashDown;
 } Input;
 
-void InputIntialize(Input *input);
+void InputInitialize(Input *input);
 /**
  * Feed raw SDL key up/down events that are polled from main()
  */

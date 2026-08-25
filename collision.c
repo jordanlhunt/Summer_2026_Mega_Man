@@ -1,5 +1,4 @@
 #include "collision.h"
-#include "game.h"
 
 bool CollisionIsSolidTile(const Level *level, int tileX, int tileY) {
   if (tileX < 0 || tileX >= level->width || tileY < 0 ||
