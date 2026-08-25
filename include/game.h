@@ -18,7 +18,6 @@ typedef struct Game {
   Camera camera;
   Input input;
   Projectile projectiles[MAX_PROJECTILES];
-  float playerShootCooldown;
   bool isRunning;
   Uint64 previousTime;
 } Game;
