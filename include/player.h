@@ -49,28 +49,29 @@ typedef enum PLAYER_STATE {
   STATE_SLIDING
 } PlayerState;
 typedef struct Player {
-  float x;
-  float y;
+  bool canWallJump;
+  bool isDashing;
+  bool isFacingRight;
+  bool isOnGround;
+  bool isWallSliding;
+  float animationFrameDuration;
+  float animationTimer;
+  float coyoteTimer;
+  float dashCooldown;
+  float dashTimer;
+  float height;
+  float jumpBufferTimer;
+  float shootCooldown;
   float velocityX;
   float velocityY;
-  float width;
-  float height;
-  bool isOnGround;
-  bool isFacingRight;
-  bool isDashing;
-  bool isWallSliding;
-  bool canWallJump;
-  int wallDirection;
-  float dashTimer;
-  float dashCooldown;
   float wallSlideTimer;
-  float animationTimer;
-  float animationFrameDuration;
+  float width;
+  float x;
+  float y;
   int hitPoints;
-  PlayerState currentPlayerState;
   int styleRow;
-  float jumpBufferTimer;
-  float coyoteTimer;
+  int wallDirection;
+  PlayerState currentPlayerState;
 } Player;
 void PlayerUpdate(Player *player, const Input *Input, const Level *level,
                   float deltaTime);

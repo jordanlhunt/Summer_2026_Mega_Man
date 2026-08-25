@@ -13,13 +13,16 @@ typedef struct Input {
   // Edge-detection memory, previous frame's held state
   bool wasJumpKeyDown;
   bool wasDashKeyDown;
+  bool wasShootKeyDown;
   bool isJumpJustPressed;
   bool isDashJustPressed;
+  bool isShootJustPressed;
   // Derived recomputed every call in InputUpate()
   bool moveLeft;
   bool moveRight;
   bool jumpDown;
   bool dashDown;
+  bool shootDown;
 } Input;
 
 void InputInitialize(Input *input);

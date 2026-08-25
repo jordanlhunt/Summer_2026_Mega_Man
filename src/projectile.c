@@ -1,4 +1,4 @@
-#include "../include/projectile.h"
+#include "projectile.h"
 
 void ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
                      float originY, bool isFacingRight) {
@@ -47,6 +47,20 @@ void ProjectileRenderAll(const Projectile *projectiles, int *renderer,
                                  .y = projectile->y - cameraY,
                                  .w = PROJECTILE_WIDTH,
                                  .h = PROJECTILE_HEIGHT};
-    SDL_RenderTexture(renderer, projectileTexture, NULL, &destinationRect)
+    SDL_RenderTexture(renderer, projectileTexture, NULL, &destinationRect);
+  }
+}
+void ProjectileHandlePlayerShooting(Projectile projectiles[MAX_PROJECTILES],
+                                    Player *player, const Input *input) {
+  if (input->isShootJustPressed && player->shootCooldown <= 0.0f) {
+    float originY = player->y + player->height * .5f - PROJECTILE_HEIGHT * .5f;
+    float originX;
+    if (player->isFacingRight) {
+      originX = player->x + player->width;
+    } else {
+      originX = player->x - PROJECTILE_WIDTH;
+    }
+    ProjectileSpawn(projectiles, originX, originY, player->isFacingRight);
+    player->shootCooldown = PROJECTILE_COOLDOWN;
   }
 }

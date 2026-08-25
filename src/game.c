@@ -38,6 +38,23 @@ bool GameInitialize(Game *game) {
   if (game->spriteSheetTexture == NULL) {
     SDL_Log("Unable to create texture from surface: %s", SDL_GetError());
   }
+  SDL_Surface *playerProjectileSurface = IMG_Load(SHOT_ASSET_PATH);
+  if (playerProjectileSurface == NULL) {
+    SDL_Log("Unable to load player projectile sprite: %s", SDL_GetError());
+    SDL_DestroyTexture(game->spriteSheetTexture);
+    SDL_DestroyRenderer(game->gameRenderer);
+    SDL_DestroyWindow(game->gameWindow);
+    SDL_Quit();
+    return false;
+  } else {
+    SDL_Log("Player sprite loaded successfuly from: %s", SHOT_ASSET_PATH);
+  }
+  game->playerProjectile =
+      SDL_CreateTextureFromSurface(game->gameRenderer, playerProjectileSurface);
+  if (game->playerProjectileTexture == NULL) {
+    SDL_Log("Unable to create texture from surface: %s");
+  }
+
   game->player = (Player){.x = 0,
                           .y = 0,
                           .width = 32,
@@ -61,6 +78,8 @@ bool GameInitialize(Game *game) {
   game->player.y = game->level.playerSpawnY;
   game->isRunning = true;
   game->previousTime = SDL_GetTicks();
+  game->playerShootCooldown = 0.0f;
+  memset(game->projectiles, 0, sizeof(game->projectiles));
   InputInitialize(&game->input);
   return true;
 }
@@ -78,6 +97,27 @@ void GameUpdate(Game *game, float deltaTime) {
   PlayerUpdate(&game->player, &game->input, &game->level, deltaTime);
   float targetCameraX = game->player.x - SCREEN_WIDTH / 2.0f;
   float targetCameraY = game->player.y - SCREEN_HEIGHT / 2.0f;
+  if (game->playerShootCooldown > 0.0f) {
+    game->playerShootCooldown -= deltaTime;
+    if (game->playerShootCooldown < 0.0f) {
+      game->playerShootCooldown = 0.0f;
+    }
+  }
+  if (game->input.isShootJustPressed && game->playerShootCooldown <= 0.0f) {
+    float originY =
+        game->player.y + game->player.height * 0.5f - PROJECTILE_HEIGHT * 0.5f;
+    float originX;
+    if (game->player.isFacingRight) {
+      originX = game->player.x + game->player.width;
+    } else {
+      originX = game->player.x - PROJECTILE_WIDTH;
+    }
+    ProjectileSpawn(game->projectiles, originX, originY,
+                    game->player.isFacingRight);
+    game->playerShootCooldown = PROJECTILE_COOLDOWN;
+  }
+  ProjectileUpdateAll(game->projectiles, &game->level, deltaTime);
+
   CameraUpdate(&game->camera, targetCameraX, targetCameraY, &game->level,
                deltaTime);
 }
@@ -86,5 +126,8 @@ void GameRender(Game *game) {
   GraphicsRenderLevel(&game->level, game->gameRenderer, &game->camera);
   GraphicsRenderPlayer(&game->player, game->gameRenderer, &game->camera,
                        game->spriteSheetTexture);
+  ProjectileRenderAll(game->projectiles, game->gameRenderer, game->camera.x,
+                      game->camera.y, game->playerProjectile);
+
   GraphicsPresent(game->gameRenderer);
 }

@@ -12,10 +12,13 @@ typedef struct Game {
   SDL_Window *gameWindow;
   SDL_Renderer *gameRenderer;
   SDL_Texture *spriteSheetTexture;
+  SDL_Texture *playerProjectile;
   Player player;
   Level level;
   Camera camera;
   Input input;
+  Projectile projectiles[MAX_PROJECTILES];
+  float playerShootCooldown;
   bool isRunning;
   Uint64 previousTime;
 } Game;
@@ -23,4 +26,5 @@ bool GameInitialize(Game *game);
 void GameShutdown(Game *game);
 void GameUpdate(Game *game, float deltaTime);
 void GameRender(Game *game);
+
 #endif

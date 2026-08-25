@@ -44,4 +44,12 @@ void ProjectileRenderAll(const Projectile projectiles[MAX_PROJECTILES],
                          SDL_Renderer *renderer, float cameraX, float cameraY,
                          SDL_Texture *projectileTexture);
 
+/**
+ * Handles the player's shooting input.
+ * Updates the player's shootCooldown, and spawns a projectile if conditions are
+ * met.
+ */
+void ProjectileHandlePlayerShooting(Projectile projectiles[MAX_PROJECTILES],
+                                    Player *player, const Input *input);
+
 #endif

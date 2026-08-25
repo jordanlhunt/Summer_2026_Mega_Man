@@ -82,11 +82,17 @@ void PlayerUpdate(Player *player, const Input *input, const Level *level,
     return;
   }
 
-  /* ----- Cooldown (only when not dashing) ------------------------------ */
+  /* ----- Cooldown ------------------------------------------------------ */
   if (player->dashCooldown > 0.0f) {
     player->dashCooldown -= deltaTime;
     if (player->dashCooldown < 0.0f)
       player->dashCooldown = 0.0f;
+  }
+  if (player->shootCooldown > 0.0f) {
+    player->shootCooldown -= deltaTime;
+    if (player->shootCooldown < 0.0f) {
+      player->shootCooldown = 0.0f;
+    }
   }
 
   /* ----- Normal movement (only when not dashing) ----------------------- */

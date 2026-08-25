@@ -21,8 +21,11 @@ void InputUpdate(Input *input) {
       input->keys[SDL_SCANCODE_SPACE] || input->keys[SDL_SCANCODE_J];
   input->dashDown =
       input->keys[SDL_SCANCODE_LSHIFT] || input->keys[SDL_SCANCODE_Z];
+  input->shootDown = input->keys[SDL_SCANCODE_K] || input->keys[SDL_SCANCODE_X];
   input->isJumpJustPressed = input->jumpDown && !input->wasJumpKeyDown;
   input->isDashJustPressed = input->dashDown && !input->wasDashKeyDown;
+  input->isShootJustPressed = input->shootDown && !input->wasShootKeyDown;
   input->wasJumpKeyDown = input->jumpDown;
   input->wasDashKeyDown = input->dashDown;
+  input->wasShootKeyDown = input->shootDown;
 }
