@@ -1,10 +1,7 @@
 #ifndef LEVEL_H
 #define LEVEL_H
+#include "common.h"
 #include "config.h"
-#include <SDL3/SDL.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
 typedef struct Level {
   int width;
   int height;

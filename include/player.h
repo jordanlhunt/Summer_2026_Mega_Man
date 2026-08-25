@@ -1,11 +1,10 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 #include "collision.h"
+#include "common.h"
 #include "config.h"
 #include "input.h"
 #include "level.h"
-#include <math.h>
-#include <stdbool.h>
 /* Tuning constants */
 #define PLAYER_SPEED 220.0f
 #define JUMP_FORCE 520.0f

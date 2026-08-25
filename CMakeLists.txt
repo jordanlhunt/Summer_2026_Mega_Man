@@ -18,13 +18,14 @@ if(NOT SDL3_IMAGE_LIBRARY OR NOT SDL3_IMAGE_INCLUDE_DIR)
     message(FATAL_ERROR "SDL3_image not found. Please install it.")
 endif()
 add_executable(sdl_man
-    main.c
-    game.c
-    player.c
-    level.c
-    input.c
-    collision.c
-    graphics.c
+    src/main.c
+    src/game.c
+    src/player.c
+    src/level.c
+    src/input.c
+    src/collision.c
+    src/graphics.c
+    src/projectile.c
 )
 target_compile_options(sdl_man PRIVATE
     -Wall
@@ -33,6 +34,7 @@ target_compile_options(sdl_man PRIVATE
 )
 target_include_directories(sdl_man PRIVATE
     ${SDL3_IMAGE_INCLUDE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 target_link_libraries(sdl_man PRIVATE
     SDL3::SDL3

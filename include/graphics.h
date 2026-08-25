@@ -1,11 +1,9 @@
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
+#include "common.h"
 #include "config.h"
 #include "level.h"
 #include "player.h"
-#include <SDL3/SDL.h>
-#include <SDL3_image/SDL_image.h>
-#include <math.h>
 typedef struct Camera {
   float x;
   float y;

@@ -1,13 +1,12 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "common.h"
 #include "config.h"
 #include "graphics.h"
 #include "input.h"
 #include "level.h"
 #include "player.h"
-#include <SDL3/SDL.h>
-#include <stdbool.h>
 
 typedef struct Game {
   SDL_Window *gameWindow;

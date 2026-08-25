@@ -1,4 +1,4 @@
-#include "../include/collision.h"
+#include "collision.h"
 
 bool CollisionIsSolidTile(const Level *level, int tileX, int tileY) {
   if (tileX < 0 || tileX >= level->width || tileY < 0 ||
@@ -8,7 +8,7 @@ bool CollisionIsSolidTile(const Level *level, int tileX, int tileY) {
   return level->tiles[tileY * level->width + tileX] != 0;
 }
 void CollisionResolveTileAxis(AxisAlignedBoundingBox *boundingBox,
-                              const Level *level, bool *isXAxis) {
+                              const Level *level, bool isXAxis) {
   int startTileX = (int)floorf(boundingBox->x / TILE_SIZE);
   int startTileY = (int)floorf(boundingBox->y / TILE_SIZE);
   int endTileX =

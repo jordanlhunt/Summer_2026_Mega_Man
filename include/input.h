@@ -1,10 +1,8 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_events.h>
-#include <stdbool.h>
-#include <string.h>
+#include "common.h"
+#include "config.h"
 
 /**
  * Input owns raw key state and turns into semnatic, per-frame booleans so

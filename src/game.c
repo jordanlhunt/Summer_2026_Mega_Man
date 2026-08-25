@@ -61,7 +61,7 @@ bool GameInitialize(Game *game) {
   game->player.y = game->level.playerSpawnY;
   game->isRunning = true;
   game->previousTime = SDL_GetTicks();
-  InputIntialize(&game->input);
+  InputInitialize(&game->input);
   return true;
 }
 void GameShutdown(Game *game) {

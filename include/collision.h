@@ -1,7 +1,6 @@
 #ifndef COLLISION_H
 #define COLLISION_H
 #include "config.h"
-#include "game.h"
 #include "level.h"
 #include <math.h>
 #include <stdbool.h>
@@ -31,7 +30,7 @@ bool CollisionIsSolidTile(const Level *level, int tileX, int tileY);
  * landing on top of a tile during Y-axis pass
  */
 void CollisionResolveTileAxis(AxisAlignedBoundingBox *boundingBox,
-                              const Level *level, bool *isXAxis);
+                              const Level *level, bool isXAxis);
 /* Tile queries used for wall-slide/wall-jump detection. */
 bool CollisionCheckWallLeft(const Level *level, float x, float y, float height);
 bool CollisionCheckWallRight(const Level *level, float x, float y, float width,

@@ -1,9 +1,9 @@
 #ifndef PROJECTILE_H
 #define PROJECTILE_H
+#include "collision.h"
+#include "common.h"
 #include "config.h"
 #include "level.h"
-#include <SDL3/SDL.h>
-#include <stdbool.h>
 
 #define MAX_PROJECTILES 16
 #define PROJECTILE_WIDTH 11.0f
@@ -33,8 +33,8 @@ void ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
  * Update all the projectiles by deltaTime, and freeing any that expire (collide
  * with solid enviorment or time expire)
  */
-void ProjectileUpdate(Projectile projectiles[MAX_PROJECTILES],
-                      const Level *level, float deltaTime);
+void ProjectileUpdateAll(Projectile projectiles[MAX_PROJECTILES],
+                         const Level *level, float deltaTime);
 
 /**
  * Draws all the active projectile with the shotTexture, offset by the camera
