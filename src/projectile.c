@@ -42,7 +42,8 @@ void ProjectileUpdateAll(Projectile *projectiles, const Level *level,
   }
 }
 void ProjectileRenderAll(const Projectile *projectiles, SDL_Renderer *renderer,
-                         float cameraX, float cameraY, int *projectileTexture) {
+                         float cameraX, float cameraY,
+                         SDL_Texture *projectileTexture) {
   for (int i = 0; i < MAX_PROJECTILES; i++) {
     const Projectile *projectile = &projectiles[i];
     if (!projectile->isActive) {
