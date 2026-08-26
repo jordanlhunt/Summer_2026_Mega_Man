@@ -29,7 +29,7 @@ typedef struct Projectile {
  */
 void ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
                      float originY, bool isFacingRight);
-
+/** Don't leave your screen open unattended */
 /**
  * Update all the projectiles by deltaTime, and freeing any that expire (collide
  * with solid enviorment or time expire)

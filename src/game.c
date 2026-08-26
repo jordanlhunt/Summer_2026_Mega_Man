@@ -50,7 +50,7 @@ bool GameInitialize(Game *game) {
     SDL_Log("Player sprite loaded successfuly from: %s",
             PLAYER_PROJECTILE_ASSET_PATH);
   }
-  game->playerProjectile =
+  game->playerProjectileTexture =
       SDL_CreateTextureFromSurface(game->gameRenderer, playerProjectileSurface);
   if (game->playerProjectileTexture == NULL) {
     SDL_Log("Unable to create texture from surface: %s", SDL_GetError());
@@ -111,6 +111,6 @@ void GameRender(Game *game) {
   GraphicsRenderPlayer(&game->player, game->gameRenderer, &game->camera,
                        game->spriteSheetTexture);
   ProjectileRenderAll(game->projectiles, game->gameRenderer, game->camera.x,
-                      game->camera.y, game->playerProjectile);
+                      game->camera.y, game->playerProjectileTexture);
   GraphicsPresent(game->gameRenderer);
 }

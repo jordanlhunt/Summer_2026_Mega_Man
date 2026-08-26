@@ -26,6 +26,11 @@ void ProjectileUpdateAll(Projectile *projectiles, const Level *level,
     if (!projectile->isActive) {
       continue;
     }
+    projectile->lifeTimer -= deltaTime;
+    if (projectile->lifeTimer <= 0.0f) {
+      projectile->isActive = false;
+      continue;
+    }
     projectile->x += projectile->velocityX * deltaTime;
     int tileX =
         (int)floorf((projectile->x + PROJECTILE_WIDTH * 0.5f) / TILE_SIZE);
@@ -41,11 +46,6 @@ void ProjectileRenderAll(const Projectile *projectiles, SDL_Renderer *renderer,
   for (int i = 0; i < MAX_PROJECTILES; i++) {
     const Projectile *projectile = &projectiles[i];
     if (!projectile->isActive) {
-      continue;
-    }
-    projectile->lifeTimer -= deltaTime;
-    if (projectile->lifeTimer <= 0.0f) {
-      projectile->isActive = false;
       continue;
     }
     SDL_FRect destinationRect = {.x = projectile->x - cameraX,
