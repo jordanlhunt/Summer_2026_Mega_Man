@@ -13,7 +13,7 @@ typedef struct Game {
   SDL_Window *gameWindow;
   SDL_Renderer *gameRenderer;
   SDL_Texture *spriteSheetTexture;
-  SDL_Texture *playerProjectile;
+  SDL_Texture *playerProjectileTexture;
   Player player;
   Level level;
   Camera camera;

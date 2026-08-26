@@ -36,11 +36,16 @@ void ProjectileUpdateAll(Projectile *projectiles, const Level *level,
     }
   }
 }
-void ProjectileRenderAll(const Projectile *projectiles, int *renderer,
+void ProjectileRenderAll(const Projectile *projectiles, SDL_Renderer *renderer,
                          float cameraX, float cameraY, int *projectileTexture) {
   for (int i = 0; i < MAX_PROJECTILES; i++) {
     const Projectile *projectile = &projectiles[i];
     if (!projectile->isActive) {
+      continue;
+    }
+    projectile->lifeTimer -= deltaTime;
+    if (projectile->lifeTimer <= 0.0f) {
+      projectile->isActive = false;
       continue;
     }
     SDL_FRect destinationRect = {.x = projectile->x - cameraX,
@@ -52,15 +57,18 @@ void ProjectileRenderAll(const Projectile *projectiles, int *renderer,
 }
 void ProjectileHandlePlayerShooting(Projectile projectiles[MAX_PROJECTILES],
                                     Player *player, const Input *input) {
+  // PRESS-TO-SHOOT: Only fires on the exact frame the button goes down
   if (input->isShootJustPressed && player->shootCooldown <= 0.0f) {
-    float originY = player->y + player->height * .5f - PROJECTILE_HEIGHT * .5f;
+    float originY =
+        player->y + player->height * 0.5f - PROJECTILE_HEIGHT * 0.5f;
     float originX;
     if (player->isFacingRight) {
       originX = player->x + player->width;
     } else {
       originX = player->x - PROJECTILE_WIDTH;
     }
+
     ProjectileSpawn(projectiles, originX, originY, player->isFacingRight);
-    player->shootCooldown = PROJECTILE_COOLDOWN;
+    player->shootCooldown = PROJECTILE_COOLDOWN; // Prevents spamming
   }
 }

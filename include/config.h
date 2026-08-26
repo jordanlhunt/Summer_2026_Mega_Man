@@ -4,7 +4,7 @@
 /* Window / world                                                        */
 /* -------------------------------------------------------------------- */
 #define SARABOT_ASSET_PATH "assets/sarabot-alpha.png"
-#define SHOT_ASSET_PATH "assets/shot.png"
+#define PLAYER_PROJECTILE_ASSET_PATH "assets/shot.png"
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 #define TILE_SIZE 32

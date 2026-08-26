@@ -38,7 +38,7 @@ bool GameInitialize(Game *game) {
   if (game->spriteSheetTexture == NULL) {
     SDL_Log("Unable to create texture from surface: %s", SDL_GetError());
   }
-  SDL_Surface *playerProjectileSurface = IMG_Load(SHOT_ASSET_PATH);
+  SDL_Surface *playerProjectileSurface = IMG_Load(PLAYER_PROJECTILE_ASSET_PATH);
   if (playerProjectileSurface == NULL) {
     SDL_Log("Unable to load player projectile sprite: %s", SDL_GetError());
     SDL_DestroyTexture(game->spriteSheetTexture);
@@ -47,12 +47,13 @@ bool GameInitialize(Game *game) {
     SDL_Quit();
     return false;
   } else {
-    SDL_Log("Player sprite loaded successfuly from: %s", SHOT_ASSET_PATH);
+    SDL_Log("Player sprite loaded successfuly from: %s",
+            PLAYER_PROJECTILE_ASSET_PATH);
   }
   game->playerProjectile =
       SDL_CreateTextureFromSurface(game->gameRenderer, playerProjectileSurface);
   if (game->playerProjectileTexture == NULL) {
-    SDL_Log("Unable to create texture from surface: %s");
+    SDL_Log("Unable to create texture from surface: %s", SDL_GetError());
   }
 
   game->player = (Player){.x = 0,
@@ -64,7 +65,7 @@ bool GameInitialize(Game *game) {
                           .styleRow = STYLE_NES,
                           .currentPlayerState = STATE_IDLE};
   if (!LevelLoadFromFile(&game->level, "assets/levels/testroom.txt")) {
-    SDL_Log("Failed to load level file.");
+    SDL_Log("Failed to load level file.", SDL_GetError());
     // Clean up anything created so far:
     SDL_DestroyTexture(game->spriteSheetTexture);
     SDL_DestroyRenderer(game->gameRenderer);
@@ -78,7 +79,7 @@ bool GameInitialize(Game *game) {
   game->player.y = game->level.playerSpawnY;
   game->isRunning = true;
   game->previousTime = SDL_GetTicks();
-  game->playerShootCooldown = 0.0f;
+
   memset(game->projectiles, 0, sizeof(game->projectiles));
   InputInitialize(&game->input);
   return true;
@@ -111,6 +112,5 @@ void GameRender(Game *game) {
                        game->spriteSheetTexture);
   ProjectileRenderAll(game->projectiles, game->gameRenderer, game->camera.x,
                       game->camera.y, game->playerProjectile);
-
   GraphicsPresent(game->gameRenderer);
 }
