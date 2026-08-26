@@ -7,6 +7,7 @@
 #include "input.h"
 #include "level.h"
 #include "player.h"
+#include "projectile.h"
 
 typedef struct Game {
   SDL_Window *gameWindow;

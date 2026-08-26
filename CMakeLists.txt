@@ -3,6 +3,7 @@ project(SDL_Man LANGUAGES C)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # SDL3 core – uses the Config mode (works because you have it installed)
 find_package(SDL3 REQUIRED CONFIG)
 # SDL3_image – manually find the library and header

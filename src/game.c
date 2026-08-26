@@ -95,29 +95,12 @@ void GameShutdown(Game *game) {
 void GameUpdate(Game *game, float deltaTime) {
   InputUpdate(&game->input);
   PlayerUpdate(&game->player, &game->input, &game->level, deltaTime);
-  float targetCameraX = game->player.x - SCREEN_WIDTH / 2.0f;
-  float targetCameraY = game->player.y - SCREEN_HEIGHT / 2.0f;
-  if (game->playerShootCooldown > 0.0f) {
-    game->playerShootCooldown -= deltaTime;
-    if (game->playerShootCooldown < 0.0f) {
-      game->playerShootCooldown = 0.0f;
-    }
-  }
-  if (game->input.isShootJustPressed && game->playerShootCooldown <= 0.0f) {
-    float originY =
-        game->player.y + game->player.height * 0.5f - PROJECTILE_HEIGHT * 0.5f;
-    float originX;
-    if (game->player.isFacingRight) {
-      originX = game->player.x + game->player.width;
-    } else {
-      originX = game->player.x - PROJECTILE_WIDTH;
-    }
-    ProjectileSpawn(game->projectiles, originX, originY,
-                    game->player.isFacingRight);
-    game->playerShootCooldown = PROJECTILE_COOLDOWN;
-  }
+  ProjectileHandlePlayerShooting(game->projectiles, &game->player,
+                                 &game->input);
   ProjectileUpdateAll(game->projectiles, &game->level, deltaTime);
 
+  float targetCameraX = game->player.x - SCREEN_WIDTH / 2.0f;
+  float targetCameraY = game->player.y - SCREEN_HEIGHT / 2.0f;
   CameraUpdate(&game->camera, targetCameraX, targetCameraY, &game->level,
                deltaTime);
 }

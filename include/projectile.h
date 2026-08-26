@@ -4,6 +4,7 @@
 #include "common.h"
 #include "config.h"
 #include "level.h"
+#include "player.h"
 
 #define MAX_PROJECTILES 16
 #define PROJECTILE_WIDTH 11.0f
