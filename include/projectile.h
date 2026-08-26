@@ -25,7 +25,7 @@ typedef struct Projectile {
 /**
  * Finds a free slot in the projectile pool and activates a projectile traveling
  * from a point (orginX, originY) in the direction the player is facing. If
- * every slot is already active, the shit is sliently dropped
+ * every slot is already active, the shot is sliently dropped
  */
 void ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
                      float originY, bool isFacingRight);

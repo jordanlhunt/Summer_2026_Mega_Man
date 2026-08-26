@@ -1,22 +1,22 @@
 #include "projectile.h"
 
-void ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
+bool ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
                      float originY, bool isFacingRight) {
   for (int i = 0; i < MAX_PROJECTILES; i++) {
     if (!projectiles[i].isActive) {
-      projectiles[i].isActive = true;
-      projectiles[i].x = originX;
-      projectiles[i].y = originY;
-      if (isFacingRight) {
-        projectiles[i].velocityX = PROJECTILE_SPEED;
-      } else {
-        projectiles[i].velocityX = -PROJECTILE_SPEED;
-      }
-      projectiles[i].lifeTimer = PROJECTILE_LIFETIME;
-      return;
+      projectiles[i] = (Projectile){
+          .x = originX,
+          .y = originY,
+          .velocityX = isFacingRight ? PROJECTILE_SPEED : -PROJECTILE_SPEED,
+          .lifeTimer = PROJECTILE_LIFETIME,
+          .isActive = true,
+      };
+
+      return true;
     }
   }
-  // Pool exhausted - shot is dropped
+
+  return false;
 }
 
 void ProjectileUpdateAll(Projectile *projectiles, const Level *level,

@@ -1,5 +1,14 @@
 #include "player.h"
 
+static void DecreaseTimer(float *timer, float deltaTime) {
+  if (*timer > 0.0f) {
+    *timer -= deltaTime;
+    if (*timer < 0.0f) {
+      *timer = 0.0f;
+    }
+  }
+}
+
 /* Integrates velocity into position and resolves tile collisions on both
  * axes, matching the original move-x/resolve-x, move-y/resolve-y order.
  * Both the dash path and the normal movement path in PlayerUpdate used to
@@ -31,6 +40,8 @@ static void PlayerMoveAndResolve(Player *player, const Level *level,
 }
 void PlayerUpdate(Player *player, const Input *input, const Level *level,
                   float deltaTime) {
+  DecreaseTimer(&player->dashCooldown, deltaTime);
+  DecreaseTimer(&player->shootCooldown, deltaTime);
   /* ----- Jump buffer and coyote timer --------------------------------- */
   if (input->isJumpJustPressed) {
     player->jumpBufferTimer = JUMP_BUFFER_TIME;
@@ -65,21 +76,23 @@ void PlayerUpdate(Player *player, const Input *input, const Level *level,
 
   if (player->isDashing) {
     player->dashTimer -= deltaTime;
+
     if (player->dashTimer <= 0.0f) {
+      player->dashTimer = 0.0f;
       player->isDashing = false;
       player->velocityX *= 0.3f;
+    } else {
+      player->velocityY += GRAVITY * deltaTime * DASH_GRAVITY_SCALE;
+
+      if (player->velocityY > MAX_FALL_SPEED) {
+        player->velocityY = MAX_FALL_SPEED;
+      }
+
+      PlayerMoveAndResolve(player, level, deltaTime);
+      player->currentPlayerState = STATE_DASHING;
+      player->animationTimer += deltaTime;
+      return;
     }
-
-    /* Dash uses reduced gravity */
-    player->velocityY += GRAVITY * deltaTime * DASH_GRAVITY_SCALE;
-    if (player->velocityY > MAX_FALL_SPEED)
-      player->velocityY = MAX_FALL_SPEED;
-
-    PlayerMoveAndResolve(player, level, deltaTime);
-
-    /* Update animation timer and return - skip normal movement. */
-    player->animationTimer += deltaTime;
-    return;
   }
 
   /* ----- Cooldown ------------------------------------------------------ */

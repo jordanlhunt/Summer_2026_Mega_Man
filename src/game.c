@@ -1,6 +1,6 @@
 #include "game.h"
 bool GameInitialize(Game *game) {
-  if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+  if (!SDL_Init(SDL_INIT_VIDEO)) {
     SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
     return false;
   }
@@ -32,11 +32,20 @@ bool GameInitialize(Game *game) {
   } else {
     SDL_Log("Sprite sheet loaded successfully from: %s", SARABOT_ASSET_PATH);
   }
-  game->spriteSheetTexture =
-      SDL_CreateTextureFromSurface(game->gameRenderer, spriteSheetSurface);
-  SDL_DestroySurface(spriteSheetSurface);
-  if (game->spriteSheetTexture == NULL) {
-    SDL_Log("Unable to create texture from surface: %s", SDL_GetError());
+  game->playerProjectileTexture =
+      SDL_CreateTextureFromSurface(game->gameRenderer, playerProjectileSurface);
+
+  SDL_DestroySurface(playerProjectileSurface);
+  playerProjectileSurface = NULL;
+
+  if (game->playerProjectileTexture == NULL) {
+    SDL_Log("Unable to create projectile texture: %s", SDL_GetError());
+
+    SDL_DestroyTexture(game->spriteSheetTexture);
+    SDL_DestroyRenderer(game->gameRenderer);
+    SDL_DestroyWindow(game->gameWindow);
+    SDL_Quit();
+    return false;
   }
   SDL_Surface *playerProjectileSurface = IMG_Load(PLAYER_PROJECTILE_ASSET_PATH);
   if (playerProjectileSurface == NULL) {
@@ -47,7 +56,7 @@ bool GameInitialize(Game *game) {
     SDL_Quit();
     return false;
   } else {
-    SDL_Log("Player sprite loaded successfuly from: %s",
+    SDL_Log("Player sprite loaded successfully from: %s",
             PLAYER_PROJECTILE_ASSET_PATH);
   }
   game->playerProjectileTexture =
@@ -85,13 +94,21 @@ bool GameInitialize(Game *game) {
   return true;
 }
 void GameShutdown(Game *game) {
-  if (game->spriteSheetTexture) {
+  void GameShutdown(Game * game) {
+    if (game == NULL) {
+      return;
+    }
+    SDL_DestroyTexture(game->playerProjectileTexture);
+    game->playerProjectileTexture = NULL;
     SDL_DestroyTexture(game->spriteSheetTexture);
+    game->spriteSheetTexture = NULL;
+    LevelFree(&game->level);
+    SDL_DestroyRenderer(game->gameRenderer);
+    game->gameRenderer = NULL;
+    SDL_DestroyWindow(game->gameWindow);
+    game->gameWindow = NULL;
+    SDL_Quit();
   }
-  LevelFree(&game->level);
-  SDL_DestroyRenderer(game->gameRenderer);
-  SDL_DestroyWindow(game->gameWindow);
-  SDL_Quit();
 }
 void GameUpdate(Game *game, float deltaTime) {
   InputUpdate(&game->input);
