@@ -28,6 +28,9 @@ int main(int argc, char *argv[]) {
       InputHandleEvent(&game.input, &sdlEvent);
     }
     accumulator += frameTime;
+    if (accumulator > 0.3f) {
+      accumulator = 0.3f;
+    }
     while (accumulator >= FIXED_DELTATIME) {
       GameUpdate(&game, FIXED_DELTATIME);
       accumulator -= FIXED_DELTATIME;

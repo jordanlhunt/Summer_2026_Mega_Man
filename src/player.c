@@ -157,8 +157,9 @@ void PlayerUpdate(Player *player, const Input *input, const Level *level,
   } else {
     player->velocityY += GRAVITY * deltaTime * WALL_SLIDE_GRAVITY_SCALE;
   }
-  if (player->velocityY > MAX_FALL_SPEED)
+  if (player->velocityY > MAX_FALL_SPEED) {
     player->velocityY = MAX_FALL_SPEED;
+  }
   /* ----- Move and resolve collisions --------------------------------------*/
   PlayerMoveAndResolve(player, level, deltaTime);
   /* ----- Update animation state -------------------------------------------*/
