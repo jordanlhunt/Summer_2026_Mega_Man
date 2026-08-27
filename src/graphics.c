@@ -133,9 +133,9 @@ void GraphicsRenderPlayer(const Player *player, SDL_Renderer *renderer,
       SDL_SetTextureColorMod(sheet, 255, 255, 255);
       SDL_FRect trailDestinationFRect = destinationFRect;
       if (player->isFacingRight) {
-        trailDestinationFRect.x += -10.0f;
+        trailDestinationFRect.x += -DASH_TRAIL_OFFSET;
       } else {
-        trailDestinationFRect.x += 10.0f;
+        trailDestinationFRect.x += DASH_TRAIL_OFFSET;
       }
       SDL_SetTextureAlphaMod(sheet, 128);
       SDL_RenderTextureRotated(renderer, sheet, &sourceFRect,

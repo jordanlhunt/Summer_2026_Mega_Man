@@ -12,6 +12,7 @@
 #define PROJECTILE_SPEED 420.0f
 #define PROJECTILE_LIFETIME 1.2f
 #define PROJECTILE_COOLDOWN 0.22f
+#define PROJECTILE_SUBSTEP_SIZE (TILE_SIZE * 0.5f)
 
 typedef struct Projectile {
   float x;
@@ -29,10 +30,8 @@ typedef struct Projectile {
  */
 bool ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
                      float originY, bool isFacingRight);
-/** Don't leave your screen open unattended */
 /**
- * Update all the projectiles by deltaTime, and freeing any that expire (collide
- * with solid enviorment or time expire)
+ * Update all active projectiles: move, check lifetime and collision.
  */
 void ProjectileUpdateAll(Projectile projectiles[MAX_PROJECTILES],
                          const Level *level, float deltaTime);

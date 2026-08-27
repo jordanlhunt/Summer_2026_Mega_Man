@@ -23,55 +23,26 @@ bool GameInitialize(Game *game) {
   if (!SDL_SetRenderVSync(game->gameRenderer, 1)) {
     SDL_Log("Warning: VSync not enabled: %s", SDL_GetError());
   }
-  SDL_Surface *spriteSheetSurface = IMG_Load(SARABOT_ASSET_PATH);
-  if (spriteSheetSurface == NULL) {
-    SDL_Log("Unable to load sprite sheet: %s", SDL_GetError());
+  // Load sprite sheet
+  game->spriteSheetTexture =
+      GraphicsLoadSpriteSheet(game->gameRenderer, SARABOT_ASSET_PATH);
+  if (game->spriteSheetTexture == NULL) {
+    SDL_Log("Failed to load sprite sheet.");
     SDL_DestroyRenderer(game->gameRenderer);
     SDL_DestroyWindow(game->gameWindow);
     SDL_Quit();
     return false;
-  } else {
-    SDL_Log("Sprite sheet loaded successfully from: %s", SARABOT_ASSET_PATH);
   }
-  SDL_Surface *playerProjectileSurface = IMG_Load(PLAYER_PROJECTILE_ASSET_PATH);
-  if (playerProjectileSurface == NULL) {
-    SDL_Log("Unable to load sprite sheet: %s", SDL_GetError());
-    SDL_DestroySurface(spriteSheetSurface);
-    SDL_DestroyRenderer(game->gameRenderer);
-    SDL_DestroyWindow(game->gameWindow);
-    SDL_Quit();
-  }
+  // Load projectile sprite
   game->playerProjectileTexture =
-      SDL_CreateTextureFromSurface(game->gameRenderer, playerProjectileSurface);
-
-  SDL_DestroySurface(playerProjectileSurface);
-  playerProjectileSurface = NULL;
-
+      GraphicsLoadSpriteSheet(game->gameRenderer, PLAYER_PROJECTILE_ASSET_PATH);
   if (game->playerProjectileTexture == NULL) {
-    SDL_Log("Unable to create projectile texture: %s", SDL_GetError());
-
+    SDL_Log("Failed to load projectile sprite.");
     SDL_DestroyTexture(game->spriteSheetTexture);
     SDL_DestroyRenderer(game->gameRenderer);
     SDL_DestroyWindow(game->gameWindow);
     SDL_Quit();
     return false;
-  }
-  SDL_Surface *playerProjectileSurface = IMG_Load(PLAYER_PROJECTILE_ASSET_PATH);
-  if (playerProjectileSurface == NULL) {
-    SDL_Log("Unable to load player projectile sprite: %s", SDL_GetError());
-    SDL_DestroyTexture(game->spriteSheetTexture);
-    SDL_DestroyRenderer(game->gameRenderer);
-    SDL_DestroyWindow(game->gameWindow);
-    SDL_Quit();
-    return false;
-  } else {
-    SDL_Log("Player sprite loaded successfully from: %s",
-            PLAYER_PROJECTILE_ASSET_PATH);
-  }
-  game->playerProjectileTexture =
-      SDL_CreateTextureFromSurface(game->gameRenderer, playerProjectileSurface);
-  if (game->playerProjectileTexture == NULL) {
-    SDL_Log("Unable to create texture from surface: %s", SDL_GetError());
   }
 
   game->player = (Player){.x = 0,

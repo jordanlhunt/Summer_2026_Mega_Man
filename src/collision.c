@@ -1,5 +1,8 @@
 #include "collision.h"
 
+// ------------------------------------------------------------
+// Basic tile query
+// ------------------------------------------------------------
 bool CollisionIsSolidTile(const Level *level, int tileX, int tileY) {
   if (tileX < 0 || tileX >= level->width || tileY < 0 ||
       tileY >= level->height) {
@@ -7,66 +10,133 @@ bool CollisionIsSolidTile(const Level *level, int tileX, int tileY) {
   }
   return level->tiles[tileY * level->width + tileX] != 0;
 }
-void CollisionResolveTileAxis(AxisAlignedBoundingBox *boundingBox,
-                              const Level *level, bool isXAxis) {
-  int startTileX = (int)floorf(boundingBox->x / TILE_SIZE);
-  int startTileY = (int)floorf(boundingBox->y / TILE_SIZE);
-  int endTileX =
-      (int)floorf((boundingBox->x + boundingBox->width - 0.01f) / TILE_SIZE);
-  int endTileY =
-      (int)floorf((boundingBox->y + boundingBox->height - 0.01f) / TILE_SIZE);
+
+// ------------------------------------------------------------
+// Edge / line check
+// ------------------------------------------------------------
+bool CollisionCheckTileEdge(const Level *level, int edgeTile, int startTile,
+                            int endTile, bool isVerticalLine) {
+  for (int i = startTile; i <= endTile; i++) {
+    int tileX, tileY;
+    if (isVerticalLine) {
+      tileX = edgeTile;
+      tileY = i;
+    } else {
+      tileX = i;
+      tileY = edgeTile;
+    }
+    if (CollisionIsSolidTile(level, tileX, tileY)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// ------------------------------------------------------------
+// AABB overlap test
+// ------------------------------------------------------------
+bool CollisionCheckAABB(const Level *level, float x, float y, float width,
+                        float height) {
+  int startTileX = (int)floorf(x / TILE_SIZE);
+  int endTileX = (int)floorf((x + width - 0.01f) / TILE_SIZE);
+  int startTileY = (int)floorf(y / TILE_SIZE);
+  int endTileY = (int)floorf((y + height - 0.01f) / TILE_SIZE);
+
   for (int tileY = startTileY; tileY <= endTileY; tileY++) {
     for (int tileX = startTileX; tileX <= endTileX; tileX++) {
-      if (!CollisionIsSolidTile(level, tileX, tileY)) {
-        continue;
+      if (CollisionIsSolidTile(level, tileX, tileY)) {
+        return true;
       }
-      float tileXPosition = (float)(tileX * TILE_SIZE);
-      float tileYPosition = (float)(tileY * TILE_SIZE);
-      if (isXAxis) {
-        if (boundingBox->velocityX > 0.0f) {
-          boundingBox->x = tileXPosition - boundingBox->width - 0.01f;
-        } else if (boundingBox->velocityX < 0.0f) {
-          boundingBox->x = tileXPosition + TILE_SIZE + 0.01f;
-        }
-        boundingBox->velocityX = 0.0f;
-      } else {
-        // Landing on the floor
-        if (boundingBox->velocityY > 0.0f) {
-          boundingBox->y = tileYPosition - boundingBox->height - 0.01f;
-          boundingBox->isOnGround = true;
-        }
-        // Hitting the ceiling
-        else if (boundingBox->velocityY < 0.0f) {
-          boundingBox->y = tileYPosition + TILE_SIZE + 0.01f;
-        }
-        boundingBox->velocityY = 0.0f;
+    }
+  }
+  return false;
+}
+
+// ------------------------------------------------------------
+// Helper: returns the first overlapping tile
+// ------------------------------------------------------------
+static bool FindFirstOverlappingTile(const Level *level, float x, float y,
+                                     float width, float height, int *outTileX,
+                                     int *outTileY) {
+  int startTileX = (int)floorf(x / TILE_SIZE);
+  int endTileX = (int)floorf((x + width - 0.01f) / TILE_SIZE);
+  int startTileY = (int)floorf(y / TILE_SIZE);
+  int endTileY = (int)floorf((y + height - 0.01f) / TILE_SIZE);
+
+  for (int tileY = startTileY; tileY <= endTileY; tileY++) {
+    for (int tileX = startTileX; tileX <= endTileX; tileX++) {
+      if (CollisionIsSolidTile(level, tileX, tileY)) {
+        if (outTileX)
+          *outTileX = tileX;
+        if (outTileY)
+          *outTileY = tileY;
+        return true;
       }
+    }
+  }
+  return false;
+}
+
+// ------------------------------------------------------------
+// Iterative resolution along one axis
+// ------------------------------------------------------------
+void CollisionResolveTileAxis(AxisAlignedBoundingBox *boundingBox,
+                              const Level *level, bool isXAxis) {
+  const int MAX_ITERATIONS = 8; // safety limit – usually exits in 1‑3 passes
+
+  for (int iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
+    // 1. If no overlap, we're done.
+    if (!CollisionCheckAABB(level, boundingBox->x, boundingBox->y,
+                            boundingBox->width, boundingBox->height)) {
+      break;
+    }
+
+    // 2. Find one overlapping tile to resolve against.
+    int tileX, tileY;
+    if (!FindFirstOverlappingTile(level, boundingBox->x, boundingBox->y,
+                                  boundingBox->width, boundingBox->height,
+                                  &tileX, &tileY)) {
+      break; // should never happen if check passed, but keep safe
+    }
+
+    float tileXPosition = (float)(tileX * TILE_SIZE);
+    float tileYPosition = (float)(tileY * TILE_SIZE);
+
+    // 3. Resolve along the axis, push the box out.
+    if (isXAxis) {
+      if (boundingBox->velocityX > 0.0f) {
+        boundingBox->x = tileXPosition - boundingBox->width - 0.01f;
+      } else if (boundingBox->velocityX < 0.0f) {
+        boundingBox->x = tileXPosition + TILE_SIZE + 0.01f;
+      }
+      boundingBox->velocityX = 0.0f;
+    } else {
+      if (boundingBox->velocityY > 0.0f) {
+        boundingBox->y = tileYPosition - boundingBox->height - 0.01f;
+        boundingBox->isOnGround = true;
+      } else if (boundingBox->velocityY < 0.0f) {
+        boundingBox->y = tileYPosition + TILE_SIZE + 0.01f;
+      }
+      boundingBox->velocityY = 0.0f;
     }
   }
 }
 
+// ------------------------------------------------------------
+// Wall‑side checks
+// ------------------------------------------------------------
 bool CollisionCheckWallLeft(const Level *level, float x, float y,
                             float height) {
   int tileX = (int)floorf((x - 1.0f) / TILE_SIZE);
   int tileYTop = (int)floorf((y + 2.0f) / TILE_SIZE);
   int tileYBottom = (int)floorf((y + height - 2.0f) / TILE_SIZE);
-
-  for (int tileY = tileYTop; tileY <= tileYBottom; tileY++) {
-    if (CollisionIsSolidTile(level, tileX, tileY)) {
-      return true;
-    }
-  }
-  return false;
+  return CollisionCheckTileEdge(level, tileX, tileYTop, tileYBottom, true);
 }
+
 bool CollisionCheckWallRight(const Level *level, float x, float y, float width,
                              float height) {
   int tileX = (int)floorf((x + width + 1.0f) / TILE_SIZE);
   int tileYTop = (int)floorf((y + 2.0f) / TILE_SIZE);
   int tileYBottom = (int)floorf((y + height - 2.0f) / TILE_SIZE);
-  for (int tileY = tileYTop; tileY <= tileYBottom; tileY++) {
-    if (CollisionIsSolidTile(level, tileX, tileY)) {
-      return true;
-    }
-  }
-  return false;
+  return CollisionCheckTileEdge(level, tileX, tileYTop, tileYBottom, true);
 }

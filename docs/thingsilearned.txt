@@ -1,1 +1,3 @@
-AABB collision - I'm pretty familiar with basic 2D object collision, but I never actually knew how it really actually worked. Axis-aligned bounding box (AABB) is the more computer science-y way of doing it. I like that.
+1.) AABB collision - I'm pretty familiar with basic 2D object collision, but I never actually knew how it really actually worked. Axis-aligned bounding box (AABB) is the more computer science-y way of doing it. I like that.
+
+2.) Collision in general is a LOT more involved that I assumed for a platformer

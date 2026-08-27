@@ -57,7 +57,7 @@ add_custom_command(
     "${CMAKE_SOURCE_DIR}/assets/levels/testroom.txt"
     "$<TARGET_FILE_DIR:sdl_man>/assets/levels/testroom.txt"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "${CMAKE_SOURCE_DIR}/assets/assset/shot.png"
+    "${CMAKE_SOURCE_DIR}/assset/shot.png"
     "$<TARGET_FILE_DIR:sdl_man>/assets/shot.png"
     VERBATIM
 )

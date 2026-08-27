@@ -54,7 +54,6 @@ typedef struct Player {
   bool isFacingRight;
   bool isOnGround;
   bool isWallSliding;
-  float animationFrameDuration;
   float animationTimer;
   float coyoteTimer;
   float dashCooldown;

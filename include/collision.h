@@ -5,11 +5,6 @@
 #include <math.h>
 #include <stdbool.h>
 
-/**
- * A minimal axis-aligned box used for tile collision. Any entity can build one
- * from their own fields and send it to CollisionResolveTileAxis, and copy the
- * result back.
- */
 typedef struct AxisAlignedBoundingBox {
   float x;
   float y;
@@ -20,18 +15,31 @@ typedef struct AxisAlignedBoundingBox {
   bool isOnGround;
 } AxisAlignedBoundingBox;
 
-/**
- * True if the tile at (tileX, tileY) is solid. Out-of-bounds is never solid
- */
 bool CollisionIsSolidTile(const Level *level, int tileX, int tileY);
+
 /**
- * Resolves collision along a single axis. Mutates box->x/y and zeroes the
- * zeroes the relevant velocity component on impact; sets box->isOnGround when
- * landing on top of a tile during Y-axis pass
+ * Checks if a line of tiles along a single row or column contains any solid
+ * tile. If isVerticalLine is true, edgeTile is the X coordinate,
+ * startTile/endTile are Y coordinates. If false, edgeTile is the Y coordinate,
+ * startTile/endTile are X coordinates.
+ */
+bool CollisionCheckTileEdge(const Level *level, int edgeTile, int startTile,
+                            int endTile, bool isVerticalLine);
+
+/**
+ * Returns true if the AABB overlaps any solid tile.
+ */
+bool CollisionCheckAABB(const Level *level, float x, float y, float width,
+                        float height);
+
+/**
+ * Resolves the AABB along one axis. Repeatedly pushes the box out of any
+ * overlapping solid tiles until none remain. Sets isOnGround if landing.
  */
 void CollisionResolveTileAxis(AxisAlignedBoundingBox *boundingBox,
                               const Level *level, bool isXAxis);
-/* Tile queries used for wall-slide/wall-jump detection. */
+
+/* Wall‑slide queries (refactored to use CollisionCheckTileEdge) */
 bool CollisionCheckWallLeft(const Level *level, float x, float y, float height);
 bool CollisionCheckWallRight(const Level *level, float x, float y, float width,
                              float height);

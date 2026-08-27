@@ -34,11 +34,6 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
     fclose(levelFile);
     return false;
   }
-  if ((size_t)width > SIZE_MAX / (size_t)height) {
-    SDL_Log("Level dimensions overflow: %d x %d", width, height);
-    fclose(levelFile);
-    return false;
-  }
   size_t tileCount = (size_t)width * (size_t)height;
   unsigned char *newTiles = calloc(tileCount, sizeof(*newTiles));
   if (newTiles == NULL) {

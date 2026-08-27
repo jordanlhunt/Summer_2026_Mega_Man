@@ -1,5 +1,4 @@
 #include "projectile.h"
-
 bool ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
                      float originY, bool isFacingRight) {
   for (int i = 0; i < MAX_PROJECTILES; i++) {
@@ -10,7 +9,6 @@ bool ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
       } else {
         velocityX = -PROJECTILE_SPEED;
       }
-
       projectiles[i] = (Projectile){
           .x = originX,
           .y = originY,
@@ -18,14 +16,11 @@ bool ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
           .lifeTimer = PROJECTILE_LIFETIME,
           .isActive = true,
       };
-
       return true;
     }
   }
-
   return false;
 }
-
 void ProjectileUpdateAll(Projectile *projectiles, const Level *level,
                          float deltaTime) {
   for (int i = 0; i < MAX_PROJECTILES; i++) {
@@ -38,13 +33,23 @@ void ProjectileUpdateAll(Projectile *projectiles, const Level *level,
       projectile->isActive = false;
       continue;
     }
-    projectile->x += projectile->velocityX * deltaTime;
-    int tileX =
-        (int)floorf((projectile->x + PROJECTILE_WIDTH * 0.5f) / TILE_SIZE);
-    int tileY =
-        (int)floorf((projectile->y + PROJECTILE_HEIGHT * 0.5f) / TILE_SIZE);
-    if (CollisionIsSolidTile(level, tileX, tileY)) {
-      projectile->isActive = false;
+    // Calculate movement for this frame
+    float totalMoveX = projectile->velocityX * deltaTime;
+    // Sub-step movement to prevent passing through thin walls (tunneling)
+    float stepSize = PROJECTILE_SUBSTEP_SIZE;
+    int steps = (int)ceilf(fabsf(totalMoveX) / stepSize);
+    if (steps < 1) {
+      steps = 1;
+    }
+    float stepX = totalMoveX / steps;
+    for (int step = 0; step < steps; step++) {
+      projectile->x += stepX;
+      // Full AABB check against solid tiles at current sub-step
+      if (CollisionCheckAABB(level, projectile->x, projectile->y,
+                             PROJECTILE_WIDTH, PROJECTILE_HEIGHT)) {
+        projectile->isActive = false;
+        break;
+      }
     }
   }
 }
@@ -74,8 +79,8 @@ void ProjectileHandlePlayerShooting(Projectile projectiles[MAX_PROJECTILES],
     } else {
       originX = player->x - PROJECTILE_WIDTH;
     }
-
-    ProjectileSpawn(projectiles, originX, originY, player->isFacingRight);
-    player->shootCooldown = PROJECTILE_COOLDOWN;
+    if (ProjectileSpawn(projectiles, originX, originY, player->isFacingRight)) {
+      player->shootCooldown = PROJECTILE_COOLDOWN;
+    }
   }
 }
