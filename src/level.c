@@ -39,6 +39,7 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
     fclose(levelFile);
     return false;
   }
+  size_t tileCount = (size_t)width * (size_t)height;
   unsigned char *newTiles = calloc(tileCount, sizeof(*newTiles));
   if (newTiles == NULL) {
     SDL_Log("Could not allocate memory for level: %s", filePath);

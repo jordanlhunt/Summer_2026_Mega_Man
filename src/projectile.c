@@ -4,10 +4,17 @@ bool ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
                      float originY, bool isFacingRight) {
   for (int i = 0; i < MAX_PROJECTILES; i++) {
     if (!projectiles[i].isActive) {
+      float velocityX;
+      if (isFacingRight) {
+        velocityX = PROJECTILE_SPEED;
+      } else {
+        velocityX = -PROJECTILE_SPEED;
+      }
+
       projectiles[i] = (Projectile){
           .x = originX,
           .y = originY,
-          .velocityX = isFacingRight ? PROJECTILE_SPEED : -PROJECTILE_SPEED,
+          .velocityX = velocityX,
           .lifeTimer = PROJECTILE_LIFETIME,
           .isActive = true,
       };
@@ -58,7 +65,6 @@ void ProjectileRenderAll(const Projectile *projectiles, SDL_Renderer *renderer,
 }
 void ProjectileHandlePlayerShooting(Projectile projectiles[MAX_PROJECTILES],
                                     Player *player, const Input *input) {
-  // PRESS-TO-SHOOT: Only fires on the exact frame the button goes down
   if (input->isShootJustPressed && player->shootCooldown <= 0.0f) {
     float originY =
         player->y + player->height * 0.5f - PROJECTILE_HEIGHT * 0.5f;
@@ -70,6 +76,6 @@ void ProjectileHandlePlayerShooting(Projectile projectiles[MAX_PROJECTILES],
     }
 
     ProjectileSpawn(projectiles, originX, originY, player->isFacingRight);
-    player->shootCooldown = PROJECTILE_COOLDOWN; // Prevents spamming
+    player->shootCooldown = PROJECTILE_COOLDOWN;
   }
 }

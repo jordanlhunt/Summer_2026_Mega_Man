@@ -1,4 +1,5 @@
 #include "game.h"
+#include <SDL3/SDL_surface.h>
 bool GameInitialize(Game *game) {
   if (!SDL_Init(SDL_INIT_VIDEO)) {
     SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
@@ -31,6 +32,14 @@ bool GameInitialize(Game *game) {
     return false;
   } else {
     SDL_Log("Sprite sheet loaded successfully from: %s", SARABOT_ASSET_PATH);
+  }
+  SDL_Surface *playerProjectileSurface = IMG_Load(PLAYER_PROJECTILE_ASSET_PATH);
+  if (playerProjectileSurface == NULL) {
+    SDL_Log("Unable to load sprite sheet: %s", SDL_GetError());
+    SDL_DestroySurface(spriteSheetSurface);
+    SDL_DestroyRenderer(game->gameRenderer);
+    SDL_DestroyWindow(game->gameWindow);
+    SDL_Quit();
   }
   game->playerProjectileTexture =
       SDL_CreateTextureFromSurface(game->gameRenderer, playerProjectileSurface);
@@ -93,23 +102,23 @@ bool GameInitialize(Game *game) {
   InputInitialize(&game->input);
   return true;
 }
+
 void GameShutdown(Game *game) {
-  void GameShutdown(Game * game) {
-    if (game == NULL) {
-      return;
-    }
-    SDL_DestroyTexture(game->playerProjectileTexture);
-    game->playerProjectileTexture = NULL;
-    SDL_DestroyTexture(game->spriteSheetTexture);
-    game->spriteSheetTexture = NULL;
-    LevelFree(&game->level);
-    SDL_DestroyRenderer(game->gameRenderer);
-    game->gameRenderer = NULL;
-    SDL_DestroyWindow(game->gameWindow);
-    game->gameWindow = NULL;
-    SDL_Quit();
+  if (game == NULL) {
+    return;
   }
+  SDL_DestroyTexture(game->playerProjectileTexture);
+  game->playerProjectileTexture = NULL;
+  SDL_DestroyTexture(game->spriteSheetTexture);
+  game->spriteSheetTexture = NULL;
+  LevelFree(&game->level);
+  SDL_DestroyRenderer(game->gameRenderer);
+  game->gameRenderer = NULL;
+  SDL_DestroyWindow(game->gameWindow);
+  game->gameWindow = NULL;
+  SDL_Quit();
 }
+
 void GameUpdate(Game *game, float deltaTime) {
   InputUpdate(&game->input);
   PlayerUpdate(&game->player, &game->input, &game->level, deltaTime);

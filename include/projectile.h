@@ -27,7 +27,7 @@ typedef struct Projectile {
  * from a point (orginX, originY) in the direction the player is facing. If
  * every slot is already active, the shot is sliently dropped
  */
-void ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
+bool ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
                      float originY, bool isFacingRight);
 /** Don't leave your screen open unattended */
 /**
