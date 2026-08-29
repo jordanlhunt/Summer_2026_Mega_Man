@@ -2,6 +2,8 @@
 #define LEVEL_H
 #include "common.h"
 #include "config.h"
+#include "levelEnemy.h"
+#define MAX_LEVEL_ENEMIES 1
 typedef struct Level {
   int width;
   int height;
@@ -9,6 +11,8 @@ typedef struct Level {
   float playerSpawnX;
   float playerSpawnY;
   bool hasPlayerSpawn;
+  LevelEnemy levelEnemies[MAX_LEVEL_ENEMIES];
+  int levelEnemiesCount;
 } Level;
 /**
  * Loads a level from a text file into `level`. On failure, `level` is left
