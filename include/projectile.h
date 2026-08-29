@@ -13,6 +13,7 @@
 #define PROJECTILE_LIFETIME 1.2f
 #define PROJECTILE_COOLDOWN 0.22f
 #define PROJECTILE_SUBSTEP_SIZE (TILE_SIZE * 0.5f)
+#define PROJECTILE_MUZZLE_OFFSET_Y 7.0f
 
 typedef struct Projectile {
   float x;

@@ -40,6 +40,7 @@ void PlayerUpdate(Player *player, const Input *input, const Level *level,
   DecreaseTimer(&player->dashCooldown, deltaTime);
   DecreaseTimer(&player->shootCooldown, deltaTime);
   DecreaseTimer(&player->jumpBufferTimer, deltaTime);
+  DecreaseTimer(&player->shootAnimationTimer, deltaTime);
   if (player->isOnGround) {
     player->coyoteTimer = COYOTE_TIME;
   } else {

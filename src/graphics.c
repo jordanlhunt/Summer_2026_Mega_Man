@@ -119,6 +119,21 @@ void GraphicsRenderPlayer(const Player *player, SDL_Renderer *renderer,
       frameRow = player->styleRow + 1;
       break;
     }
+    /**
+     * Shooting temporarily overrides the movement animation
+     * shooting frames are on the first row of each style blook
+     */
+    if (player->shootAnimationTimer > 0.0f) {
+      frameRow = player->styleRow;
+      float elpasedShootTime =
+          SHOOT_ANIMATION_DURATION - player->shootAnimationTimer;
+      if (elpasedShootTime < SHOOT_FLASH_DURATION) {
+        frameColumn = ANIMATION_SHOOT_FLASH;
+      } else {
+        frameColumn = ANIMATION_SHOOT_END;
+      }
+    }
+
     SDL_FRect sourceFRect = {frameColumn * SPRITE_WIDTH,
                              frameRow * SPRITE_HEIGHT, SPRITE_WIDTH,
                              SPRITE_HEIGHT};
@@ -128,18 +143,29 @@ void GraphicsRenderPlayer(const Player *player, SDL_Renderer *renderer,
     } else {
       flip = SDL_FLIP_HORIZONTAL;
     }
+
     /* Dash trail effect */
     if (player->isDashing) {
-      SDL_SetTextureColorMod(sheet, 255, 255, 255);
-      SDL_FRect trailDestinationFRect = destinationFRect;
-      if (player->isFacingRight) {
-        trailDestinationFRect.x += -DASH_TRAIL_OFFSET;
-      } else {
-        trailDestinationFRect.x += DASH_TRAIL_OFFSET;
+      // Number of ghosts and their spacing
+      const int numberOfGhostTrails = 3; // how many ghosts
+      const float spacing = 1.5f;        // multiplier for offset distance
+      const Uint8 alphas[] = {200, 150, 90, 50}; // alpha per ghost
+
+      for (int i = 0; i < numberOfGhostTrails; i++) {
+        // Offset increases with each ghost
+        float offset = DASH_TRAIL_OFFSET * (i + 1) * spacing;
+        SDL_FRect trailRect = destinationFRect;
+        if (player->isFacingRight) {
+          trailRect.x -= offset; // trail behind (opposite to facing)
+        } else {
+          trailRect.x += offset;
+        }
+
+        SDL_SetTextureAlphaMod(sheet, alphas[i]);
+        SDL_RenderTextureRotated(renderer, sheet, &sourceFRect, &trailRect, 0.0,
+                                 NULL, flip);
       }
-      SDL_SetTextureAlphaMod(sheet, 128);
-      SDL_RenderTextureRotated(renderer, sheet, &sourceFRect,
-                               &trailDestinationFRect, 0.0, NULL, flip);
+      // Restore alpha for the main player sprite
       SDL_SetTextureAlphaMod(sheet, 255);
     }
     SDL_RenderTextureRotated(renderer, sheet, &sourceFRect, &destinationFRect,

@@ -6,22 +6,25 @@
 #include "input.h"
 #include "level.h"
 /* Tuning constants */
-#define PLAYER_SPEED 220.0f
+#define AIR_ACCELERATION 12.0f
+#define COYOTE_TIME 0.08f
+#define DASH_COOLDOWN 0.25f
+#define DASH_DURATION 0.18f
+#define DASH_GRAVITY_SCALE 0.2f
+#define DASH_SPEED 550.0f
+#define GROUND_ACCELERATION 25.0f
+#define JUMP_BUFFER_TIME 0.1f
 #define JUMP_FORCE 520.0f
+#define PLAYER_SPEED 220.0f
+#define SHOOT_ANIMATION_DURATION 0.18f
+#define SHOOT_FLASH_DURATION 0.05f
+#define SHOOT_START_DURATION 0.10f
+#define VARIABLE_JUMP_MULTIPLIER 0.88f
+#define VARIABLE_JUMP_THRESHOLD -180.0f
 #define WALL_JUMP_FORCE_X 350.0f
 #define WALL_JUMP_FORCE_Y 480.0f
-#define DASH_SPEED 550.0f
-#define DASH_DURATION 0.18f
-#define DASH_COOLDOWN 0.25f
-#define WALL_SLIDE_SPEED 120.0f
-#define COYOTE_TIME 0.08f
-#define JUMP_BUFFER_TIME 0.1f
-#define GROUND_ACCELERATION 25.0f
-#define AIR_ACCELERATION 12.0f
-#define VARIABLE_JUMP_THRESHOLD -180.0f
-#define VARIABLE_JUMP_MULTIPLIER 0.88f
 #define WALL_SLIDE_GRAVITY_SCALE 0.3f
-#define DASH_GRAVITY_SCALE 0.2f
+#define WALL_SLIDE_SPEED 120.0f
 /* Animation frame indices (column within a style block) */
 typedef enum ANIMATION_INDEX {
   ANIMATION_IDLE_1,
@@ -55,6 +58,7 @@ typedef struct Player {
   bool isOnGround;
   bool isWallSliding;
   float animationTimer;
+  float shootAnimationTimer;
   float coyoteTimer;
   float dashCooldown;
   float dashTimer;

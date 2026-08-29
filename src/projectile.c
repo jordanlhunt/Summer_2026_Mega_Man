@@ -1,4 +1,5 @@
 #include "projectile.h"
+#include "player.h"
 bool ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
                      float originY, bool isFacingRight) {
   for (int i = 0; i < MAX_PROJECTILES; i++) {
@@ -21,8 +22,8 @@ bool ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
   }
   return false;
 }
-void ProjectileUpdateAll(Projectile *projectiles, const Level *level,
-                         float deltaTime) {
+void ProjectileUpdateAll(Projectile projectiles[MAX_PROJECTILES],
+                         const Level *level, float deltaTime) {
   for (int i = 0; i < MAX_PROJECTILES; i++) {
     Projectile *projectile = &projectiles[i];
     if (!projectile->isActive) {
@@ -53,8 +54,8 @@ void ProjectileUpdateAll(Projectile *projectiles, const Level *level,
     }
   }
 }
-void ProjectileRenderAll(const Projectile *projectiles, SDL_Renderer *renderer,
-                         float cameraX, float cameraY,
+void ProjectileRenderAll(const Projectile projectiles[MAX_PROJECTILES],
+                         SDL_Renderer *renderer, float cameraX, float cameraY,
                          SDL_Texture *projectileTexture) {
   for (int i = 0; i < MAX_PROJECTILES; i++) {
     const Projectile *projectile = &projectiles[i];
@@ -71,8 +72,8 @@ void ProjectileRenderAll(const Projectile *projectiles, SDL_Renderer *renderer,
 void ProjectileHandlePlayerShooting(Projectile projectiles[MAX_PROJECTILES],
                                     Player *player, const Input *input) {
   if (input->isShootJustPressed && player->shootCooldown <= 0.0f) {
-    float originY =
-        player->y + player->height * 0.5f - PROJECTILE_HEIGHT * 0.5f;
+    float originY = player->y + player->height * 0.5f -
+                    PROJECTILE_HEIGHT * 0.5f - PROJECTILE_MUZZLE_OFFSET_Y;
     float originX;
     if (player->isFacingRight) {
       originX = player->x + player->width;
@@ -81,6 +82,7 @@ void ProjectileHandlePlayerShooting(Projectile projectiles[MAX_PROJECTILES],
     }
     if (ProjectileSpawn(projectiles, originX, originY, player->isFacingRight)) {
       player->shootCooldown = PROJECTILE_COOLDOWN;
+      player->shootAnimationTimer = SHOOT_ANIMATION_DURATION;
     }
   }
 }

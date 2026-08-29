@@ -54,7 +54,7 @@ bool GameInitialize(Game *game) {
                           .styleRow = STYLE_NES,
                           .currentPlayerState = STATE_IDLE};
   if (!LevelLoadFromFile(&game->level, "assets/levels/testroom.txt")) {
-    SDL_Log("Failed to load level file.", SDL_GetError());
+    SDL_Log("Failed to load level file. %s", SDL_GetError());
     // Clean up anything created so far:
     SDL_DestroyTexture(game->spriteSheetTexture);
     SDL_DestroyRenderer(game->gameRenderer);
