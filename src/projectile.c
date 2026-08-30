@@ -1,5 +1,5 @@
 #include "projectile.h"
-#include "player.h"
+
 bool ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
                      float originY, bool isFacingRight) {
   for (int i = 0; i < MAX_PROJECTILES; i++) {

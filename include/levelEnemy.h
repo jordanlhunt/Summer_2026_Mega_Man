@@ -33,6 +33,5 @@ void LevelEnemyUpdateAll(LevelEnemy levelEnemies[], int levelEnemyCount,
  * future to draw them based on their classification
  */
 void LevelEnemyRenderAll(LevelEnemy levelEnemies[], SDL_Renderer *renderer,
-                         int levelEnemyCount, const Camera *camera,
-                         SDL_Texture *enemyTexture);
+                         int levelEnemyCount, SDL_Texture *levelEnemyTexture);
 #endif

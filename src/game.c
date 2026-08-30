@@ -1,5 +1,7 @@
 #include "game.h"
-#include <SDL3/SDL_surface.h>
+#include "config.h"
+#include "graphics.h"
+#include <SDL3/SDL_render.h>
 bool GameInitialize(Game *game) {
   if (!SDL_Init(SDL_INIT_VIDEO)) {
     SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
@@ -39,6 +41,19 @@ bool GameInitialize(Game *game) {
   if (game->playerProjectileTexture == NULL) {
     SDL_Log("Failed to load projectile sprite.");
     SDL_DestroyTexture(game->spriteSheetTexture);
+    SDL_DestroyRenderer(game->gameRenderer);
+    SDL_DestroyWindow(game->gameWindow);
+    SDL_Quit();
+    return false;
+  }
+
+  // Load the level enemy texture
+  game->levelEnemyTexture =
+      GraphicsLoadSpriteSheet(game->gameRenderer, BIG_PROPELLER_BOT_ASSET_PATH);
+  if (game->levelEnemyTexture == NULL) {
+    SDL_Log("Failed to load Big Propeller sprite.");
+    SDL_DestroyTexture(game->spriteSheetTexture);
+    SDL_DestroyTexture(game->playerProjectileTexture);
     SDL_DestroyRenderer(game->gameRenderer);
     SDL_DestroyWindow(game->gameWindow);
     SDL_Quit();

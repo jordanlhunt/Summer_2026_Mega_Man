@@ -14,6 +14,7 @@ typedef struct Game {
   SDL_Renderer *gameRenderer;
   SDL_Texture *spriteSheetTexture;
   SDL_Texture *playerProjectileTexture;
+  SDL_Texture *levelEnemyTexture;
   Player player;
   Level level;
   Camera camera;

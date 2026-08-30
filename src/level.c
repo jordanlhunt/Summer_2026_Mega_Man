@@ -1,4 +1,5 @@
 #include "level.h"
+#include "config.h"
 void LevelFree(Level *level) {
   if (level) {
     free(level->tiles);
@@ -41,6 +42,7 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
     fclose(levelFile);
     return false;
   }
+  level->levelEnemiesCount = 0;
   bool spawnFound = false;
   float spawnX = 0.0f;
   float spawnY = 0.0f;
@@ -72,6 +74,22 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
         spawnFound = true;
         spawnX = (float)(x * TILE_SIZE);
         spawnY = (float)(y * TILE_SIZE);
+        newTiles[index] = 0;
+      } else if (fileCharacter == '7') {
+        // Spawn a level enemy at this tile position
+        if (level->levelEnemiesCount < MAX_LEVEL_ENEMIES) {
+          LevelEnemy *levelEnemy =
+              &level->levelEnemies[level->levelEnemiesCount];
+          levelEnemy->x = (float)(x * TILE_SIZE);
+          levelEnemy->y = (float)(y * TILE_SIZE);
+          levelEnemy->width = LEVELENEMY_WIDTH;
+          levelEnemy->height = LEVELENEMY_HEIGHT;
+          levelEnemy->hitPoints = 1;
+          levelEnemy->animationTimer = 0.0f;
+          levelEnemy->isActive = true;
+          levelEnemy->velocityX = 0.0f;
+          level->levelEnemiesCount += 1;
+        }
         newTiles[index] = 0;
       } else {
         newTiles[index] = (unsigned char)(fileCharacter - '0');

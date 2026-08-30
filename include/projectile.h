@@ -4,6 +4,7 @@
 #include "common.h"
 #include "config.h"
 #include "level.h"
+#include "levelEnemy.h"
 #include "player.h"
 
 #define MAX_PROJECTILES 16
@@ -52,5 +53,13 @@ void ProjectileRenderAll(const Projectile projectiles[MAX_PROJECTILES],
  */
 void ProjectileHandlePlayerShooting(Projectile projectiles[MAX_PROJECTILES],
                                     Player *player, const Input *input);
+
+/**
+ * Handles projectile collision from the player to a levelEnemy
+ * TODO: Make this a general soultion for all projectiles
+ */
+void ProjectileCheckPlayerProjectileToEnemyCollision(
+    Projectile projectiles[MAX_PROJECTILES], LevelEnemy levelEnemies[],
+    int enemyCount);
 
 #endif
