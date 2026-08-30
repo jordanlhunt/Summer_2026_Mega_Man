@@ -9,6 +9,32 @@ void LevelEnemyUpdate(LevelEnemy *levelEnemy, const Level *level,
     return;
   }
   /**
+   * State-based behavior
+   */
+  switch (levelEnemy->enemyState) {
+  case LEVELENEMY_STATE_GROUNDED:
+    /**
+     * Ground patrol logic will go here
+     */
+    levelEnemy->velocityY = 0.0f;
+    break;
+
+  case LEVELENEMY_STATE_FLYING:
+    /* Hover/fly logic */
+    levelEnemy->velocityY = sinf(levelEnemy->animationTimer * 2.0f) * 0.5f;
+    break;
+
+  case LEVELENEMY_STATE_TURNING:
+    /* Turning animation, could set a timer to return to previous state */
+    break;
+  }
+  /**
+   * Apply velocity
+   */
+  levelEnemy->x += levelEnemy->velocityX * deltaTime;
+  levelEnemy->y += levelEnemy->velocityY * deltaTime;
+
+  /**
    * TODO: Added Animations and stuff
    */
   // Advance animation timer (drives frame selection in render)
@@ -40,13 +66,33 @@ void LevelEnemyRenderAll(const LevelEnemy enemies[], int count,
     }
 
     int spriteW = LEVELENEMY_WIDTH;
-    int spriteH = LEVELENEMY_HEIGHT;
+    int spriteH = LEVELENEMY_FRAME_HEIGHT;
     int framesPerRow = LEVELENEMY_COLUMNS;
     int frameColumn = ((int)(enemies[i].animationTimer * 4.0f) % 2);
     int frameRow = 0;
+    switch (enemies[i].levelEnemyState) {
+    case LEVELENEMY_STATE_GROUNDED:
+      /* Frames 0-1: grounded animation */
+      frameColumn = ((int)(enemies[i].animationTimer * 4.0f) % 2);
+      break;
 
-    SDL_FRect sourceRect = {
-        .x = frameColumn * spriteW, .y = 0, .w = spriteW, .h = spriteH};
+    case LEVELENEMY_STATE_FLYING:
+      /* Frames 2-5: flying animation */
+      frameColumn = 2 + ((int)(enemies[i].animationTimer * 6.0f) % 4);
+      break;
+
+    case LEVELENEMY_STATE_TURNING:
+      /* Special turn frame */
+      frameColumn = 5;
+      break;
+
+    default:
+      frameColumn = 0;
+    }
+    SDL_FRect sourceRect = {.x = frameColumn * spriteW,
+                            .y = frameRow * spriteH,
+                            .w = spriteW,
+                            .h = spriteH};
 
     destinationRect.x -= (spriteW - enemies[i].width) / 2.0f;
     destinationRect.y -= (spriteH - enemies[i].height); // Aligns feet to bottom
