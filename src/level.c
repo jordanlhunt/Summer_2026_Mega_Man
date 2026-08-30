@@ -1,5 +1,6 @@
 #include "level.h"
 #include "config.h"
+#include "levelEnemy.h"
 void LevelFree(Level *level) {
   if (level) {
     free(level->tiles);
@@ -110,4 +111,34 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
   level->playerSpawnY = spawnY;
   level->hasPlayerSpawn = true;
   return true;
+}
+
+int LevelGetEnemyCount(const Level *level) {
+  if (level != NULL) {
+    return level->levelEnemiesCount;
+  } else {
+    return 0;
+  }
+}
+
+LevelEnemy *LevelGetLevelEnemyAt(Level *level, int index) {
+  if (!level || index < 0 || index >= level->levelEnemiesCount) {
+    return NULL;
+  }
+  return &level->levelEnemies[index];
+}
+
+bool LevelAddEnemy(Level *level, float x, float y,
+                   LevelEnemyState initialState) {
+  LevelEnemy *enemy = &level->levelEnemies[level->levelEnemiesCount];
+  enemy->width = LEVELENEMY_WIDTH;
+  enemy->height = LEVELENEMY_HEIGHT;
+  enemy->hitPoints = 1;
+  enemy->animationTimer = 0.0f;
+  enemy->isActive = true;
+  enemy->isFacingRight = true;
+  enemy->velocityX = 0.0f;
+  enemy->velocityY = 0.0f;
+  enemy->levelEnemyState = initialState;
+  level->levelEnemiesCount++;
 }

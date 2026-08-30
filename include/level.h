@@ -21,4 +21,13 @@ typedef struct Level {
  * */
 bool LevelLoadFromFile(Level *level, const char *filePath);
 void LevelFree(Level *level);
+
+/**
+ * Encapsulated enemy access
+ */
+int LevelGetEnemyCount(const Level *level);
+LevelEnemy *LevelGetEnemyAt(Level *level, int index);
+bool LevelAddEnemy(Level *level, float x, float y,
+                   LevelEnemyState initialState);
+
 #endif
