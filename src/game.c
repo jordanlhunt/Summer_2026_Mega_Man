@@ -62,11 +62,16 @@ bool GameInitialize(Game *game) {
     SDL_Quit();
     return false;
   }
-
-  game->player = (Player){.x = 0,
-                          .y = 0,
-                          .width = 32,
-                          .height = 40,
+  game->player = (Player){.entity =
+                              {
+                                  .x = 0,
+                                  .y = 0,
+                                  .width = 32,
+                                  .height = 40,
+                                  .velocityX = 0,
+                                  .velocityY = 0,
+                                  .isActive = true,
+                              },
                           .isFacingRight = true,
                           .hitPoints = 16,
                           .styleRow = STYLE_NES,
@@ -82,8 +87,8 @@ bool GameInitialize(Game *game) {
   }
   game->camera.x = 0;
   game->camera.y = 0;
-  game->player.x = game->level.playerSpawnX;
-  game->player.y = game->level.playerSpawnY;
+  game->player.entity.x = game->level.playerSpawnX;
+  game->player.entity.y = game->level.playerSpawnY;
   game->isRunning = true;
   game->previousTime = SDL_GetTicks();
 

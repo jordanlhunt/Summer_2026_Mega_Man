@@ -4,7 +4,7 @@
 bool ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
                      float originY, bool isFacingRight) {
   for (int i = 0; i < MAX_PROJECTILES; i++) {
-    if (!projectiles[i].isActive) {
+    if (!projectiles[i].entity.isActive) {
       float velocityX;
       if (isFacingRight) {
         velocityX = PROJECTILE_SPEED;
@@ -12,32 +12,37 @@ bool ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
         velocityX = -PROJECTILE_SPEED;
       }
       projectiles[i] = (Projectile){
-          .x = originX,
-          .y = originY,
-          .velocityX = velocityX,
+          .entity =
+              {
+                  .x = originX,
+                  .y = originY,
+                  .width = PROJECTILE_WIDTH,
+                  .height = PROJECTILE_HEIGHT,
+                  .velocityX = velocityX,
+                  .velocityY = 0.0f,
+                  .isActive = true,
+              },
           .lifeTimer = PROJECTILE_LIFETIME,
-          .isActive = true,
       };
       return true;
     }
   }
   return false;
 }
+
 void ProjectileUpdateAll(Projectile projectiles[MAX_PROJECTILES],
                          const Level *level, float deltaTime) {
   for (int i = 0; i < MAX_PROJECTILES; i++) {
     Projectile *projectile = &projectiles[i];
-    if (!projectile->isActive) {
+    if (!projectile->entity.isActive) {
       continue;
     }
     projectile->lifeTimer -= deltaTime;
     if (projectile->lifeTimer <= 0.0f) {
-      projectile->isActive = false;
+      projectile->entity.isActive = false;
       continue;
     }
-    // Calculate movement for this frame
-    float totalMoveX = projectile->velocityX * deltaTime;
-    // Sub-step movement to prevent passing through thin walls (tunneling)
+    float totalMoveX = projectile->entity.velocityX * deltaTime;
     float stepSize = PROJECTILE_SUBSTEP_SIZE;
     int steps = (int)ceilf(fabsf(totalMoveX) / stepSize);
     if (steps < 1) {
@@ -45,41 +50,42 @@ void ProjectileUpdateAll(Projectile projectiles[MAX_PROJECTILES],
     }
     float stepX = totalMoveX / steps;
     for (int step = 0; step < steps; step++) {
-      projectile->x += stepX;
-      // Full AABB check against solid tiles at current sub-step
-      if (CollisionCheckAABB(level, projectile->x, projectile->y,
+      projectile->entity.x += stepX;
+      if (CollisionCheckAABB(level, projectile->entity.x, projectile->entity.y,
                              PROJECTILE_WIDTH, PROJECTILE_HEIGHT)) {
-        projectile->isActive = false;
+        projectile->entity.isActive = false;
         break;
       }
     }
   }
 }
+
 void ProjectileRenderAll(const Projectile projectiles[MAX_PROJECTILES],
                          SDL_Renderer *renderer, float cameraX, float cameraY,
                          SDL_Texture *projectileTexture) {
   for (int i = 0; i < MAX_PROJECTILES; i++) {
     const Projectile *projectile = &projectiles[i];
-    if (!projectile->isActive) {
+    if (!projectile->entity.isActive) {
       continue;
     }
-    SDL_FRect destinationRect = {.x = projectile->x - cameraX,
-                                 .y = projectile->y - cameraY,
-                                 .w = PROJECTILE_WIDTH,
-                                 .h = PROJECTILE_HEIGHT};
+    SDL_FRect destinationRect = {.x = projectile->entity.x - cameraX,
+                                 .y = projectile->entity.y - cameraY,
+                                 .w = projectile->entity.width,
+                                 .h = projectile->entity.height};
     SDL_RenderTexture(renderer, projectileTexture, NULL, &destinationRect);
   }
 }
+
 void ProjectileHandlePlayerShooting(Projectile projectiles[MAX_PROJECTILES],
                                     Player *player, const Input *input) {
   if (input->isShootJustPressed && player->shootCooldown <= 0.0f) {
-    float originY = player->y + player->height * 0.5f -
+    float originY = player->entity.y + player->entity.height * 0.5f -
                     PROJECTILE_HEIGHT * 0.5f - PROJECTILE_MUZZLE_OFFSET_Y;
     float originX;
     if (player->isFacingRight) {
-      originX = player->x + player->width;
+      originX = player->entity.x + player->entity.width;
     } else {
-      originX = player->x - PROJECTILE_WIDTH;
+      originX = player->entity.x - PROJECTILE_WIDTH;
     }
     if (ProjectileSpawn(projectiles, originX, originY, player->isFacingRight)) {
       player->shootCooldown = PROJECTILE_COOLDOWN;
@@ -88,27 +94,22 @@ void ProjectileHandlePlayerShooting(Projectile projectiles[MAX_PROJECTILES],
   }
 }
 
-void ProjectileCheckPlayerProjectileToEnemyCollision(Projectile *projectiles,
-                                                     LevelEnemy *levelEnemies,
-                                                     int enemyCount) {
+void HandleProjectileEntityCollision(Projectile *projectiles,
+                                     LevelEnemy *levelEnemies, int enemyCount) {
   for (int projectile = 0; projectile < MAX_PROJECTILES; projectile++) {
-    if (!projectiles[projectile].isActive) {
+    if (!projectiles[projectile].entity.isActive) {
       continue;
     }
     for (int enemy = 0; enemy < enemyCount; enemy++) {
-      if (!levelEnemies[enemy].isActive) {
+      if (!levelEnemies[enemy].entity.isActive) {
         continue;
       }
-      // AABB overlap check
-      if (CollisionAABBBoxOverlap(
-              projectiles[projectile].x, projectiles[projectile].y,
-              PROJECTILE_WIDTH, PROJECTILE_HEIGHT, levelEnemies[enemy].x,
-              levelEnemies[enemy].y, levelEnemies[enemy].width,
-              levelEnemies[enemy].height)) {
+      if (EntityOverlaps(&projectiles[projectile].entity,
+                         &levelEnemies[enemy].entity)) {
         levelEnemies[enemy].hitPoints -= 1;
-        projectiles[projectile].isActive = false;
+        projectiles[projectile].entity.isActive = false;
         if (levelEnemies[enemy].hitPoints <= 0) {
-          levelEnemies[enemy].isActive = false;
+          levelEnemies[enemy].entity.isActive = false;
         }
       }
     }
