@@ -77,19 +77,13 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
         spawnY = (float)(y * TILE_SIZE);
         newTiles[index] = 0;
       } else if (fileCharacter == '7') {
+        float levelEnemySpawnX = (float)(x * TILE_SIZE);
+        float levelEnemySpawnY = (float)(y * TILE_SIZE);
         // Spawn a level enemy at this tile position
-        if (level->levelEnemiesCount < MAX_LEVEL_ENEMIES) {
-          LevelEnemy *levelEnemy =
-              &level->levelEnemies[level->levelEnemiesCount];
-          levelEnemy->x = (float)(x * TILE_SIZE);
-          levelEnemy->y = (float)(y * TILE_SIZE);
-          levelEnemy->width = LEVELENEMY_WIDTH;
-          levelEnemy->height = LEVELENEMY_HEIGHT;
-          levelEnemy->hitPoints = 1;
-          levelEnemy->animationTimer = 0.0f;
-          levelEnemy->isActive = true;
-          levelEnemy->velocityX = 0.0f;
-          level->levelEnemiesCount += 1;
+        if (!LevelAddEnemy(level, levelEnemySpawnX, levelEnemySpawnY,
+                           LEVELENEMY_STATE_FLYING)) {
+          SDL_Log("Warning: Could not add enemy at (%d, %d) - array full", x,
+                  y);
         }
         newTiles[index] = 0;
       } else {
