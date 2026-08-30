@@ -1,10 +1,9 @@
 #ifndef PLAYER_H
 #define PLAYER_H
-#include "collision.h"
+
 #include "common.h"
 #include "config.h"
-#include "input.h"
-#include "level.h"
+
 /* Tuning constants */
 #define AIR_ACCELERATION 12.0f
 #define COYOTE_TIME 0.08f

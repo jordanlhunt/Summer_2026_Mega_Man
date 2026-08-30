@@ -1,11 +1,8 @@
 #ifndef PROJECTILE_H
 #define PROJECTILE_H
-#include "collision.h"
+
 #include "common.h"
 #include "config.h"
-#include "level.h"
-#include "levelEnemy.h"
-#include "player.h"
 
 #define MAX_PROJECTILES 16
 #define PROJECTILE_WIDTH 11.0f
@@ -19,6 +16,7 @@
 typedef struct Level Level;
 typedef struct Player Player;
 typedef struct LevelEnemy LevelEnemy;
+typedef struct Input Input;
 
 typedef struct Projectile {
   float x;
@@ -31,7 +29,7 @@ typedef struct Projectile {
 
 /**
  * Finds a free slot in the projectile pool and activates a projectile traveling
- * from a point (orginX, originY) in the direction the player is facing. If
+ * from a point (originX, originY) in the direction the player is facing. If
  * every slot is already active, the shot is sliently dropped
  */
 bool ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
@@ -62,8 +60,7 @@ void ProjectileHandlePlayerShooting(Projectile projectiles[MAX_PROJECTILES],
  * Handles projectile collision from the player to a levelEnemy
  * TODO: Make this a general soultion for all projectiles
  */
-void ProjectileCheckPlayerProjectileToEnemyCollision(Projectile projectiles[],
-                                                     LevelEnemy levelEnemies[],
-                                                     int enemyCount);
+void HandleProjectileEntityCollision(Projectile projectiles[],
+                                     LevelEnemy levelEnemies[], int enemyCount);
 
 #endif
