@@ -1,4 +1,5 @@
 #include "levelEnemy.h"
+#include "config.h"
 
 void LevelEnemyUpdate(LevelEnemy *levelEnemy, const Level *level,
                       float deltaTime) {
@@ -16,12 +17,45 @@ void LevelEnemyUpdateAll(LevelEnemy *levelEnemies, int levelEnemyCount,
     LevelEnemyUpdate(&levelEnemies[i], level, deltaTime);
   }
 }
-void LevelEnemyRenderAll(LevelEnemy *levelEnemies, SDL_Renderer *renderer,
-                         int levelEnemyCount, SDL_Texture *levelEnemyTexture) {
-  for (int i = 0; i < levelEnemyCount; i++) {
-    if (!levelEnemies[i].isActive) {
+void LevelEnemyRenderAll(const LevelEnemy enemies[], int count,
+                         SDL_Renderer *renderer, const Camera *camera,
+                         SDL_Texture *enemyTexture) {
+  for (int i = 0; i < count; i++) {
+    if (!enemies[i].isActive)
+      continue;
+
+    SDL_FRect destinationRect = {.x = enemies[i].x - camera->x,
+                                 .y = enemies[i].y - camera->y,
+                                 .w = enemies[i].width,
+                                 .h = enemies[i].height};
+
+    if (enemyTexture == NULL) {
+      SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+      SDL_RenderFillRect(renderer, &destinationRect);
       continue;
     }
-    SDL_FRect
+
+    int spriteW = LEVELENEMY_WIDTH;
+    int spriteH = LEVELENEMY_HEIGHT;
+    int framesPerRow = LEVELENEMY_COLUMNS;
+    int frameColumn = ((int)(enemies[i].animationTimer * 8.0f) % framesPerRow);
+    int frameRow = 0;
+
+    SDL_FRect sourceRect = {.x = frameColumn * spriteW,
+                            .y = frameRow * spriteH,
+                            .w = spriteW,
+                            .h = spriteH};
+
+    destinationRect.x -= (spriteW - enemies[i].width) / 2.0f;
+    destinationRect.y -= (spriteH - enemies[i].height); // Aligns feet to bottom
+
+    SDL_FlipMode flip;
+    if (enemies[i].isFacingRight) {
+      flip = SDL_FLIP_NONE;
+    } else {
+      flip = SDL_FLIP_HORIZONTAL;
+    }
+    SDL_RenderTextureRotated(renderer, enemyTexture, &sourceRect,
+                             &destinationRect, 0.0, NULL, flip);
   }
 }

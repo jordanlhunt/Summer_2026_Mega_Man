@@ -1,4 +1,5 @@
 #include "projectile.h"
+#include "collision.h"
 
 bool ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
                      float originY, bool isFacingRight) {
@@ -84,5 +85,28 @@ void ProjectileHandlePlayerShooting(Projectile projectiles[MAX_PROJECTILES],
       player->shootCooldown = PROJECTILE_COOLDOWN;
       player->shootAnimationTimer = SHOOT_ANIMATION_DURATION;
     }
+  }
+}
+
+void ProjectileCheckPlayerProjectileToEnemyCollision(Projectile *projectiles,
+                                                     LevelEnemy *levelEnemies,
+                                                     int enemyCount) {
+  for (int projectile = 0; projectile < MAX_PROJECTILES; projectile++) {
+    if (!projectiles[projectile].isActive) {
+      continue;
+    }
+    for (int enemy = 0; enemy < enemyCount; enemy++)
+      // AABB overlap check
+      if (CollisionAABBBoxOverlap(
+              projectiles[projectile].x, projectiles[projectile].y,
+              PROJECTILE_WIDTH, PROJECTILE_HEIGHT, levelEnemies[enemy].x,
+              levelEnemies[enemy].y, levelEnemies[enemy].width,
+              levelEnemies[enemy].height)) {
+        levelEnemies[enemy].hitPoints -= 1;
+        projectiles[projectile].isActive = false;
+        if (levelEnemies[enemy].hitPoints <= 0) {
+          levelEnemies[enemy].isActive = false;
+        }
+      }
   }
 }

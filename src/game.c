@@ -1,6 +1,8 @@
 #include "game.h"
 #include "config.h"
 #include "graphics.h"
+#include "levelEnemy.h"
+#include "projectile.h"
 #include <SDL3/SDL_render.h>
 bool GameInitialize(Game *game) {
   if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -111,8 +113,13 @@ void GameUpdate(Game *game, float deltaTime) {
   ProjectileHandlePlayerShooting(game->projectiles, &game->player,
                                  &game->input);
   ProjectileUpdateAll(game->projectiles, &game->level, deltaTime);
+  LevelEnemyUpdateAll(game->level.levelEnemies, game->level.levelEnemiesCount,
+                      game->level, deltaTime);
+  ProjectileCheckPlayerProjectileToEnemyCollision(game->projectiles,
+                                                  game->level.levelEnemies,
+                                                  game->level.levelEnemiesCount)
 
-  float targetCameraX = game->player.x - SCREEN_WIDTH / 2.0f;
+      float targetCameraX = game->player.x - SCREEN_WIDTH / 2.0f;
   float targetCameraY = game->player.y - SCREEN_HEIGHT / 2.0f;
   CameraUpdate(&game->camera, targetCameraX, targetCameraY, &game->level,
                deltaTime);
@@ -124,5 +131,7 @@ void GameRender(Game *game) {
                        game->spriteSheetTexture);
   ProjectileRenderAll(game->projectiles, game->gameRenderer, game->camera.x,
                       game->camera.y, game->playerProjectileTexture);
+  LevelEnemyRenderAll(game->level.levelEnemies, game->gameRenderer,
+                      game->level.levelEnemiesCount, game->levelEnemyTexture);
   GraphicsPresent(game->gameRenderer);
 }
