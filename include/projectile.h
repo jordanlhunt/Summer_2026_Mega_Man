@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "config.h"
+#include "entity.h"
 
 #define MAX_PROJECTILES 16
 #define PROJECTILE_WIDTH 11.0f
@@ -19,11 +20,9 @@ typedef struct LevelEnemy LevelEnemy;
 typedef struct Input Input;
 
 typedef struct Projectile {
-  float x;
-  float y;
-  float velocityX;
+
   float lifeTimer;
-  bool isActive;
+  Entity entity;
 
 } Projectile;
 

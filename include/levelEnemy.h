@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "config.h"
+#include "entity.h"
 
 typedef struct Level Level;
 typedef struct Camera Camera;
@@ -17,15 +18,12 @@ typedef enum LevelEnemyState {
 } LevelEnemyState;
 
 typedef struct LevelEnemy {
-  float x;
-  float y;
   float velocityX;
   float velocityY;
-  float width;
-  float height;
+
   int hitPoints;
   float animationTimer;
-  bool isActive;
+  Entity entity;
   bool isFacingRight;
   LevelEnemyState levelEnemyState;
 } LevelEnemy;

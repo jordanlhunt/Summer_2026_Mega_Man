@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "config.h"
+#include "entity.h"
 
 /* Tuning constants */
 #define AIR_ACCELERATION 12.0f
@@ -61,15 +62,13 @@ typedef struct Player {
   float coyoteTimer;
   float dashCooldown;
   float dashTimer;
-  float height;
+  Entity entity;
   float jumpBufferTimer;
   float shootCooldown;
   float velocityX;
   float velocityY;
   float wallSlideTimer;
-  float width;
-  float x;
-  float y;
+
   int hitPoints;
   int styleRow;
   int wallDirection;
