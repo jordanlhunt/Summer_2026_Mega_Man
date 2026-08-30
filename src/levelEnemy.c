@@ -42,8 +42,7 @@ void LevelEnemyRenderAll(const LevelEnemy enemies[], int count,
     int spriteW = LEVELENEMY_WIDTH;
     int spriteH = LEVELENEMY_HEIGHT;
     int framesPerRow = LEVELENEMY_COLUMNS;
-    int frameColumn = frameColumn =
-        ((int)(enemies[i].animationTimer * 4.0f) % 2);
+    int frameColumn = ((int)(enemies[i].animationTimer * 4.0f) % 2);
     int frameRow = 0;
 
     SDL_FRect sourceRect = {
