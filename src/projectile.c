@@ -95,7 +95,10 @@ void ProjectileCheckPlayerProjectileToEnemyCollision(Projectile *projectiles,
     if (!projectiles[projectile].isActive) {
       continue;
     }
-    for (int enemy = 0; enemy < enemyCount; enemy++)
+    for (int enemy = 0; enemy < enemyCount; enemy++) {
+      if (!levelEnemies[enemy].isActive) {
+        continue;
+      }
       // AABB overlap check
       if (CollisionAABBBoxOverlap(
               projectiles[projectile].x, projectiles[projectile].y,
@@ -108,5 +111,6 @@ void ProjectileCheckPlayerProjectileToEnemyCollision(Projectile *projectiles,
           levelEnemies[enemy].isActive = false;
         }
       }
+    }
   }
 }

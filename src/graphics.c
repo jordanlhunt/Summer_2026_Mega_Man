@@ -1,11 +1,8 @@
 #include "graphics.h"
 #include "game.h"
+#include "level.h"
 #include "player.h"
-#include <SDL3/SDL_error.h>
-#include <SDL3/SDL_oldnames.h>
-#include <SDL3/SDL_rect.h>
-#include <SDL3/SDL_render.h>
-#include <SDL3/SDL_surface.h>
+
 void CameraUpdate(Camera *camera, float targetX, float targetY,
                   const Level *level, float deltaTime) {
   float maxCameraX = level->width * TILE_SIZE - SCREEN_WIDTH;

@@ -2,8 +2,10 @@
 #define GRAPHICS_H
 #include "common.h"
 #include "config.h"
-#include "level.h"
-#include "player.h"
+
+typedef struct Player Player;
+typedef struct Level Level;
+
 typedef struct Camera {
   float x;
   float y;

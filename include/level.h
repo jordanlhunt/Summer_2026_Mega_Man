@@ -3,7 +3,7 @@
 #include "common.h"
 #include "config.h"
 #include "levelEnemy.h"
-#define MAX_LEVEL_ENEMIES 1
+#define MAX_LEVEL_ENEMIES 7
 typedef struct Level {
   int width;
   int height;

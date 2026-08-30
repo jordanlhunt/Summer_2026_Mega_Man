@@ -1,10 +1,11 @@
 #ifndef LEVELENEMY_H
 #define LEVELENEMY_H
-#include "collision.h"
+
 #include "common.h"
 #include "config.h"
-#include "graphics.h"
-#include "level.h"
+
+typedef struct Level Level;
+typedef struct Camera Camera;
 
 typedef struct LevelEnemy {
   float x;
@@ -34,5 +35,5 @@ void LevelEnemyUpdateAll(LevelEnemy levelEnemies[], int levelEnemyCount,
  */
 void LevelEnemyRenderAll(const LevelEnemy enemies[], int count,
                          SDL_Renderer *renderer, const Camera *camera,
-                         SDL_Texture *enemyTexture)
+                         SDL_Texture *enemyTexture);
 #endif

@@ -1,14 +1,18 @@
 #include "levelEnemy.h"
+#include "collision.h"
 #include "config.h"
+#include "graphics.h"
 
 void LevelEnemyUpdate(LevelEnemy *levelEnemy, const Level *level,
                       float deltaTime) {
-  if (levelEnemy->isActive) {
+  if (!levelEnemy->isActive) {
     return;
   }
   /**
    * TODO: Added Animations and stuff
    */
+  // Advance animation timer (drives frame selection in render)
+  levelEnemy->animationTimer += deltaTime;
 }
 
 void LevelEnemyUpdateAll(LevelEnemy *levelEnemies, int levelEnemyCount,
@@ -38,13 +42,12 @@ void LevelEnemyRenderAll(const LevelEnemy enemies[], int count,
     int spriteW = LEVELENEMY_WIDTH;
     int spriteH = LEVELENEMY_HEIGHT;
     int framesPerRow = LEVELENEMY_COLUMNS;
-    int frameColumn = ((int)(enemies[i].animationTimer * 8.0f) % framesPerRow);
+    int frameColumn = frameColumn =
+        ((int)(enemies[i].animationTimer * 4.0f) % 2);
     int frameRow = 0;
 
-    SDL_FRect sourceRect = {.x = frameColumn * spriteW,
-                            .y = frameRow * spriteH,
-                            .w = spriteW,
-                            .h = spriteH};
+    SDL_FRect sourceRect = {
+        .x = frameColumn * spriteW, .y = 0, .w = spriteW, .h = spriteH};
 
     destinationRect.x -= (spriteW - enemies[i].width) / 2.0f;
     destinationRect.y -= (spriteH - enemies[i].height); // Aligns feet to bottom
@@ -56,6 +59,6 @@ void LevelEnemyRenderAll(const LevelEnemy enemies[], int count,
       flip = SDL_FLIP_HORIZONTAL;
     }
     SDL_RenderTextureRotated(renderer, enemyTexture, &sourceRect,
-                             &destinationRect, 0.0, NULL, flip);
+                             &destinationRect, 0.0, NULL, !flip);
   }
 }

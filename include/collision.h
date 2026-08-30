@@ -1,9 +1,9 @@
 #ifndef COLLISION_H
 #define COLLISION_H
+#include "common.h"
 #include "config.h"
-#include "level.h"
-#include <math.h>
-#include <stdbool.h>
+
+typedef struct Level Level;
 
 typedef struct AxisAlignedBoundingBox {
   float x;

@@ -16,6 +16,10 @@
 #define PROJECTILE_SUBSTEP_SIZE (TILE_SIZE * 0.5f)
 #define PROJECTILE_MUZZLE_OFFSET_Y 7.0f
 
+typedef struct Level Level;
+typedef struct Player Player;
+typedef struct LevelEnemy LevelEnemy;
+
 typedef struct Projectile {
   float x;
   float y;
@@ -58,8 +62,8 @@ void ProjectileHandlePlayerShooting(Projectile projectiles[MAX_PROJECTILES],
  * Handles projectile collision from the player to a levelEnemy
  * TODO: Make this a general soultion for all projectiles
  */
-void ProjectileCheckPlayerProjectileToEnemyCollision(
-    Projectile projectiles[MAX_PROJECTILES], LevelEnemy levelEnemies[],
-    int enemyCount);
+void ProjectileCheckPlayerProjectileToEnemyCollision(Projectile projectiles[],
+                                                     LevelEnemy levelEnemies[],
+                                                     int enemyCount);
 
 #endif
