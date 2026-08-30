@@ -1,5 +1,4 @@
 #include "graphics.h"
-#include "game.h"
 #include "level.h"
 #include "player.h"
 

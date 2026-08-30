@@ -59,6 +59,6 @@ void LevelEnemyRenderAll(const LevelEnemy enemies[], int count,
       flip = SDL_FLIP_HORIZONTAL;
     }
     SDL_RenderTextureRotated(renderer, enemyTexture, &sourceRect,
-                             &destinationRect, 0.0, NULL, !flip);
+                             &destinationRect, 0.0, NULL, flip);
   }
 }
