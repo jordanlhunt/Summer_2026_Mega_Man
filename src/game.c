@@ -3,6 +3,7 @@
 #include "graphics.h"
 #include "levelEnemy.h"
 #include "projectile.h"
+#include <SDL3/SDL_render.h>
 bool GameInitialize(Game *game) {
   if (!SDL_Init(SDL_INIT_VIDEO)) {
     SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
@@ -94,6 +95,8 @@ void GameShutdown(Game *game) {
   if (game == NULL) {
     return;
   }
+  SDL_DestroyTexture(game->levelEnemyTexture);
+  game->levelEnemyTexture = NULL;
   SDL_DestroyTexture(game->playerProjectileTexture);
   game->playerProjectileTexture = NULL;
   SDL_DestroyTexture(game->spriteSheetTexture);

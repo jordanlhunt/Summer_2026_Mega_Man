@@ -3,3 +3,5 @@
 2.) Collision in general is a LOT more involved that I assumed for a platformer
 
 3.) Forward Declares are a bit weird. Need to practice them more
+
+4.) Composition is a better more intuitive than inheritance
