@@ -7,16 +7,27 @@
 typedef struct Level Level;
 typedef struct Camera Camera;
 
+/**
+ * LevelEnemy State Machine for animation control
+ */
+typedef enum LevelEnemyState {
+  LEVELENEMY_STATE_GROUNDED,
+  LEVELENEMY_STATE_FLYING,
+  LEVELENEMY_STATE_TURNING
+} LevelEnemyState;
+
 typedef struct LevelEnemy {
   float x;
   float y;
   float velocityX;
+  float velocityY;
   float width;
   float height;
   int hitPoints;
   float animationTimer;
   bool isActive;
   bool isFacingRight;
+  LevelEnemyState levelEnemyState;
 } LevelEnemy;
 /**
  * Updates the LevelEnemy
