@@ -20,7 +20,6 @@ typedef enum LevelEnemyState {
 typedef struct LevelEnemy {
   float velocityX;
   float velocityY;
-
   int hitPoints;
   float animationTimer;
   Entity entity;

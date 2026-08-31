@@ -65,8 +65,7 @@ typedef struct Player {
   Entity entity;
   float jumpBufferTimer;
   float shootCooldown;
-  float velocityX;
-  float velocityY;
+
   float wallSlideTimer;
 
   int hitPoints;

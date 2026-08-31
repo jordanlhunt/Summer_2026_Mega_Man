@@ -5,3 +5,5 @@
 3.) Forward Declares are a bit weird. Need to practice them more
 
 4.) Composition is a better more intuitive than inheritance
+
+5.) Using Generative AI for code isn't for me. 

@@ -27,7 +27,8 @@ bool EntityOverlaps(const Entity *a, const Entity *b);
 /**
  * Initialize entity with common defaults.
  */
-void EntityInit(Entity *entity, float x, float y, float width, float height);
+void EntityInitialize(Entity *entity, float x, float y, float width,
+                      float height);
 
 /**
  * Move entity by its velocity, with optional deltaTime scaling.
