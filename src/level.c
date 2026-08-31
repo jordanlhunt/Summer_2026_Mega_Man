@@ -107,6 +107,10 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
   level->playerSpawnX = spawnX;
   level->playerSpawnY = spawnY;
   level->hasPlayerSpawn = true;
+  // Commit enemies
+  memcpy(level->levelEnemies, newEnemies, sizeof(newEnemies));
+  level->levelEnemiesCount = newEnemyCount;
+
   return true;
 }
 
@@ -144,11 +148,19 @@ bool LevelAddEnemy(Level *level, float x, float y,
   return true;
 }
 int LevelGetWidth(const Level *level) {
-  return level != NULL ? level->width : 0;
+  if (level != NULL) {
+    return level->width;
+  } else {
+    return 0;
+  }
 }
 
 int LevelGetHeight(const Level *level) {
-  return level != NULL ? level->height : 0;
+  if (level != NULL) {
+    return level->height;
+  } else {
+    return 0;
+  }
 }
 
 float LevelGetWidthPixels(const Level *level) {
@@ -160,11 +172,19 @@ float LevelGetHeightPixels(const Level *level) {
 }
 
 float LevelGetPlayerSpawnX(const Level *level) {
-  return level != NULL ? level->playerSpawnX : 0.0f;
+  if (level != NULL) {
+    return level->playerSpawnX;
+  } else {
+    return 0.0f;
+  }
 }
 
 float LevelGetPlayerSpawnY(const Level *level) {
-  return level != NULL ? level->playerSpawnY : 0.0f;
+  if (level != NULL) {
+    return level->playerSpawnY;
+  } else {
+    return 0.0f;
+  }
 }
 
 unsigned char LevelGetTile(const Level *level, int tileX, int tileY) {

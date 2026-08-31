@@ -2,7 +2,7 @@
 #include "config.h"
 #include "graphics.h"
 #include "level.h"
-#include <assert.h>
+
 void LevelEnemyInitialize(LevelEnemy *enemy, float x, float y,
                           LevelEnemyState initialState) {
   *enemy = (LevelEnemy){
@@ -44,7 +44,6 @@ void LevelEnemyUpdate(LevelEnemy *enemy, const Level *level, float deltaTime) {
 }
 void LevelEnemyUpdateAll(LevelEnemy enemies[], int enemyCount,
                          const Level *level, float deltaTime) {
-  assert(deltaTime >= 0.0f);
   for (int i = 0; i < enemyCount; i++) {
     LevelEnemyUpdate(&enemies[i], level, deltaTime);
   }

@@ -5,11 +5,7 @@
 // Basic tile query
 // ------------------------------------------------------------
 bool CollisionIsSolidTile(const Level *level, int tileX, int tileY) {
-  if (tileX < 0 || tileX >= level->width || tileY < 0 ||
-      tileY >= level->height) {
-    return false;
-  }
-  return level->tiles[tileY * level->width + tileX] != 0;
+  return LevelIsSolidTile(level, tileX, tileY);
 }
 // ------------------------------------------------------------
 // Edge / line check

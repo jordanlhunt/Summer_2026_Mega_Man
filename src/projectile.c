@@ -97,7 +97,7 @@ void ProjectileHandlePlayerShooting(Projectile projectiles[MAX_PROJECTILES],
   }
 }
 
-void ProjectileHandleEnemyCollisions(
+void HandleProjectileEntityCollision(
 
     Projectile projectiles[MAX_PROJECTILES],
 
@@ -120,6 +120,7 @@ void ProjectileHandleEnemyCollisions(
       }
       projectile->entity.isActive = false;
       LevelEnemyApplyDamage(levelEnemy, 1);
+      break;
     }
   }
 }
