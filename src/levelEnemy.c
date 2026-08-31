@@ -22,19 +22,7 @@ void LevelEnemyInitialize(LevelEnemy *enemy, float x, float y,
       .state = initialState,
   };
 }
-void LevelEnemyApplyDamage(LevelEnemy *enemy, int damage) {
-  if (!enemy->entity.isActive) {
-    return;
-  }
-  if (damage == 0) {
-    return;
-  }
-  enemy->hitPoints -= damage;
-  if (enemy->hitPoints <= 0) {
-    enemy->hitPoints = 0;
-    enemy->entity.isActive = false;
-  }
-}
+
 void LevelEnemyUpdate(LevelEnemy *enemy, const Level *level, float deltaTime) {
   if (!enemy->entity.isActive) {
     return;
@@ -57,7 +45,7 @@ void LevelEnemyUpdate(LevelEnemy *enemy, const Level *level, float deltaTime) {
 void LevelEnemyUpdateAll(LevelEnemy enemies[], int enemyCount,
                          const Level *level, float deltaTime) {
   assert(deltaTime >= 0.0f);
-  for (int i = 0; i < enemyCount; ++i) {
+  for (int i = 0; i < enemyCount; i++) {
     LevelEnemyUpdate(&enemies[i], level, deltaTime);
   }
 }
@@ -107,5 +95,16 @@ void LevelEnemyRenderAll(const LevelEnemy enemies[], int count,
     }
     SDL_RenderTextureRotated(renderer, enemyTexture, &sourceRect,
                              &destinationRect, 0.0, NULL, flip);
+  }
+}
+
+void LevelEnemyApplyDamage(LevelEnemy *enemy, int damage) {
+  if (!enemy->entity.isActive || damage == 0) {
+    return;
+  }
+  enemy->hitPoints -= damage;
+  if (enemy->hitPoints <= 0) {
+    enemy->hitPoints = 0;
+    enemy->entity.isActive = false;
   }
 }

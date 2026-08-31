@@ -115,7 +115,7 @@ int LevelGetEnemyCount(const Level *level) {
   }
 }
 
-LevelEnemy *LevelGetLevelEnemyAt(Level *level, int index) {
+const LevelEnemy *LevelGetEnemyAt(Level *level, int index) {
   if (!level || index < 0 || index >= level->levelEnemiesCount) {
     return NULL;
   }
@@ -124,15 +124,19 @@ LevelEnemy *LevelGetLevelEnemyAt(Level *level, int index) {
 
 bool LevelAddEnemy(Level *level, float x, float y,
                    LevelEnemyState initialState) {
+  if (level == NULL) {
+    return false;
+  }
+
+  if (level->levelEnemiesCount < 0 ||
+      level->levelEnemiesCount >= MAX_LEVEL_ENEMIES) {
+    return false;
+  }
+
   LevelEnemy *enemy = &level->levelEnemies[level->levelEnemiesCount];
-  enemy->width = LEVELENEMY_WIDTH;
-  enemy->height = LEVELENEMY_HEIGHT;
-  enemy->hitPoints = 1;
-  enemy->animationTimer = 0.0f;
-  enemy->isActive = true;
-  enemy->isFacingRight = true;
-  enemy->velocityX = 0.0f;
-  enemy->velocityY = 0.0f;
-  enemy->levelEnemyState = initialState;
-  level->levelEnemiesCount++;
+
+  LevelEnemyInitialize(enemy, x, y, initialState);
+  level->levelEnemiesCount += 1;
+
+  return true;
 }
