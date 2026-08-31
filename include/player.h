@@ -1,9 +1,12 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include "collision.h"
 #include "common.h"
 #include "config.h"
 #include "entity.h"
+#include "input.h"
+#include "level.h"
 
 /* Tuning constants */
 #define AIR_ACCELERATION 12.0f
@@ -65,7 +68,6 @@ typedef struct Player {
   Entity entity;
   float jumpBufferTimer;
   float shootCooldown;
-
   float wallSlideTimer;
 
   int hitPoints;
