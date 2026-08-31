@@ -5,8 +5,9 @@
 #include "common.h"
 #include "config.h"
 #include "entity.h"
-#include "input.h"
-#include "level.h"
+
+typedef struct Input Input;
+typedef struct Level Level;
 
 /* Tuning constants */
 #define AIR_ACCELERATION 12.0f
@@ -75,6 +76,6 @@ typedef struct Player {
   int wallDirection;
   PlayerState currentPlayerState;
 } Player;
-void PlayerUpdate(Player *player, const Input *Input, const Level *level,
+void PlayerUpdate(Player *player, const Input *input, const Level *level,
                   float deltaTime);
 #endif

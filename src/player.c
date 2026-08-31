@@ -1,5 +1,9 @@
 #include "player.h"
 
+#include "collision.h"
+#include "input.h"
+#include "level.h"
+
 static void DecreaseTimer(float *timer, float deltaTime) {
   if (*timer > 0.0f) {
     *timer -= deltaTime;

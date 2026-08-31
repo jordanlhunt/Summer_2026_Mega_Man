@@ -2,15 +2,11 @@
 #define LEVELENEMY_H
 
 #include "common.h"
-#include "config.h"
 #include "entity.h"
 
 typedef struct Level Level;
 typedef struct Camera Camera;
 
-/**
- * LevelEnemy State Machine for animation control
- */
 typedef enum LevelEnemyState {
   LEVELENEMY_STATE_GROUNDED,
   LEVELENEMY_STATE_FLYING,
@@ -18,30 +14,41 @@ typedef enum LevelEnemyState {
 } LevelEnemyState;
 
 typedef struct LevelEnemy {
-  float velocityX;
-  float velocityY;
+  Entity entity;
+
   int hitPoints;
   float animationTimer;
-  Entity entity;
   bool isFacingRight;
-  LevelEnemyState levelEnemyState;
+  LevelEnemyState state;
 } LevelEnemy;
+
 /**
- * Updates the LevelEnemy
+ * Initializes an enemy at the supplied world position.
  */
-void LevelEnemyUpdate(LevelEnemy *levelEnemy, const Level *level,
-                      float deltaTime);
+void LevelEnemyInitialize(LevelEnemy *enemy, float x, float y,
+                          LevelEnemyState initialState);
+
 /**
- * Loops through all the LevelEnemies and updates them, will expand this in the
- * future to update them based on their classification
+ * Applies damage and deactivates the enemy when its health reaches zero.
  */
-void LevelEnemyUpdateAll(LevelEnemy levelEnemies[], int levelEnemyCount,
+void LevelEnemyApplyDamage(LevelEnemy *enemy, int damage);
+
+/**
+ * Updates one active enemy.
+ */
+void LevelEnemyUpdate(LevelEnemy *enemy, const Level *level, float deltaTime);
+
+/**
+ * Updates all enemies in the supplied array.
+ */
+void LevelEnemyUpdateAll(LevelEnemy enemies[], int enemyCount,
                          const Level *level, float deltaTime);
+
 /**
- * Loops through all the LevelEnemies and draw them, will expand this in the
- * future to draw them based on their classification
+ * Renders all active enemies in the supplied array.
  */
-void LevelEnemyRenderAll(const LevelEnemy enemies[], int count,
+void LevelEnemyRenderAll(const LevelEnemy enemies[], int enemyCount,
                          SDL_Renderer *renderer, const Camera *camera,
                          SDL_Texture *enemyTexture);
+
 #endif
