@@ -2,13 +2,12 @@
 #include "config.h"
 #include "levelEnemy.h"
 void LevelFree(Level *level) {
-  if (level) {
-    free(level->tiles);
-    level->tiles = NULL;
-    level->width = 0;
-    level->height = 0;
-    level->hasPlayerSpawn = false;
+  if (level == NULL) {
+    return;
   }
+
+  free(level->tiles);
+  *level = (Level){0};
 }
 bool LevelLoadFromFile(Level *level, const char *filePath) {
   if (level == NULL || filePath == NULL) {
@@ -43,7 +42,8 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
     fclose(levelFile);
     return false;
   }
-  level->levelEnemiesCount = 0;
+  LevelEnemy newEnemies[MAX_LEVEL_ENEMIES] = {0};
+  int newEnemyCount = 0;
   bool spawnFound = false;
   float spawnX = 0.0f;
   float spawnY = 0.0f;
@@ -77,14 +77,17 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
         spawnY = (float)(y * TILE_SIZE);
         newTiles[index] = 0;
       } else if (fileCharacter == '7') {
-        float levelEnemySpawnX = (float)(x * TILE_SIZE);
-        float levelEnemySpawnY = (float)(y * TILE_SIZE);
-        // Spawn a level enemy at this tile position
-        if (!LevelAddEnemy(level, levelEnemySpawnX, levelEnemySpawnY,
-                           LEVELENEMY_STATE_FLYING)) {
-          SDL_Log("Warning: Could not add enemy at (%d, %d) - array full", x,
-                  y);
+        if (newEnemyCount >= MAX_LEVEL_ENEMIES) {
+          SDL_Log("Too many enemies in level at (%d, %d): %s", x, y, filePath);
+          free(newTiles);
+          fclose(levelFile);
+          return false;
         }
+
+        LevelEnemyInitialize(&newEnemies[newEnemyCount], (float)(x * TILE_SIZE),
+                             (float)(y * TILE_SIZE), LEVELENEMY_STATE_FLYING);
+
+        newEnemyCount += 1;
         newTiles[index] = 0;
       } else {
         newTiles[index] = (unsigned char)(fileCharacter - '0');
@@ -139,4 +142,44 @@ bool LevelAddEnemy(Level *level, float x, float y,
   level->levelEnemiesCount += 1;
 
   return true;
+}
+int LevelGetWidth(const Level *level) {
+  return level != NULL ? level->width : 0;
+}
+
+int LevelGetHeight(const Level *level) {
+  return level != NULL ? level->height : 0;
+}
+
+float LevelGetWidthPixels(const Level *level) {
+  return (float)(LevelGetWidth(level) * TILE_SIZE);
+}
+
+float LevelGetHeightPixels(const Level *level) {
+  return (float)(LevelGetHeight(level) * TILE_SIZE);
+}
+
+float LevelGetPlayerSpawnX(const Level *level) {
+  return level != NULL ? level->playerSpawnX : 0.0f;
+}
+
+float LevelGetPlayerSpawnY(const Level *level) {
+  return level != NULL ? level->playerSpawnY : 0.0f;
+}
+
+unsigned char LevelGetTile(const Level *level, int tileX, int tileY) {
+  if (level == NULL || level->tiles == NULL) {
+    return 0;
+  }
+
+  if (tileX < 0 || tileX >= level->width || tileY < 0 ||
+      tileY >= level->height) {
+    return 0;
+  }
+
+  return level->tiles[tileY * level->width + tileX];
+}
+
+bool LevelIsSolidTile(const Level *level, int tileX, int tileY) {
+  return LevelGetTile(level, tileX, tileY) != 0;
 }

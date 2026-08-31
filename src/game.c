@@ -139,8 +139,8 @@ void GameRender(Game *game) {
                        game->spriteSheetTexture);
   ProjectileRenderAll(game->projectiles, game->gameRenderer, game->camera.x,
                       game->camera.y, game->playerProjectileTexture);
-  LevelEnemyRenderAll(game->level.levelEnemies, game->level.levelEnemiesCount,
-                      game->gameRenderer, &game->camera,
-                      game->levelEnemyTexture);
+  LevelEnemyRenderAll(game->level.levelEnemies,
+                      LevelGetEnemyCount(&game->level), game->gameRenderer,
+                      &game->camera, game->levelEnemyTexture);
   GraphicsPresent(game->gameRenderer);
 }

@@ -29,5 +29,15 @@ int LevelGetEnemyCount(const Level *level);
 const LevelEnemy *LevelGetEnemyAt(Level *level, int index);
 bool LevelAddEnemy(Level *level, float x, float y,
                    LevelEnemyState initialState);
+int LevelGetWidth(const Level *level);
+int LevelGetHeight(const Level *level);
 
+float LevelGetWidthPixels(const Level *level);
+float LevelGetHeightPixels(const Level *level);
+
+float LevelGetPlayerSpawnX(const Level *level);
+float LevelGetPlayerSpawnY(const Level *level);
+
+unsigned char LevelGetTile(const Level *level, int tileX, int tileY);
+bool LevelIsSolidTile(const Level *level, int tileX, int tileY);
 #endif
