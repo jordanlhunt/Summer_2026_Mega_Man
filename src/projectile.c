@@ -1,5 +1,8 @@
 #include "projectile.h"
 #include "collision.h"
+#include "entity.h"
+#include "levelEnemy.h"
+#include <stdbool.h>
 
 bool ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
                      float originY, bool isFacingRight) {
@@ -94,24 +97,29 @@ void ProjectileHandlePlayerShooting(Projectile projectiles[MAX_PROJECTILES],
   }
 }
 
-void HandleProjectileEntityCollision(Projectile *projectiles,
-                                     LevelEnemy *levelEnemies, int enemyCount) {
-  for (int projectile = 0; projectile < MAX_PROJECTILES; projectile++) {
-    if (!projectiles[projectile].entity.isActive) {
+void ProjectileHandleEnemyCollisions(
+
+    Projectile projectiles[MAX_PROJECTILES],
+
+    LevelEnemy enemies[],
+
+    int enemyCount) {
+  for (int projectileIndex = 0; projectileIndex < MAX_PROJECTILES;
+       projectileIndex++) {
+    Projectile *projectile = &projectiles[projectileIndex];
+    if (!projectile->entity.isActive) {
       continue;
     }
-    for (int enemy = 0; enemy < enemyCount; enemy++) {
-      if (!levelEnemies[enemy].entity.isActive) {
+    for (int enemyIndex = 0; enemyIndex < enemyCount; enemyIndex++) {
+      LevelEnemy *levelEnemy = &enemies[enemyIndex];
+      if (!levelEnemy->entity.isActive) {
         continue;
       }
-      if (EntityOverlaps(&projectiles[projectile].entity,
-                         &levelEnemies[enemy].entity)) {
-        levelEnemies[enemy].hitPoints -= 1;
-        projectiles[projectile].entity.isActive = false;
-        if (levelEnemies[enemy].hitPoints <= 0) {
-          levelEnemies[enemy].entity.isActive = false;
-        }
+      if (!EntityOverlaps(&projectile->entity, &levelEnemy->entity)) {
+        continue;
       }
+      projectile->entity.isActive = false;
+      LevelEnemyApplyDamage(levelEnemy, 1);
     }
   }
 }
