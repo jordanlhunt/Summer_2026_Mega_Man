@@ -57,12 +57,31 @@ void GraphicsRenderLevel(const Level *level, SDL_Renderer *renderer,
       if (level->tiles[y * level->width + x] == 0) {
         continue;
       }
+      unsigned char tileChar = level->tiles[y * level->width + x];
       SDL_FRect tile = {
           .x = x * TILE_SIZE - camera->x,
           .y = y * TILE_SIZE - camera->y,
           .w = TILE_SIZE,
           .h = TILE_SIZE,
       };
+      // ---------- ONE-WAY PLATFORM (tile 2) ----------
+      if (tile == 2) {
+        // Main body: SaddleBrown
+        SDL_SetRenderDrawColor(renderer, 160, 100, 50, 255);
+        SDL_RenderFillRect(renderer, &tileRect);
+
+        // Bright top edge: Gold (makes it clear you can stand here)
+        SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255);
+        SDL_FRect topEdge = {tileRect.x, tileRect.y, tileRect.w, 3.0f};
+        SDL_RenderFillRect(renderer, &topEdge);
+
+        // Small bottom shadow to give depth
+        SDL_SetRenderDrawColor(renderer, 100, 60, 30, 200);
+        SDL_FRect bottomShadow = {tileRect.x, tileRect.y + tileRect.h - 2.0f,
+                                  tileRect.w, 2.0f};
+        SDL_RenderFillRect(renderer, &bottomShadow);
+        continue; // skip the default solid-tile drawing below
+      }
       bool isFloor = (y >= level->height - 3);
       bool isWall = (x == 0 || x == level->width - 1);
       if (y + 1 < level->height &&
