@@ -2,6 +2,59 @@
 #include "level.h"
 #include "player.h"
 
+static void GraphicsGetVisableTileRange(const Level *level,
+                                        const Camera *camera, int outStartX,
+                                        int *outStartY, int outEndX,
+                                        int *outEndY) {
+  int startX = (int)floorf(camera->x / TILE_SIZE) - 1;
+  int startY = (int)floorf(camera->y / TILE_SIZE) - 1;
+  int endX = startX + (SCREEN_WIDTH / TILE_SIZE) + 3;
+  int endY = startY + (SCREEN_HEIGHT / TILE_SIZE) + 3;
+  if (startX < 0) {
+    startX = 0;
+  }
+  if (startY < 0) {
+    startY = 0;
+  }
+  if (endX > level->width) {
+    endX = level->width;
+  }
+  if (endY > level->height) {
+    endY = level->height;
+  }
+}
+
+static void GraphicsDrawOneWayPlatformTile(SDL_Renderer *renderer,
+                                           SDL_FRect tile) {
+  // Main body:
+  SDL_SetRenderDrawColor(renderer, 4, 239, 191);
+  SDL_RenderFillRect(renderer, &tile);
+  SDL_SetRenderDrawColor(renderer, 239, 191, 4);
+  SDL_FRect topEdge = {tile.x, tile.y, tile.w, 4.0f};
+  SDL_RenderFillRect(renderer, &topEdge);
+
+  // Small bottom shadow to give depth
+  SDL_SetRenderDrawColor(renderer, 100, 60, 30, 200);
+  SDL_FRect bottomShadow = {tile.x, tile.y + tile.h - 2.0f, tile.w, 2.0f};
+  SDL_RenderFillRect(renderer, &bottomShadow);
+}
+static void GraphicsDrawSolidTile(SDL_Renderer *renderer, SDL_FRect tile,
+                                  const Level *level, int x, int y) {
+  bool isFloor = (y >= level->height - 3);
+  bool isWall = (x == 0 || x == level->width - 1);
+  bool hasOpenBelow =
+      (y + 1 < level->height && level->tiles[(y + 1) * level->width + x] == 0);
+
+  if (hasOpenBelow && !isFloor) {
+    SDL_SetRenderDrawColor(renderer, 255, 70, 60, 255); // ledge edge
+  } else if (isWall) {
+    SDL_SetRenderDrawColor(renderer, 100, 10, 10, 255); // wall
+  } else {
+    SDL_SetRenderDrawColor(renderer, 200, 100, 0, 255); // floor
+  }
+  SDL_RenderFillRect(renderer, &tile);
+}
+
 void CameraUpdate(Camera *camera, float targetX, float targetY,
                   const Level *level, float deltaTime) {
   float maxCameraX = level->width * TILE_SIZE - SCREEN_WIDTH;
@@ -42,60 +95,29 @@ void GraphicsClear(SDL_Renderer *renderer) {
 }
 void GraphicsRenderLevel(const Level *level, SDL_Renderer *renderer,
                          const Camera *camera) {
-  int startX = (int)floorf(camera->x / TILE_SIZE) - 1;
-  int startY = (int)floorf(camera->y / TILE_SIZE) - 1;
-  int endX = startX + (SCREEN_WIDTH / TILE_SIZE) + 3;
-  int endY = startY + (SCREEN_HEIGHT / TILE_SIZE) + 3;
+  int startX;
+  int startY, int endX;
+  int endY;
+  GraphicsGetVisableTileRange(level, camera, &startX, &startY, &endX, &endY);
   for (int y = startY; y < endY; y++) {
     for (int x = startX; x < endX; x++) {
-      if (x < 0 || y < 0) {
-        continue;
+      unsigned char tileCharacter = level->tiles[y * level->width + x];
+      if (tileChar == 0) {
+        contiune;
       }
-      if (x >= level->width || y >= level->height) {
-        continue;
-      }
-      if (level->tiles[y * level->width + x] == 0) {
-        continue;
-      }
-      unsigned char tileChar = level->tiles[y * level->width + x];
-      SDL_FRect tile = {
-          .x = x * TILE_SIZE - camera->x,
-          .y = y * TILE_SIZE - camera->y,
-          .w = TILE_SIZE,
-          .h = TILE_SIZE,
-      };
-      // ---------- ONE-WAY PLATFORM (tile 2) ----------
-      if (tile == 2) {
-        // Main body: SaddleBrown
-        SDL_SetRenderDrawColor(renderer, 160, 100, 50, 255);
-        SDL_RenderFillRect(renderer, &tileRect);
-
-        // Bright top edge: Gold (makes it clear you can stand here)
-        SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255);
-        SDL_FRect topEdge = {tileRect.x, tileRect.y, tileRect.w, 3.0f};
-        SDL_RenderFillRect(renderer, &topEdge);
-
-        // Small bottom shadow to give depth
-        SDL_SetRenderDrawColor(renderer, 100, 60, 30, 200);
-        SDL_FRect bottomShadow = {tileRect.x, tileRect.y + tileRect.h - 2.0f,
-                                  tileRect.w, 2.0f};
-        SDL_RenderFillRect(renderer, &bottomShadow);
-        continue; // skip the default solid-tile drawing below
-      }
-      bool isFloor = (y >= level->height - 3);
-      bool isWall = (x == 0 || x == level->width - 1);
-      if (y + 1 < level->height &&
-          level->tiles[(y + 1) * level->width + x] == 0 && !isFloor) {
-        SDL_SetRenderDrawColor(renderer, 255, 70, 60, 255);
-      } else if (isWall) {
-        SDL_SetRenderDrawColor(renderer, 100, 10, 10, 255);
+      SDL_FRect tile = {.x = x * TILE_SIZE - camera->x,
+                        .y = y * TILE_SIZE - camera->y,
+                        .w = TILE_SIZE,
+                        .h = TILE_SIZE};
+      if (tileCharacter == 2) {
+        GraphicsDrawOneWayPlatformTile(renderer, tile);
       } else {
-        SDL_SetRenderDrawColor(renderer, 200, 100, 0, 255);
+        GraphicsDrawSolidTile(renderer, tile, level, x, y);
       }
-      SDL_RenderFillRect(renderer, &tile);
     }
   }
 }
+
 void GraphicsRenderPlayer(const Player *player, SDL_Renderer *renderer,
                           const Camera *camera, SDL_Texture *sheet) {
   float drawX = player->entity.x - camera->x -
