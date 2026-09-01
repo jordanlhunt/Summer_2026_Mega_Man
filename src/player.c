@@ -4,6 +4,12 @@
 #include "input.h"
 #include "level.h"
 
+/**
+ * If the bottom of the box has cross a one-wa platform (tile == '2')
+ * while moving downward, snap the box onto the top of the tile. Returns true if
+ * snap has occurred
+ */
+
 static void DecreaseTimer(float *timer, float deltaTime) {
   if (*timer > 0.0f) {
     *timer -= deltaTime;
