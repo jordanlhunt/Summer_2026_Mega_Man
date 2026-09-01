@@ -23,10 +23,11 @@ void LevelEnemyInitialize(LevelEnemy *enemy, float x, float y,
   };
 }
 
-void LevelEnemyUpdate(LevelEnemy *enemy, const Level *level, float deltaTime) {
+void LevelEnemyUpdate(LevelEnemy *enemy, float deltaTime) {
   if (!enemy->entity.isActive) {
     return;
   }
+
   switch (enemy->state) {
   case LEVELENEMY_STATE_GROUNDED:
     enemy->entity.velocityY = 0.0f;
@@ -43,28 +44,33 @@ void LevelEnemyUpdate(LevelEnemy *enemy, const Level *level, float deltaTime) {
   enemy->animationTimer += deltaTime;
 }
 void LevelEnemyUpdateAll(LevelEnemy enemies[], int enemyCount,
-                         const Level *level, float deltaTime) {
+                         float deltaTime) {
   for (int i = 0; i < enemyCount; i++) {
-    LevelEnemyUpdate(&enemies[i], level, deltaTime);
+    LevelEnemyUpdate(&enemies[i], deltaTime);
   }
 }
 void LevelEnemyRenderAll(const LevelEnemy enemies[], int count,
                          SDL_Renderer *renderer, const Camera *camera,
                          SDL_Texture *enemyTexture) {
   for (int i = 0; i < count; i++) {
-    if (!enemies[i].entity.isActive)
+    if (!enemies[i].entity.isActive) {
       continue;
-    SDL_FRect destinationRect = {.x = enemies[i].entity.x - camera->x,
-                                 .y = enemies[i].entity.y - camera->y,
-                                 .w = enemies[i].entity.width,
-                                 .h = enemies[i].entity.height};
+    }
+    int spriteWidth = LEVELENEMY_WIDTH;
+    int spriteHeight = LEVELENEMY_FRAME_HEIGHT;
+
+    SDL_FRect destinationRect = {.x = enemies[i].entity.x - camera->x -
+                                      (spriteWidth - enemies[i].entity.width) /
+                                          2.0f,
+                                 .y = enemies[i].entity.y - camera->y -
+                                      (spriteHeight - enemies[i].entity.height),
+                                 .w = (float)spriteWidth,
+                                 .h = (float)spriteHeight};
     if (enemyTexture == NULL) {
       SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
       SDL_RenderFillRect(renderer, &destinationRect);
       continue;
     }
-    int spriteW = LEVELENEMY_WIDTH;
-    int spriteH = LEVELENEMY_FRAME_HEIGHT;
     int frameColumn;
     int frameRow = 0;
     switch (enemies[i].state) {
@@ -72,7 +78,7 @@ void LevelEnemyRenderAll(const LevelEnemy enemies[], int count,
       frameColumn = ((int)(enemies[i].animationTimer * 4.0f) % 2);
       break;
     case LEVELENEMY_STATE_FLYING:
-      frameColumn = 2 + ((int)(enemies[i].animationTimer * 6.0f) % 4);
+      frameColumn = 1 + ((int)(enemies[i].animationTimer * 4.0f) % 2);
       break;
     case LEVELENEMY_STATE_TURNING:
       frameColumn = 5;
@@ -80,12 +86,10 @@ void LevelEnemyRenderAll(const LevelEnemy enemies[], int count,
     default:
       frameColumn = 0;
     }
-    SDL_FRect sourceRect = {.x = frameColumn * spriteW,
-                            .y = frameRow * spriteH,
-                            .w = spriteW,
-                            .h = spriteH};
-    destinationRect.x -= (spriteW - enemies[i].entity.width) / 2.0f;
-    destinationRect.y -= (spriteH - enemies[i].entity.height);
+    SDL_FRect sourceRect = {.x = frameColumn * spriteWidth,
+                            .y = frameRow * spriteHeight,
+                            .w = spriteWidth,
+                            .h = spriteHeight};
     SDL_FlipMode flip;
     if (enemies[i].isFacingRight) {
       flip = SDL_FLIP_NONE;

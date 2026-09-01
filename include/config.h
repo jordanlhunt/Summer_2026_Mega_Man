@@ -28,9 +28,9 @@
 /* -------------------------------------------------------------------- */
 /* Level Enemy sheet layout: 30x30 per frame, 6 cols x 1 rows                */
 /* -------------------------------------------------------------------- */
-#define LEVELENEMY_WIDTH 30
-#define LEVELENEMY_FRAME_HEIGHT 30
-#define LEVELENEMY_HEIGHT 40
+#define LEVELENEMY_WIDTH 32
+#define LEVELENEMY_FRAME_HEIGHT 32
+#define LEVELENEMY_HEIGHT 32
 #define LEVELENEMY_COLUMNS 6
 #define LEVELENEMY_ROWS 1
 /* -------------------------------------------------------------------- */

@@ -122,8 +122,7 @@ void GameUpdate(Game *game, float deltaTime) {
                                  &game->input);
   ProjectileUpdateAll(game->projectiles, &game->level, deltaTime);
   LevelEnemyUpdateAll(game->level.levelEnemies,
-                      LevelGetEnemyCount(&game->level), &game->level,
-                      deltaTime);
+                      LevelGetEnemyCount(&game->level), deltaTime);
   HandleProjectileEntityCollision(game->projectiles, game->level.levelEnemies,
                                   LevelGetEnemyCount(&game->level));
   float targetCameraX = game->player.entity.x - SCREEN_WIDTH / 2.0f;

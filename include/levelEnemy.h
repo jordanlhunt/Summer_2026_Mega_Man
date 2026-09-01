@@ -36,13 +36,12 @@ void LevelEnemyApplyDamage(LevelEnemy *enemy, int damage);
 /**
  * Updates one active enemy.
  */
-void LevelEnemyUpdate(LevelEnemy *enemy, const Level *level, float deltaTime);
+void LevelEnemyUpdate(LevelEnemy *enemy, float deltaTime);
 
 /**
  * Updates all enemies in the supplied array.
  */
-void LevelEnemyUpdateAll(LevelEnemy enemies[], int enemyCount,
-                         const Level *level, float deltaTime);
+void LevelEnemyUpdateAll(LevelEnemy enemies[], int enemyCount, float deltaTime);
 
 /**
  * Renders all active enemies in the supplied array.
