@@ -37,7 +37,8 @@ static bool IsSnappedToPlaform(AxisAlignedBoundingBox *boundingBox,
       if (playerCollisionBoxBottom >= tileTop) {
         boundingBox->y = tileTop - boundingBox->height;
         boundingBox->isOnGround = true;
-        boundingBox->velocityY = 0.0f return true;
+        boundingBox->velocityY = 0.0f;
+        return true;
       }
     }
   }

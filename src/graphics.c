@@ -1,11 +1,10 @@
 #include "graphics.h"
 #include "level.h"
 #include "player.h"
-#include <SDL3/SDL_surface.h>
 
-static void GraphicsGetVisableTileRange(const Level *level,
-                                        const Camera *camera, int outStartX,
-                                        int *outStartY, int outEndX,
+static void GraphicsGetVisibleTileRange(const Level *level,
+                                        const Camera *camera, int *outStartX,
+                                        int *outStartY, int *outEndX,
                                         int *outEndY) {
   int startX = (int)floorf(camera->x / TILE_SIZE) - 1;
   int startY = (int)floorf(camera->y / TILE_SIZE) - 1;
@@ -23,14 +22,19 @@ static void GraphicsGetVisableTileRange(const Level *level,
   if (endY > level->height) {
     endY = level->height;
   }
+
+  *outStartX = startX;
+  *outStartY = startY;
+  *outEndX = endX;
+  *outEndY = endY;
 }
 
 static void GraphicsDrawOneWayPlatformTile(SDL_Renderer *renderer,
                                            SDL_FRect tile) {
   // Main body:
-  SDL_SetRenderDrawColor(renderer, 4, 239, 191);
+  SDL_SetRenderDrawColor(renderer, 4, 239, 191, 255);
   SDL_RenderFillRect(renderer, &tile);
-  SDL_SetRenderDrawColor(renderer, 239, 191, 4);
+  SDL_SetRenderDrawColor(renderer, 239, 191, 4, 255);
   SDL_FRect topEdge = {tile.x, tile.y, tile.w, 4.0f};
   SDL_RenderFillRect(renderer, &topEdge);
 
@@ -98,14 +102,15 @@ void GraphicsClear(SDL_Renderer *renderer) {
 void GraphicsRenderLevel(const Level *level, SDL_Renderer *renderer,
                          const Camera *camera) {
   int startX;
-  int startY, int endX;
+  int startY;
+  int endX;
   int endY;
   GraphicsGetVisableTileRange(level, camera, &startX, &startY, &endX, &endY);
   for (int y = startY; y < endY; y++) {
     for (int x = startX; x < endX; x++) {
       unsigned char tileCharacter = level->tiles[y * level->width + x];
-      if (tileChar == 0) {
-        contiune;
+      if (tileCharacter == 0) {
+        continue;
       }
       SDL_FRect tile = {.x = x * TILE_SIZE - camera->x,
                         .y = y * TILE_SIZE - camera->y,
