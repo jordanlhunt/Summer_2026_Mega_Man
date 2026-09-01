@@ -9,6 +9,33 @@
  * while moving downward, snap the box onto the top of the tile. Returns true if
  * snap has occurred
  */
+static bool IsSnappedToPlaform(AxisAlignedBoundingBox *boundingBox,
+                               float originalY, const Level *level) {
+  if (boundingBox->velocityY < 0.0f) {
+    return false;
+  }
+  float playerCollisionBoxBottom = boundingBox->y + boundingBox->height;
+  int tileX =
+      (int)floorf((boundingBox->x + boundingBox->width * .5f) / TILE_SIZE);
+  int tileY = (int)floorf(playerCollisionBoxBottom / TILE_SIZE);
+  if (tileX < 0 || tileX >= level->width || tileY < 0 ||
+      tileY >= level->height) {
+    return false;
+  }
+  unsigned char tile = LevelGetTile(level, tileX, tileY);
+  if (tile != 2) {
+    return false;
+  }
+  float tileTop = (float)(tileY * TILE_SIZE);
+  float originalBottom = originalY + boundingBox->height;
+  if (originalBottom > tileTop + .01f) {
+    return false;
+  }
+  boundingBox->y = tileTop - boundingBox->height;
+  boundingBox->isOnGround = true;
+  boundingBox->velocityX = 0.0f;
+  return true;
+}
 
 static void DecreaseTimer(float *timer, float deltaTime) {
   if (*timer > 0.0f) {
@@ -23,6 +50,7 @@ static void DecreaseTimer(float *timer, float deltaTime) {
  * axes. Uses entity fields for position and velocity. */
 static void PlayerMoveAndResolve(Player *player, const Level *level,
                                  float deltaTime) {
+  float originalY = player->entity.y;
   AxisAlignedBoundingBox box = {
       .x = player->entity.x,
       .y = player->entity.y,
@@ -32,10 +60,12 @@ static void PlayerMoveAndResolve(Player *player, const Level *level,
       .velocityY = player->entity.velocityY,
       .isOnGround = false,
   };
+
   box.x += box.velocityX * deltaTime;
   CollisionResolveTileAxis(&box, level, true);
   box.y += box.velocityY * deltaTime;
   CollisionResolveTileAxis(&box, level, false);
+  IsSnappedToPlaform(&box, originalY, level);
   player->entity.x = box.x;
   player->entity.y = box.y;
   player->entity.velocityX = box.velocityX;
