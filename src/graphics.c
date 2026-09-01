@@ -1,6 +1,7 @@
 #include "graphics.h"
 #include "level.h"
 #include "player.h"
+#include <SDL3/SDL_surface.h>
 
 static void GraphicsGetVisableTileRange(const Level *level,
                                         const Camera *camera, int outStartX,
@@ -85,6 +86,7 @@ SDL_Texture *GraphicsLoadSpriteSheet(SDL_Renderer *renderer, const char *path) {
     SDL_Log("Unable to create texture from surface: %s", SDL_GetError());
     return NULL;
   }
+  SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_PIXELART);
   SDL_Log("Sprite sheet loaded successfully from: %s", path);
   return texture;
 }
