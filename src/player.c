@@ -15,26 +15,33 @@ static bool IsSnappedToPlaform(AxisAlignedBoundingBox *boundingBox,
     return false;
   }
   float playerCollisionBoxBottom = boundingBox->y + boundingBox->height;
+  float originalBottom = originalY + boundingBox->height;
   int tileX =
       (int)floorf((boundingBox->x + boundingBox->width * .5f) / TILE_SIZE);
-  int tileY = (int)floorf(playerCollisionBoxBottom / TILE_SIZE);
-  if (tileX < 0 || tileX >= level->width || tileY < 0 ||
-      tileY >= level->height) {
+  if (tileX < 0 || tileX >= level->width) {
     return false;
   }
-  unsigned char tile = LevelGetTile(level, tileX, tileY);
-  if (tile != 2) {
-    return false;
+  // Calculate the range of tiles the player's bottom has passed through this
+  // frame
+  int startTileY = (int)floorf(originalBottom / TILE_SIZE);
+  int endTileY = (int)floorf(playerCollisionBoxBottom / TILE_SIZE);
+
+  // Iterate through all tiles to prevent tunneling
+  for (int tileY = startTileY; tileY <= endTileY; tileY++) {
+    if (tileY < 0 || tileY >= level->height) {
+      continue;
+    }
+    unsigned char tile = LevelGetTile(level, tileX, tileY);
+    if (tile == 2) {
+      float tileTop = (float)(tileY * TILE_SIZE);
+      if (playerCollisionBoxBottom >= tileTop) {
+        boundingBox->y = tileTop - boundingBox->height;
+        boundingBox->isOnGround = true;
+        boundingBox->velocityY = 0.0f return true;
+      }
+    }
   }
-  float tileTop = (float)(tileY * TILE_SIZE);
-  float originalBottom = originalY + boundingBox->height;
-  if (originalBottom > tileTop + .01f) {
-    return false;
-  }
-  boundingBox->y = tileTop - boundingBox->height;
-  boundingBox->isOnGround = true;
-  boundingBox->velocityX = 0.0f;
-  return true;
+  return false;
 }
 
 static void DecreaseTimer(float *timer, float deltaTime) {

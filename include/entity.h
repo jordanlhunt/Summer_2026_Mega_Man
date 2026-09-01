@@ -20,7 +20,6 @@ typedef struct Entity {
 
 /**
  *  AABB overlap using Entity
- *
  */
 bool EntityOverlaps(const Entity *a, const Entity *b);
 
