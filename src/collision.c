@@ -11,15 +11,13 @@ bool CollisionIsSolidTile(const Level *level, int tileX, int tileY) {
 // ------------------------------------------------------------
 // Remove a tile upon collision
 // ------------------------------------------------------------
-void CollisionRemoveTilesOfType(Level *level, float x, float y, float w,
-                                float h, unsigned char tileType) {
+void CollisionRemoveTilesOfType(Level *level, float x, float y, float width,
+                                float height, unsigned char tileType) {
   // Scan overlapping tiles for breaking blocks
-  int startTileX = (int)floorf(projectile->entity.x / TILE_SIZE);
-  int endTileX = (int)floorf((projectile->entity.x + PROJECTILE_WIDTH - 0.01f) /
-                             TILE_SIZE);
-  int startTileY = (int)floorf(projectile->entity.y / TILE_SIZE);
-  int endTileY = (int)floorf(
-      (projectile->entity.y + PROJECTILE_HEIGHT - 0.01f) / TILE_SIZE);
+  int startTileX = (int)floorf(x / TILE_SIZE);
+  int endTileX = (int)floorf((x + width - 0.01f) / TILE_SIZE);
+  int startTileY = (int)floorf(y / TILE_SIZE);
+  int endTileY = (int)floorf((y + height - 0.01f) / TILE_SIZE);
   for (int tileY = startTileY; tileY <= endTileY; tileY++) {
     for (int tileX = startTileX; tileX <= endTileX; tileX++) {
       if (tileX < 0 || tileX >= level->width || tileY < 0 ||

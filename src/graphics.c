@@ -122,7 +122,7 @@ void GraphicsRenderLevel(const Level *level, SDL_Renderer *renderer,
   int startY;
   int endX;
   int endY;
-  GraphicsGetVisableTileRange(level, camera, &startX, &startY, &endX, &endY);
+  GraphicsGetVisibleTileRange(level, camera, &startX, &startY, &endX, &endY);
   for (int y = startY; y < endY; y++) {
     for (int x = startX; x < endX; x++) {
       unsigned char tileCharacter = level->tiles[y * level->width + x];
@@ -146,12 +146,12 @@ void GraphicsRenderLevel(const Level *level, SDL_Renderer *renderer,
 
 void GraphicsRenderPlayer(const Player *player, SDL_Renderer *renderer,
                           const Camera *camera, SDL_Texture *sheet) {
-  float drawX = player->entity.x - camera->x -
-                (SPRITE_WIDTH * 2.0f - player->entity.width) /
-                    2.0f; // center horizontally
-  float drawY = player->entity.y - camera->y -
-                (SPRITE_HEIGHT * 2.0f -
-                 player->entity.height); // align feet to hitbox bottom
+  float drawX = floorf(player->entity.x - camera->x -
+                       (SPRITE_WIDTH * 2.0f - player->entity.width) /
+                           2.0f); // center horizontally
+  float drawY = floorf(player->entity.y - camera->y -
+                       (SPRITE_HEIGHT * 2.0f -
+                        player->entity.height)); // align feet to hitbox bottom
   SDL_FRect destinationFRect = {drawX, drawY, SPRITE_WIDTH * 2.0f,
                                 SPRITE_HEIGHT * 2.0f};
   if (sheet) {
