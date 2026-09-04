@@ -57,8 +57,8 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
         return false;
       }
       if (fileCharacter != '0' && fileCharacter != '1' &&
-          fileCharacter != '6' && fileCharacter != '7' &&
-          fileCharacter != '2') {
+          fileCharacter != '2' && fileCharacter != '3' &&
+          fileCharacter != '6' && fileCharacter != '7') {
         SDL_Log("Invalid tile '%c' at (%d, %d): %s", fileCharacter, x, y,
                 filePath);
         free(newTiles);

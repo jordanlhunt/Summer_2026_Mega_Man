@@ -36,8 +36,8 @@ bool ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
 /**
  * Update all active projectiles: move, check lifetime and collision.
  */
-void ProjectileUpdateAll(Projectile projectiles[MAX_PROJECTILES],
-                         const Level *level, float deltaTime);
+void ProjectileUpdateAll(Projectile projectiles[MAX_PROJECTILES], Level *level,
+                         float deltaTime);
 /**
  * Draws all the active projectile with the shotTexture, offset by the camera
  * position

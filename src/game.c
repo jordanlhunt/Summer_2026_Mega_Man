@@ -49,7 +49,6 @@ bool GameInitialize(Game *game) {
     SDL_Quit();
     return false;
   }
-
   // Load the level enemy texture
   game->levelEnemyTexture =
       GraphicsLoadSpriteSheet(game->gameRenderer, BIG_PROPELLER_BOT_ASSET_PATH);
@@ -91,12 +90,10 @@ bool GameInitialize(Game *game) {
   game->player.entity.y = game->level.playerSpawnY;
   game->isRunning = true;
   game->previousTime = SDL_GetTicks();
-
   memset(game->projectiles, 0, sizeof(game->projectiles));
   InputInitialize(&game->input);
   return true;
 }
-
 void GameShutdown(Game *game) {
   if (game == NULL) {
     return;
@@ -114,7 +111,6 @@ void GameShutdown(Game *game) {
   game->gameWindow = NULL;
   SDL_Quit();
 }
-
 void GameUpdate(Game *game, float deltaTime) {
   InputUpdate(&game->input);
   PlayerUpdate(&game->player, &game->input, &game->level, deltaTime);
@@ -126,7 +122,6 @@ void GameUpdate(Game *game, float deltaTime) {
   HandleProjectileEntityCollision(game->projectiles, game->level.levelEnemies,
                                   LevelGetEnemyCount(&game->level));
   float targetCameraX = game->player.entity.x - SCREEN_WIDTH / 2.0f;
-
   float targetCameraY = game->player.entity.y - SCREEN_HEIGHT / 2.0f;
   CameraUpdate(&game->camera, targetCameraX, targetCameraY, &game->level,
                deltaTime);

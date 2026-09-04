@@ -33,8 +33,8 @@ bool ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
   return false;
 }
 
-void ProjectileUpdateAll(Projectile projectiles[MAX_PROJECTILES],
-                         const Level *level, float deltaTime) {
+void ProjectileUpdateAll(Projectile projectiles[MAX_PROJECTILES], Level *level,
+                         float deltaTime) {
   for (int i = 0; i < MAX_PROJECTILES; i++) {
     Projectile *projectile = &projectiles[i];
     if (!projectile->entity.isActive) {
@@ -56,6 +56,11 @@ void ProjectileUpdateAll(Projectile projectiles[MAX_PROJECTILES],
       projectile->entity.x += stepX;
       if (CollisionCheckAABB(level, projectile->entity.x, projectile->entity.y,
                              PROJECTILE_WIDTH, PROJECTILE_HEIGHT)) {
+        // Remove any breakable tiles (type 3) at the impact position
+        CollisionRemoveTilesOfType(level, projectile->entity.x,
+                                   projectile->entity.y, PROJECTILE_WIDTH,
+                                   PROJECTILE_HEIGHT,
+                                   3); // breakable tile type
         projectile->entity.isActive = false;
         break;
       }

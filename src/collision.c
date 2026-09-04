@@ -125,3 +125,26 @@ bool CollisionAABBBoxOverlap(float x1, float y1, float w1, float h1, float x2,
                              float y2, float w2, float h2) {
   return (x1 < x2 + w2) && (x1 + w1 > x2) && (y1 < y2 + h2) && (y1 + h1 > y2);
 }
+
+void CollisionRemoveTilesOfType(Level *level, float x, float y, float w,
+                                float h, unsigned char tileType) {
+  // Scan overlapping tiles for breaking blocks
+  int startTileX = (int)floorf(projectile->entity.x / TILE_SIZE);
+  int endTileX = (int)floorf((projectile->entity.x + PROJECTILE_WIDTH - 0.01f) /
+                             TILE_SIZE);
+  int startTileY = (int)floorf(projectile->entity.y / TILE_SIZE);
+  int endTileY = (int)floorf(
+      (projectile->entity.y + PROJECTILE_HEIGHT - 0.01f) / TILE_SIZE);
+  for (int tileY = startTileY; tileY <= endTileY; tileY++) {
+    for (int tileX = startTileX; tileX <= endTileX; tileX++) {
+      if (tileX < 0 || tileX >= level->width || tileY < 0 ||
+          tileY >= level->height) {
+        continue;
+      }
+      size_t index = (size_t)tileY * level->width + (size_t)tileX;
+      if (level->tiles[index] == tileType) {
+        levels->tiles[index] = 0;
+      }
+    }
+  }
+}

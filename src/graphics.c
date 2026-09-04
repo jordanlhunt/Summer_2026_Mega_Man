@@ -60,6 +60,23 @@ static void GraphicsDrawSolidTile(SDL_Renderer *renderer, SDL_FRect tile,
   SDL_RenderFillRect(renderer, &tile);
 }
 
+static void GraphicsDrawBreakableTile(SDL_Renderer *renderer, SDL_FRect tile) {
+  // Base colour: light grey stone
+  SDL_SetRenderDrawColor(renderer, 180, 180, 180, 255);
+  SDL_RenderFillRect(renderer, &tile);
+
+  // Darker border / cracks
+  SDL_SetRenderDrawColor(renderer, 80, 80, 80, 255);
+  // Two diagonal cracks
+  SDL_RenderLine(renderer, tile.x, tile.y, tile.x + tile.w, tile.y + tile.h);
+  SDL_RenderLine(renderer, tile.x + tile.w, tile.y, tile.x, tile.y + tile.h);
+
+  // Optional: a small highlight to suggest depth
+  SDL_SetRenderDrawColor(renderer, 220, 220, 220, 255);
+  SDL_RenderLine(renderer, tile.x + 2, tile.y + 2, tile.x + tile.w - 2,
+                 tile.y + 2);
+}
+
 void CameraUpdate(Camera *camera, float targetX, float targetY,
                   const Level *level, float deltaTime) {
   float maxCameraX = level->width * TILE_SIZE - SCREEN_WIDTH;
@@ -118,6 +135,8 @@ void GraphicsRenderLevel(const Level *level, SDL_Renderer *renderer,
                         .h = TILE_SIZE};
       if (tileCharacter == 2) {
         GraphicsDrawOneWayPlatformTile(renderer, tile);
+      } else if (tileCharacter == 3) {
+        GraphicsDrawBreakableTile(renderer, tile);
       } else {
         GraphicsDrawSolidTile(renderer, tile, level, x, y);
       }
