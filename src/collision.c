@@ -6,7 +6,7 @@
 // ------------------------------------------------------------
 bool CollisionIsSolidTile(const Level *level, int tileX, int tileY) {
   unsigned char tile = LevelGetTile(level, tileX, tileY);
-  return (tile == 1);
+  return (tile == 1 || tile = 3);
 }
 // ------------------------------------------------------------
 // Edge / line check
