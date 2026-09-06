@@ -14,6 +14,16 @@ typedef struct Level {
   LevelEnemy levelEnemies[MAX_LEVEL_ENEMIES];
   int levelEnemiesCount;
 } Level;
+
+typedef enum TILETYPE {
+  TILE_EMPTY = 0,
+  TILE_SOLID = 1,
+  TILE_ONE_WAY = 2,
+  TILE_BREAKABLE = 3,
+  TILE_PLAYER_SPAWN = 6,
+  TILE_ENEMY_SPAWN = 7
+} TILETYPE;
+
 /**
  * Loads a level from a text file into `level`. On failure, `level` is left
  * untouched (any tiles it already owned are freed first, but no partial data is
