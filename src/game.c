@@ -79,6 +79,8 @@ bool GameInitialize(Game *game) {
     SDL_Log("Failed to load level file. %s", SDL_GetError());
     // Clean up anything created so far:
     SDL_DestroyTexture(game->spriteSheetTexture);
+    SDL_DestroyTexture(game->playerProjectileTexture);
+    SDL_DestroyTexture(game->levelEnemyTexture);
     SDL_DestroyRenderer(game->gameRenderer);
     SDL_DestroyWindow(game->gameWindow);
     SDL_Quit();
