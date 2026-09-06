@@ -29,6 +29,7 @@ add_executable(sdl_man
     src/projectile.c
     src/levelEnemy.c
     src/entity.c
+    src/assetmanager.c
 )
 target_compile_options(sdl_man PRIVATE
     -Wall
