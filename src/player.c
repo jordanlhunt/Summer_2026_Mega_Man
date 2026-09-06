@@ -59,26 +59,12 @@ static void DecreaseTimer(float *timer, float deltaTime) {
 static void PlayerMoveAndResolve(Player *player, const Level *level,
                                  float deltaTime) {
   float originalY = player->entity.y;
-  AxisAlignedBoundingBox box = {
-      .x = player->entity.x,
-      .y = player->entity.y,
-      .width = player->entity.width,
-      .height = player->entity.height,
-      .velocityX = player->entity.velocityX,
-      .velocityY = player->entity.velocityY,
-      .isOnGround = false,
-  };
-
-  box.x += box.velocityX * deltaTime;
-  CollisionResolveTileAxis(&box, level, true);
-  box.y += box.velocityY * deltaTime;
-  CollisionResolveTileAxis(&box, level, false);
-  IsSnappedToPlaform(&box, originalY, level);
-  player->entity.x = box.x;
-  player->entity.y = box.y;
-  player->entity.velocityX = box.velocityX;
-  player->entity.velocityY = box.velocityY;
-  player->isOnGround = box.isOnGround;
+  player->entity.isOnGround = false;
+  player->entity.x += player->entity.velocityX * deltaTime;
+  CollisionResolveTileAxis(&player->entity, level, true);
+  player->entity.y += player->entity.velocityY * deltaTime;
+  CollisionResolveTileAxis(&player->entity, level, false);
+  IsSnappedToPlaform(&player->entity, originalY, level);
 }
 
 void PlayerUpdate(Player *player, const Input *input, const Level *level,
@@ -103,7 +89,7 @@ void PlayerUpdate(Player *player, const Input *input, const Level *level,
 
   /* ----- Dash handling (state overrides normal movement) -------------- */
   if (input->isDashJustPressed && player->dashCooldown <= 0.0f &&
-      !player->isDashing && player->isOnGround) {
+      !player->isDashing && player->entity.isOnGround) {
     player->isDashing = true;
     player->dashTimer = DASH_DURATION;
     player->dashCooldown = DASH_COOLDOWN;

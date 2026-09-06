@@ -2,17 +2,8 @@
 #define COLLISION_H
 #include "common.h"
 #include "config.h"
+#include "entity.h"
 #include "forwarddeclares.h"
-
-typedef struct AxisAlignedBoundingBox {
-  float x;
-  float y;
-  float width;
-  float height;
-  float velocityX;
-  float velocityY;
-  bool isOnGround;
-} AxisAlignedBoundingBox;
 
 /**
  * Returns true if two AABBs overlap
@@ -41,8 +32,7 @@ bool CollisionCheckAABB(const Level *level, float x, float y, float width,
  * Resolves the AABB along one axis. Repeatedly pushes the box out of any
  * overlapping solid tiles until none remain. Sets isOnGround if landing.
  */
-void CollisionResolveTileAxis(AxisAlignedBoundingBox *boundingBox,
-                              const Level *level, bool isXAxis);
+void CollisionResolveTileAxis(Entity *entity, const Level *level, bool isXAxis);
 
 /* Wall‑slide queries (refactored to use CollisionCheckTileEdge) */
 bool CollisionCheckWallLeft(const Level *level, float x, float y, float height);

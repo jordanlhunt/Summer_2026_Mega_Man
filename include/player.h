@@ -57,7 +57,6 @@ typedef struct Player {
   bool canWallJump;
   bool isDashing;
   bool isFacingRight;
-  bool isOnGround;
   bool isWallSliding;
   float animationTimer;
   float shootAnimationTimer;
@@ -68,7 +67,6 @@ typedef struct Player {
   float jumpBufferTimer;
   float shootCooldown;
   float wallSlideTimer;
-
   int hitPoints;
   int styleRow;
   int wallDirection;

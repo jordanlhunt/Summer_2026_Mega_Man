@@ -1,4 +1,5 @@
 #include "collision.h"
+#include "entity.h"
 #include "level.h"
 
 // ------------------------------------------------------------
@@ -95,8 +96,8 @@ static bool FindFirstOverlappingTile(const Level *level, float x, float y,
 // ------------------------------------------------------------
 // Iterative resolution along one axis
 // ------------------------------------------------------------
-void CollisionResolveTileAxis(AxisAlignedBoundingBox *boundingBox,
-                              const Level *level, bool isXAxis) {
+void CollisionResolveTileAxis(Entity *boundingBox, const Level *level,
+                              bool isXAxis) {
   const int MAX_ITERATIONS = 8;
   for (int iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
     int tileX, tileY;
