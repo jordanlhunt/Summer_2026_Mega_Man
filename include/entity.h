@@ -5,8 +5,6 @@
 
 /**
  * Base entity structure containing transform, physics, and lifetime state.
- * Embedded as the FIRST member in Player, LevelEnemy, and Projectile
- * to enable safe pointer casting: (Entity*)&anyPlayer
  */
 typedef struct Entity {
   float x;
@@ -16,6 +14,7 @@ typedef struct Entity {
   float velocityX;
   float velocityY;
   bool isActive;
+  bool isOnGround;
 } Entity;
 
 /**

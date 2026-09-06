@@ -1,4 +1,5 @@
 #include "entity.h"
+#include <stdbool.h>
 
 bool EntityOverlaps(const Entity *a, const Entity *b) {
   if (!a || !b) {
@@ -16,6 +17,7 @@ void EntityInitialize(Entity *entity, float x, float y, float width,
   entity->velocityX = 0.0f;
   entity->velocityY = 0.0f;
   entity->isActive = true;
+  entity->isOnGround = false;
 }
 
 void EntityMove(Entity *entity, float deltaTime) {
