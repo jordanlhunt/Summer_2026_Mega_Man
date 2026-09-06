@@ -2,9 +2,7 @@
 #define COLLISION_H
 #include "common.h"
 #include "config.h"
-
-typedef struct Level Level;
-
+#include "forwarddeclares.h"
 typedef struct AxisAlignedBoundingBox {
   float x;
   float y;

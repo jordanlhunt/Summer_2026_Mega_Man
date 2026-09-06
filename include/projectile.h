@@ -1,14 +1,13 @@
 #ifndef PROJECTILE_H
 #define PROJECTILE_H
+#include "collision.h"
 #include "common.h"
 #include "config.h"
 #include "entity.h"
+#include "forwarddeclares.h"
 
-#include "collision.h"
-#include "input.h"
 #include "level.h"
 #include "levelEnemy.h"
-#include "player.h"
 
 #define MAX_PROJECTILES 16
 #define PROJECTILE_WIDTH 11.0f
@@ -18,10 +17,6 @@
 #define PROJECTILE_COOLDOWN 0.22f
 #define PROJECTILE_SUBSTEP_SIZE (TILE_SIZE * 0.5f)
 #define PROJECTILE_MUZZLE_OFFSET_Y 7.0f
-typedef struct Level Level;
-typedef struct Player Player;
-typedef struct LevelEnemy LevelEnemy;
-typedef struct Input Input;
 typedef struct Projectile {
   float lifeTimer;
   Entity entity;

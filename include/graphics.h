@@ -3,8 +3,7 @@
 #include "common.h"
 #include "config.h"
 
-typedef struct Player Player;
-typedef struct Level Level;
+#include "forwarddeclares.h"
 
 typedef struct Camera {
   float x;

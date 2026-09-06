@@ -5,9 +5,7 @@
 #include "common.h"
 #include "config.h"
 #include "entity.h"
-
-typedef struct Input Input;
-typedef struct Level Level;
+#include "forwarddeclares.h"
 
 /* Tuning constants */
 #define AIR_ACCELERATION 12.0f
