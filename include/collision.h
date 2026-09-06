@@ -3,6 +3,7 @@
 #include "common.h"
 #include "config.h"
 #include "forwarddeclares.h"
+
 typedef struct AxisAlignedBoundingBox {
   float x;
   float y;

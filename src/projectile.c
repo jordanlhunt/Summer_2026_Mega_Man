@@ -3,8 +3,6 @@
 #include "entity.h"
 #include "level.h"
 #include "levelEnemy.h"
-#include <stdbool.h>
-
 bool ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
                      float originY, bool isFacingRight) {
   for (int i = 0; i < MAX_PROJECTILES; i++) {
@@ -33,7 +31,6 @@ bool ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
   }
   return false;
 }
-
 void ProjectileUpdateAll(Projectile projectiles[MAX_PROJECTILES], Level *level,
                          float deltaTime) {
   for (int i = 0; i < MAX_PROJECTILES; i++) {
@@ -67,7 +64,6 @@ void ProjectileUpdateAll(Projectile projectiles[MAX_PROJECTILES], Level *level,
     }
   }
 }
-
 void ProjectileRenderAll(const Projectile projectiles[MAX_PROJECTILES],
                          SDL_Renderer *renderer, float cameraX, float cameraY,
                          SDL_Texture *projectileTexture) {
@@ -83,10 +79,9 @@ void ProjectileRenderAll(const Projectile projectiles[MAX_PROJECTILES],
     SDL_RenderTexture(renderer, projectileTexture, NULL, &destinationRect);
   }
 }
-
 void ProjectileHandlePlayerShooting(Projectile projectiles[MAX_PROJECTILES],
-                                    Player *player, const Input *input) {
-  if (input->isShootJustPressed && player->shootCooldown <= 0.0f) {
+                                    Player *player, bool isShootJustPressed) {
+  if (isShootJustPressed && player->shootCooldown <= 0.0f) {
     float originY = player->entity.y + player->entity.height * 0.5f -
                     PROJECTILE_HEIGHT * 0.5f - PROJECTILE_MUZZLE_OFFSET_Y;
     float originX;
@@ -101,14 +96,8 @@ void ProjectileHandlePlayerShooting(Projectile projectiles[MAX_PROJECTILES],
     }
   }
 }
-
-void HandleProjectileEntityCollision(
-
-    Projectile projectiles[MAX_PROJECTILES],
-
-    LevelEnemy enemies[],
-
-    int enemyCount) {
+void HandleProjectileEntityCollision(Projectile projectiles[MAX_PROJECTILES],
+                                     LevelEnemy enemies[], int enemyCount) {
   for (int projectileIndex = 0; projectileIndex < MAX_PROJECTILES;
        projectileIndex++) {
     Projectile *projectile = &projectiles[projectileIndex];

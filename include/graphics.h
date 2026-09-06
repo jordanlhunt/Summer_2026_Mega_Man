@@ -2,7 +2,6 @@
 #define GRAPHICS_H
 #include "common.h"
 #include "config.h"
-
 #include "forwarddeclares.h"
 
 typedef struct Camera {

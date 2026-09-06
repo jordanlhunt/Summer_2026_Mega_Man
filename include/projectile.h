@@ -8,6 +8,7 @@
 
 #include "level.h"
 #include "levelEnemy.h"
+#include "player.h"
 
 #define MAX_PROJECTILES 16
 #define PROJECTILE_WIDTH 11.0f
@@ -46,7 +47,7 @@ void ProjectileRenderAll(const Projectile projectiles[MAX_PROJECTILES],
  * met.
  */
 void ProjectileHandlePlayerShooting(Projectile projectiles[MAX_PROJECTILES],
-                                    Player *player, const Input *input);
+                                    Player *player, bool isShootJustPressed);
 /**
  * Handles projectile collision from the player to a levelEnemy
  * TODO: Make this a general soultion for all projectiles

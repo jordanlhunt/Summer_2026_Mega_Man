@@ -111,7 +111,7 @@ void GameUpdate(Game *game, float deltaTime) {
   InputUpdate(&game->input);
   PlayerUpdate(&game->player, &game->input, &game->level, deltaTime);
   ProjectileHandlePlayerShooting(game->projectiles, &game->player,
-                                 &game->input);
+                                 game->input.isShootJustPressed);
   ProjectileUpdateAll(game->projectiles, &game->level, deltaTime);
   LevelEnemyUpdateAll(game->level.levelEnemies,
                       LevelGetEnemyCount(&game->level), deltaTime);
