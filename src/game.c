@@ -1,9 +1,11 @@
 #include "game.h"
+#include "assetmanager.h"
 #include "config.h"
 #include "graphics.h"
 #include "level.h"
 #include "levelEnemy.h"
 #include "projectile.h"
+#include <SDL3/SDL_log.h>
 #include <SDL3/SDL_render.h>
 bool GameInitialize(Game *game) {
   if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -28,37 +30,33 @@ bool GameInitialize(Game *game) {
   if (!SDL_SetRenderVSync(game->gameRenderer, 1)) {
     SDL_Log("Warning: VSync not enabled: %s", SDL_GetError());
   }
-  // Load sprite sheet
-  game->spriteSheetTexture =
-      GraphicsLoadSpriteSheet(game->gameRenderer, SARABOT_ASSET_PATH);
-  if (game->spriteSheetTexture == NULL) {
-    SDL_Log("Failed to load sprite sheet.");
+  // Load Assets
+  AssetManagerInitialize(&game->assetManager);
+  game->spriteSheetTexture = AssetManagerLoadTexture(
+      &game->assetManager, game->gameRenderer, SARABOT_ASSET_PATH);
+  if (!game->spriteSheetTexture) {
+    SDL_Log("Failed to load spritesheet texture");
+    AssetManagerShutdown(&game->assetManager);
     SDL_DestroyRenderer(game->gameRenderer);
     SDL_DestroyWindow(game->gameWindow);
-    SDL_Quit();
     return false;
   }
-  // Load projectile sprite
-  game->playerProjectileTexture =
-      GraphicsLoadSpriteSheet(game->gameRenderer, PLAYER_PROJECTILE_ASSET_PATH);
-  if (game->playerProjectileTexture == NULL) {
-    SDL_Log("Failed to load projectile sprite.");
-    SDL_DestroyTexture(game->spriteSheetTexture);
+  game->levelEnemyTexture = AssetManagerLoadTexture(
+      &game->assetManager, game->gameRenderer, BIG_PROPELLER_BOT_ASSET_PATH);
+  if (!game->levelEnemyTexture) {
+    SDL_Log("Failed to load spritesheet texture");
+    AssetManagerShutdown(&game->assetManager);
     SDL_DestroyRenderer(game->gameRenderer);
     SDL_DestroyWindow(game->gameWindow);
-    SDL_Quit();
     return false;
   }
-  // Load the level enemy texture
-  game->levelEnemyTexture =
-      GraphicsLoadSpriteSheet(game->gameRenderer, BIG_PROPELLER_BOT_ASSET_PATH);
-  if (game->levelEnemyTexture == NULL) {
-    SDL_Log("Failed to load Big Propeller sprite.");
-    SDL_DestroyTexture(game->spriteSheetTexture);
-    SDL_DestroyTexture(game->playerProjectileTexture);
+  game->playerProjectileTexture = AssetManagerLoadTexture(
+      &game->assetManager, game->gameRenderer, PLAYER_PROJECTILE_ASSET_PATH);
+  if (!game->playerProjectileTexture) {
+    SDL_Log("Failed to load player projectile texture");
+    AssetManagerShutdown(&game->assetManager);
     SDL_DestroyRenderer(game->gameRenderer);
     SDL_DestroyWindow(game->gameWindow);
-    SDL_Quit();
     return false;
   }
   game->player = (Player){.entity =
@@ -78,9 +76,8 @@ bool GameInitialize(Game *game) {
   if (!LevelLoadFromFile(&game->level, "assets/levels/testroom.txt")) {
     SDL_Log("Failed to load level file. %s", SDL_GetError());
     // Clean up anything created so far:
-    SDL_DestroyTexture(game->spriteSheetTexture);
-    SDL_DestroyTexture(game->playerProjectileTexture);
-    SDL_DestroyTexture(game->levelEnemyTexture);
+    SDL_Log("Failed to load level file. %s", SDL_GetError());
+    AssetManagerShutdown(&game->assetManager);
     SDL_DestroyRenderer(game->gameRenderer);
     SDL_DestroyWindow(game->gameWindow);
     SDL_Quit();

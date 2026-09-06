@@ -17,6 +17,7 @@ void AssetManagerInitialize(AssetManager *assetManager);
  * request. Returns NULL if loading fails or cache is full
  */
 SDL_Texture *AssetManagerLoadTexture(AssetManager *assetManager,
-                                     SDL_Renderer *renderer, const char *path);
+                                     SDL_Renderer *renderer,
+                                     const char *filePath);
 void AssetManagerShutdown(AssetManager *assetManager);
 #endif

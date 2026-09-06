@@ -1,6 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "assetmanager.h"
 #include "common.h"
 #include "config.h"
 #include "graphics.h"
@@ -22,6 +23,7 @@ typedef struct Game {
   Projectile projectiles[MAX_PROJECTILES];
   bool isRunning;
   Uint64 previousTime;
+  AssetManager assetManager;
 } Game;
 bool GameInitialize(Game *game);
 void GameShutdown(Game *game);

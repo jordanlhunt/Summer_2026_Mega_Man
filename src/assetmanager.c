@@ -6,7 +6,10 @@
 void AssetManagerInitialize(AssetManager *assetManager) {
   memset(assetManager, 0, sizeof(*assetManager));
 }
-
+/**
+ * AssetManagerLoad checks if the path is already loaded or loads it and stores
+ * it
+ */
 SDL_Texture *AssetManagerLoadTexture(AssetManager *assetManager,
                                      SDL_Renderer *renderer,
                                      const char *filePath) {
