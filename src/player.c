@@ -5,7 +5,7 @@
 #include "level.h"
 
 /**
- * If the bottom of the box has cross a one-wa platform (tile == '2')
+ * If the bottom of the box has cross a one-wa platform (tile == TILE_ONE_WAY)
  * while moving downward, snap the box onto the top of the tile. Returns true if
  * snap has occurred
  */
@@ -32,7 +32,7 @@ static bool IsSnappedToPlaform(AxisAlignedBoundingBox *boundingBox,
       continue;
     }
     unsigned char tile = LevelGetTile(level, tileX, tileY);
-    if (tile == 2) {
+    if (tile == TILE_ONE_WAY) {
       float tileTop = (float)(tileY * TILE_SIZE);
       if (playerCollisionBoxBottom >= tileTop) {
         boundingBox->y = tileTop - boundingBox->height;

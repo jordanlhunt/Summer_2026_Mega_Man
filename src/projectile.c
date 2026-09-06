@@ -1,6 +1,7 @@
 #include "projectile.h"
 #include "collision.h"
 #include "entity.h"
+#include "level.h"
 #include "levelEnemy.h"
 #include <stdbool.h>
 
@@ -59,8 +60,7 @@ void ProjectileUpdateAll(Projectile projectiles[MAX_PROJECTILES], Level *level,
         // Remove any breakable tiles (type 3) at the impact position
         CollisionRemoveTilesOfType(level, projectile->entity.x,
                                    projectile->entity.y, PROJECTILE_WIDTH,
-                                   PROJECTILE_HEIGHT,
-                                   3); // breakable tile type
+                                   PROJECTILE_HEIGHT, TILE_BREAKABLE);
         projectile->entity.isActive = false;
         break;
       }

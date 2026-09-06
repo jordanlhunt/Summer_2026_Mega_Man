@@ -133,9 +133,9 @@ void GraphicsRenderLevel(const Level *level, SDL_Renderer *renderer,
                         .y = y * TILE_SIZE - camera->y,
                         .w = TILE_SIZE,
                         .h = TILE_SIZE};
-      if (tileCharacter == 2) {
+      if (tileCharacter == TILE_ONE_WAY) {
         GraphicsDrawOneWayPlatformTile(renderer, tile);
-      } else if (tileCharacter == 3) {
+      } else if (tileCharacter == TILE_BREAKABLE) {
         GraphicsDrawBreakableTile(renderer, tile);
       } else {
         GraphicsDrawSolidTile(renderer, tile, level, x, y);
