@@ -71,6 +71,7 @@ typedef struct Player {
   int styleRow;
   int wallDirection;
   PlayerState currentPlayerState;
+  SDL_Texture *spriteSheetTexture;
 } Player;
 void PlayerUpdate(Player *player, const Input *input, const Level *level,
                   float deltaTime);

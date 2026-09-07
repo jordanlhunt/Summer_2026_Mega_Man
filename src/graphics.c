@@ -187,7 +187,7 @@ void GraphicsRenderLevel(const Level *level, SDL_Renderer *renderer,
 }
 
 void GraphicsRenderPlayer(const Player *player, SDL_Renderer *renderer,
-                          const Camera *camera, SDL_Texture *sheet) {
+                          const Camera *camera) {
   float drawX = floorf(player->entity.x - camera->x -
                        (SPRITE_WIDTH * 2.0f - player->entity.width) /
                            2.0f); // center horizontally
@@ -196,7 +196,7 @@ void GraphicsRenderPlayer(const Player *player, SDL_Renderer *renderer,
                         player->entity.height)); // align feet to hitbox bottom
   SDL_FRect destinationFRect = {drawX, drawY, SPRITE_WIDTH * 2.0f,
                                 SPRITE_HEIGHT * 2.0f};
-  if (sheet) {
+  if (player->spriteSheetTexture) {
     SDL_FRect sourceFRect = PlayerGetSourceRect(player);
     SDL_FlipMode flip;
     if (player->isFacingRight) {
@@ -222,15 +222,15 @@ void GraphicsRenderPlayer(const Player *player, SDL_Renderer *renderer,
           trailRect.x += offset;
         }
 
-        SDL_SetTextureAlphaMod(sheet, alphas[i]);
-        SDL_RenderTextureRotated(renderer, sheet, &sourceFRect, &trailRect, 0.0,
-                                 NULL, flip);
+        SDL_SetTextureAlphaMod(player->spriteSheetTexture, alphas[i]);
+        SDL_RenderTextureRotated(renderer, player->spriteSheetTexture,
+                                 &sourceFRect, &trailRect, 0.0, NULL, flip);
       }
       // Restore alpha for the main player sprite
-      SDL_SetTextureAlphaMod(sheet, 255);
+      SDL_SetTextureAlphaMod(player->spriteSheetTexture, 255);
     }
-    SDL_RenderTextureRotated(renderer, sheet, &sourceFRect, &destinationFRect,
-                             0.0, NULL, flip);
+    SDL_RenderTextureRotated(renderer, player->spriteSheetTexture, &sourceFRect,
+                             &destinationFRect, 0.0, NULL, flip);
   } else {
     /* Fallback so the game is still visible/debuggable without art. */
     SDL_FRect renderRect = {drawX, drawY, SPRITE_WIDTH * 2.0f,

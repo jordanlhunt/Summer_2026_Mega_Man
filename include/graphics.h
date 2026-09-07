@@ -23,6 +23,6 @@ void GraphicsClear(SDL_Renderer *renderer);
 void GraphicsRenderLevel(const Level *level, SDL_Renderer *renderer,
                          const Camera *camera);
 void GraphicsRenderPlayer(const Player *player, SDL_Renderer *renderer,
-                          const Camera *camera, SDL_Texture *sheet);
+                          const Camera *camera);
 void GraphicsPresent(SDL_Renderer *renderer);
 #endif

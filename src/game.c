@@ -59,20 +59,22 @@ bool GameInitialize(Game *game) {
     SDL_DestroyWindow(game->gameWindow);
     return false;
   }
-  game->gameWorld.player = (Player){.entity =
-                                        {
-                                            .x = 0,
-                                            .y = 0,
-                                            .width = 32,
-                                            .height = 40,
-                                            .velocityX = 0,
-                                            .velocityY = 0,
-                                            .isActive = true,
-                                        },
-                                    .isFacingRight = true,
-                                    .hitPoints = 16,
-                                    .styleRow = STYLE_NES,
-                                    .currentPlayerState = STATE_IDLE};
+  game->gameWorld.player =
+      (Player){.entity =
+                   {
+                       .x = 0,
+                       .y = 0,
+                       .width = 32,
+                       .height = 40,
+                       .velocityX = 0,
+                       .velocityY = 0,
+                       .isActive = true,
+                   },
+               .isFacingRight = true,
+               .hitPoints = 16,
+               .styleRow = STYLE_NES,
+               .currentPlayerState = STATE_IDLE,
+               .spriteSheetTexture = game->spriteSheetTexture};
   if (!GameWorldLoadLevel(&game->gameWorld, "assets/levels/testroom.txt")) {
     SDL_Log("Failed to load level file. %s", SDL_GetError());
     // Clean up anything created so far:
@@ -83,13 +85,8 @@ bool GameInitialize(Game *game) {
     SDL_Quit();
     return false;
   }
-  game->camera.x = 0;
-  game->camera.y = 0;
-  game->player.entity.x = game->level.playerSpawnX;
-  game->player.entity.y = game->level.playerSpawnY;
   game->isRunning = true;
   game->previousTime = SDL_GetTicks();
-  memset(game->projectiles, 0, sizeof(game->projectiles));
   InputInitialize(&game->input);
   return true;
 }
@@ -101,7 +98,7 @@ void GameShutdown(Game *game) {
   game->levelEnemyTexture = NULL;
   game->playerProjectileTexture = NULL;
   game->spriteSheetTexture = NULL;
-  LevelFree(&game->level);
+  GameWorldShutdown(&game->gameWorld);
   SDL_DestroyRenderer(game->gameRenderer);
   game->gameRenderer = NULL;
   SDL_DestroyWindow(game->gameWindow);
@@ -110,28 +107,11 @@ void GameShutdown(Game *game) {
 }
 void GameUpdate(Game *game, float deltaTime) {
   InputUpdate(&game->input);
-  PlayerUpdate(&game->player, &game->input, &game->level, deltaTime);
-  ProjectileHandlePlayerShooting(game->projectiles, &game->player,
-                                 game->input.isShootJustPressed);
-  ProjectileUpdateAll(game->projectiles, &game->level, deltaTime);
-  LevelEnemyUpdateAll(game->level.levelEnemies,
-                      LevelGetEnemyCount(&game->level), deltaTime);
-  HandleProjectileEntityCollision(game->projectiles, game->level.levelEnemies,
-                                  LevelGetEnemyCount(&game->level));
-  float targetCameraX = game->player.entity.x - SCREEN_WIDTH / 2.0f;
-  float targetCameraY = game->player.entity.y - SCREEN_HEIGHT / 2.0f;
-  CameraUpdate(&game->camera, targetCameraX, targetCameraY, &game->level,
-               deltaTime);
+  GameWorldUpdate(&game->gameWorld, &game->input, deltaTime);
 }
 void GameRender(Game *game) {
   GraphicsClear(game->gameRenderer);
-  GraphicsRenderLevel(&game->level, game->gameRenderer, &game->camera);
-  GraphicsRenderPlayer(&game->player, game->gameRenderer, &game->camera,
-                       game->spriteSheetTexture);
-  ProjectileRenderAll(game->projectiles, game->gameRenderer, game->camera.x,
-                      game->camera.y, game->playerProjectileTexture);
-  LevelEnemyRenderAll(game->level.levelEnemies,
-                      LevelGetEnemyCount(&game->level), game->gameRenderer,
-                      &game->camera, game->levelEnemyTexture);
+  GameWorldRender(&game->gameWorld, game->gameRenderer,
+                  game->playerProjectileTexture, game->levelEnemyTexture);
   GraphicsPresent(game->gameRenderer);
 }

@@ -37,11 +37,10 @@ void GameWorldUpdate(GameWorld *gameWorld, const Input *input,
                &gameWorld->level, deltaTime);
 }
 void GameWorldRender(const GameWorld *gameWorld, SDL_Renderer *renderer,
-                     SDL_Texture *playerTexture, SDL_Texture *projectileTexture,
+                     SDL_Texture *projectileTexture,
                      SDL_Texture *levelEnemyTexture) {
   GraphicsRenderLevel(&gameWorld->level, renderer, &gameWorld->camera);
-  GraphicsRenderPlayer(&gameWorld->player, renderer, &gameWorld->camera,
-                       playerTexture);
+  GraphicsRenderPlayer(&gameWorld->player, renderer, &gameWorld->camera);
   ProjectileRenderAll(gameWorld->projectiles, renderer, gameWorld->camera.x,
                       gameWorld->camera.y, projectileTexture);
   LevelEnemyRenderAll(gameWorld->level.levelEnemies,

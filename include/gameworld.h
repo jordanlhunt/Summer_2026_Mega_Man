@@ -34,6 +34,6 @@ void GameWorldUpdate(GameWorld *gameWorld, const Input *input, float deltaTime);
  * Renders the level, player, projectiles, and enemies in that order
  */
 void GameWorldRender(const GameWorld *gameWorld, SDL_Renderer *renderer,
-                     SDL_Texture *playerTexture, SDL_Texture *projectileTexture,
+                     SDL_Texture *projectileTexture,
                      SDL_Texture *levelEnemyTexture);
 #endif
