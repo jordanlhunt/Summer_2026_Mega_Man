@@ -19,8 +19,8 @@
 #define PROJECTILE_SUBSTEP_SIZE (TILE_SIZE * 0.5f)
 #define PROJECTILE_MUZZLE_OFFSET_Y 7.0f
 typedef struct Projectile {
-  float lifeTimer;
   Entity entity;
+  float lifeTimer;
 } Projectile;
 /**
  * Finds a free slot in the projectile pool and activates a projectile traveling
