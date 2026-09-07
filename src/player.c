@@ -6,6 +6,7 @@
 #include "level.h"
 #include <math.h>
 #include <stdbool.h>
+
 /**
  * If the bottom of the box has cross a one-wa platform (tile == TILE_ONE_WAY)
  * while moving downward, snap the box onto the top of the tile. Returns true if

@@ -2,6 +2,48 @@
 #include "level.h"
 #include "player.h"
 
+static SDL_FRect PlayerGetSourceRect(const Player *player) {
+  int frameColumn = 0;
+  int frameRow = player->styleRow;
+  float animationSpeed = 8.0f;
+  switch (player->currentPlayerState) {
+  case STATE_IDLE:
+    frameColumn = ANIMATION_IDLE_1;
+    break;
+  case STATE_RUNNING:
+    animationSpeed = 12.0f;
+    frameColumn = ((int)(player->animationTimer * animationSpeed) % 6);
+    frameRow = player->styleRow + 1;
+    break;
+  case STATE_JUMPING:
+    frameColumn = ANIMATION_JUMP;
+    break;
+  case STATE_FALLING:
+    frameColumn = ANIMATION_JUMP;
+    break;
+  case STATE_WALL_SLIDING:
+    frameColumn = ANIMATION_TURN;
+    break;
+  case STATE_DASHING:
+  case STATE_SLIDING:
+    frameColumn = 6;
+    frameRow = player->styleRow + 1;
+    break;
+  }
+  if (player->shootAnimationTimer > 0.0f) {
+    frameRow = player->styleRow;
+    float elapsedShootTime =
+        SHOOT_ANIMATION_DURATION - player->shootAnimationTimer;
+    if (elapsedShootTime < SHOOT_FLASH_DURATION) {
+      frameColumn = ANIMATION_SHOOT_FLASH;
+    } else {
+      frameColumn = ANIMATION_SHOOT_END;
+    }
+  }
+  return (SDL_FRect){frameColumn * SPRITE_WIDTH, frameRow * SPRITE_HEIGHT,
+                     SPRITE_WIDTH, SPRITE_HEIGHT};
+}
+
 static void GraphicsGetVisibleTileRange(const Level *level,
                                         const Camera *camera, int *outStartX,
                                         int *outStartY, int *outEndX,
@@ -155,51 +197,7 @@ void GraphicsRenderPlayer(const Player *player, SDL_Renderer *renderer,
   SDL_FRect destinationFRect = {drawX, drawY, SPRITE_WIDTH * 2.0f,
                                 SPRITE_HEIGHT * 2.0f};
   if (sheet) {
-    int frameColumn = 0;
-    int frameRow = player->styleRow;
-    float animationSpeed = 8.0f;
-    switch (player->currentPlayerState) {
-    case STATE_IDLE:
-      frameColumn = ANIMATION_IDLE_1;
-      break;
-    case STATE_RUNNING:
-      animationSpeed = 12.0f;
-      frameColumn = ((int)(player->animationTimer * animationSpeed) % 6);
-      frameRow = player->styleRow + 1;
-      break;
-    case STATE_JUMPING:
-      frameColumn = ANIMATION_JUMP;
-      break;
-    case STATE_FALLING:
-      frameColumn = ANIMATION_JUMP;
-      break;
-    case STATE_WALL_SLIDING:
-      frameColumn = ANIMATION_TURN;
-      break;
-    case STATE_DASHING:
-    case STATE_SLIDING:
-      frameColumn = 6;
-      frameRow = player->styleRow + 1;
-      break;
-    }
-    /**
-     * Shooting temporarily overrides the movement animation
-     * shooting frames are on the first row of each style blook
-     */
-    if (player->shootAnimationTimer > 0.0f) {
-      frameRow = player->styleRow;
-      float elpasedShootTime =
-          SHOOT_ANIMATION_DURATION - player->shootAnimationTimer;
-      if (elpasedShootTime < SHOOT_FLASH_DURATION) {
-        frameColumn = ANIMATION_SHOOT_FLASH;
-      } else {
-        frameColumn = ANIMATION_SHOOT_END;
-      }
-    }
-
-    SDL_FRect sourceFRect = {frameColumn * SPRITE_WIDTH,
-                             frameRow * SPRITE_HEIGHT, SPRITE_WIDTH,
-                             SPRITE_HEIGHT};
+    SDL_FRect sourceFRect = PlayerGetSourceRect(player);
     SDL_FlipMode flip;
     if (player->isFacingRight) {
       flip = SDL_FLIP_NONE;
