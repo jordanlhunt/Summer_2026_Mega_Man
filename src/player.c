@@ -1,10 +1,11 @@
 #include "player.h"
-
 #include "collision.h"
+#include "config.h"
 #include "entity.h"
 #include "input.h"
 #include "level.h"
-
+#include <math.h>
+#include <stdbool.h>
 /**
  * If the bottom of the box has cross a one-wa platform (tile == TILE_ONE_WAY)
  * while moving downward, snap the box onto the top of the tile. Returns true if
@@ -26,7 +27,6 @@ static bool IsSnappedToPlatform(Entity *boundingBox, float originalY,
   // frame
   int startTileY = (int)floorf(originalBottom / TILE_SIZE);
   int endTileY = (int)floorf(playerCollisionBoxBottom / TILE_SIZE);
-
   // Iterate through all tiles to prevent tunneling
   for (int tileY = startTileY; tileY <= endTileY; tileY++) {
     if (tileY < 0 || tileY >= level->height) {
@@ -45,7 +45,6 @@ static bool IsSnappedToPlatform(Entity *boundingBox, float originalY,
   }
   return false;
 }
-
 static void DecreaseTimer(float *timer, float deltaTime) {
   if (*timer > 0.0f) {
     *timer -= deltaTime;
@@ -54,7 +53,6 @@ static void DecreaseTimer(float *timer, float deltaTime) {
     }
   }
 }
-
 /* Integrates velocity into position and resolves tile collisions on both
  * axes. Uses entity fields for position and velocity. */
 static void PlayerMoveAndResolve(Player *player, const Level *level,
@@ -67,11 +65,8 @@ static void PlayerMoveAndResolve(Player *player, const Level *level,
   CollisionResolveTileAxis(&player->entity, level, false);
   IsSnappedToPlatform(&player->entity, originalY, level);
 }
-
-void PlayerUpdate(Player *player, const Input *input, const Level *level,
-                  float deltaTime) {
-  PlayerState previousPlayerState = player->currentPlayerState;
-
+static void PlayerUpdateTimers(Player *player, const Input *input,
+                               float deltaTime) {
   /* ----- Cooldowns and Timers  ----------------------------------------- */
   DecreaseTimer(&player->dashCooldown, deltaTime);
   DecreaseTimer(&player->shootCooldown, deltaTime);
@@ -82,18 +77,22 @@ void PlayerUpdate(Player *player, const Input *input, const Level *level,
   } else {
     DecreaseTimer(&player->coyoteTimer, deltaTime);
   }
-
-  /* ----- Jump buffer and coyote timer --------------------------------- */
   if (input->isJumpJustPressed) {
     player->jumpBufferTimer = JUMP_BUFFER_TIME;
   }
-
-  /* ----- Dash handling (state overrides normal movement) -------------- */
+}
+/**
+ * Starts a dash if conditions are met, and advances an in-progress dash.
+ * Returns if the dash consumed this frame's update - the caller should return
+ * immediately without running normal movement/jump/gravity
+ */
+static bool PlayerHandleDash(Player *player, const Input *input,
+                             const Level *level, float deltaTime) {
   if (input->isDashJustPressed && player->dashCooldown <= 0.0f &&
       !player->isDashing && player->entity.isOnGround) {
     player->isDashing = true;
     player->dashTimer = DASH_DURATION;
-    player->dashCooldown = DASH_COOLDOWN;
+    player->dashTimer = DASH_COOLDOWN;
     if (player->isFacingRight) {
       player->entity.velocityX = DASH_SPEED;
     } else {
@@ -102,36 +101,39 @@ void PlayerUpdate(Player *player, const Input *input, const Level *level,
     player->entity.velocityY = 0.0f;
     player->currentPlayerState = STATE_DASHING;
   }
-  if (player->isDashing) {
-    DecreaseTimer(&player->dashTimer, deltaTime);
-    if (player->dashTimer <= 0.0f) {
-      player->isDashing = false;
-      player->entity.velocityX *= 0.3f;
-    } else {
-      player->entity.velocityY += GRAVITY * deltaTime * DASH_GRAVITY_SCALE;
-      if (player->entity.velocityY > MAX_FALL_SPEED) {
-        player->entity.velocityY = MAX_FALL_SPEED;
-      }
-      PlayerMoveAndResolve(player, level, deltaTime);
-      player->currentPlayerState = STATE_DASHING;
-      player->animationTimer += deltaTime;
-      return;
-    }
+  if (!player->isDashing) {
+    return false;
   }
-
-  /* ----- Normal movement (only when not dashing) ----------------------- */
+  DecreaseTimer(&player->dashTimer, deltaTime);
+  if (player->dashTimer <= 0.0f) {
+    player->isDashing = false;
+    player->entity.velocityX *= .3f;
+    return false;
+  }
+  player->entity.velocityY += GRAVITY * deltaTime * DASH_GRAVITY_SCALE;
+  if (player->entity.velocityY > MAX_FALL_SPEED) {
+    player->entity.velocityY = MAX_FALL_SPEED;
+  }
+  PlayerMoveAndResolve(player, level, deltaTime);
+  player->animationTimer += deltaTime;
+  return true;
+}
+static void PlayerHandleGroundToAirMovement(Player *player, const Input *input,
+                                            float deltaTime) {
   float targetVelocityX = 0.0f;
   if (input->moveLeft) {
     targetVelocityX = -PLAYER_SPEED;
-    if (!player->isWallSliding)
+    if (!player->isWallSliding) {
       player->isFacingRight = false;
+    }
   }
   if (input->moveRight) {
     targetVelocityX = PLAYER_SPEED;
-    if (!player->isWallSliding)
+    if (!player->isWallSliding) {
       player->isFacingRight = true;
+    }
   }
-  float acceleration;
+  float acceleration = 0.0f;
   if (player->entity.isOnGround) {
     acceleration = GROUND_ACCELERATION;
   } else {
@@ -139,8 +141,9 @@ void PlayerUpdate(Player *player, const Input *input, const Level *level,
   }
   player->entity.velocityX +=
       (targetVelocityX - player->entity.velocityX) * acceleration * deltaTime;
-
-  /* ----- Wall sliding detection ----------------------------------------- */
+}
+static void PlayerHandleWallSlide(Player *player, const Input *input,
+                                  const Level *level, float deltaTime) {
   player->isWallSliding = false;
   player->canWallJump = false;
   player->wallDirection = 0;
@@ -168,18 +171,16 @@ void PlayerUpdate(Player *player, const Input *input, const Level *level,
   } else {
     player->wallSlideTimer = 0.0f;
   }
-
-  /* ----- Jumping (normal) ------------------------------------------------ */
+}
+static void PlayerHandleJump(Player *player, const Input *input) {
   if (player->jumpBufferTimer > 0.0f &&
-      (player->isOnGround || player->coyoteTimer > 0.0f)) {
+      (player->entity.isOnGround || player->coyoteTimer > 0.0f)) {
     player->entity.velocityY = -JUMP_FORCE;
     player->jumpBufferTimer = 0.0f;
     player->coyoteTimer = 0.0f;
-    player->isOnGround = false;
+    player->entity.isOnGround = false;
     player->currentPlayerState = STATE_JUMPING;
   }
-
-  /* ----- Wall jump --------------------------------------------------------*/
   if (player->jumpBufferTimer > 0.0f && player->canWallJump) {
     player->entity.velocityY = -WALL_JUMP_FORCE_Y;
     player->entity.velocityX = -player->wallDirection * WALL_JUMP_FORCE_X;
@@ -189,14 +190,12 @@ void PlayerUpdate(Player *player, const Input *input, const Level *level,
     player->currentPlayerState = STATE_JUMPING;
     player->isFacingRight = (player->entity.velocityX > 0.0f);
   }
-
-  /* ----- Variable jump height ---------------------------------------------*/
   if (!input->jumpDown && player->entity.velocityY < VARIABLE_JUMP_THRESHOLD &&
       !player->isWallSliding) {
     player->entity.velocityY *= VARIABLE_JUMP_MULTIPLIER;
   }
-
-  /* ----- Gravity ----------------------------------------------------------*/
+}
+static void PlayerApplyGravity(Player *player, float deltaTime) {
   if (!player->isWallSliding) {
     player->entity.velocityY += GRAVITY * deltaTime;
   } else {
@@ -205,16 +204,15 @@ void PlayerUpdate(Player *player, const Input *input, const Level *level,
   if (player->entity.velocityY > MAX_FALL_SPEED) {
     player->entity.velocityY = MAX_FALL_SPEED;
   }
-
-  /* ----- Move and resolve collisions --------------------------------------*/
-  PlayerMoveAndResolve(player, level, deltaTime);
-
-  /* ----- Update animation state -------------------------------------------*/
+}
+static void PlayerUpdateAnimationState(Player *player,
+                                       PlayerState previousPlayerState,
+                                       float deltaTime) {
   if (player->isDashing) {
     player->currentPlayerState = STATE_DASHING;
   } else if (player->isWallSliding) {
     player->currentPlayerState = STATE_WALL_SLIDING;
-  } else if (!player->isOnGround) {
+  } else if (!player->entity.isOnGround) {
     if (player->entity.velocityY < 0) {
       player->currentPlayerState = STATE_JUMPING;
     } else {
@@ -225,10 +223,22 @@ void PlayerUpdate(Player *player, const Input *input, const Level *level,
   } else {
     player->currentPlayerState = STATE_IDLE;
   }
-
-  // Reset animationTimer on state change
   if (player->currentPlayerState != previousPlayerState) {
     player->animationTimer = 0.0f;
   }
   player->animationTimer += deltaTime;
+}
+void PlayerUpdate(Player *player, const Input *input, const Level *level,
+                  float deltaTime) {
+  PlayerState previousPlayerState = player->currentPlayerState;
+  PlayerUpdateTimers(player, input, deltaTime);
+  if (PlayerHandleDash(player, input, level, deltaTime)) {
+    return;
+  }
+  PlayerHandleGroundToAirMovement(player, input, deltaTime);
+  PlayerHandleWallSlide(player, input, level, deltaTime);
+  PlayerHandleJump(player, input);
+  PlayerApplyGravity(player, deltaTime);
+  PlayerMoveAndResolve(player, level, deltaTime);
+  PlayerUpdateAnimationState(player, previousPlayerState, deltaTime);
 }
