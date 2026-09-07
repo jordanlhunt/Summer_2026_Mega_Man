@@ -2,6 +2,7 @@
 #include "assetmanager.h"
 #include "common.h"
 #include "config.h"
+#include "gameworld.h"
 #include "graphics.h"
 #include "level.h"
 #include "levelEnemy.h"
@@ -58,21 +59,21 @@ bool GameInitialize(Game *game) {
     SDL_DestroyWindow(game->gameWindow);
     return false;
   }
-  game->player = (Player){.entity =
-                              {
-                                  .x = 0,
-                                  .y = 0,
-                                  .width = 32,
-                                  .height = 40,
-                                  .velocityX = 0,
-                                  .velocityY = 0,
-                                  .isActive = true,
-                              },
-                          .isFacingRight = true,
-                          .hitPoints = 16,
-                          .styleRow = STYLE_NES,
-                          .currentPlayerState = STATE_IDLE};
-  if (!LevelLoadFromFile(&game->level, "assets/levels/testroom.txt")) {
+  game->gameWorld.player = (Player){.entity =
+                                        {
+                                            .x = 0,
+                                            .y = 0,
+                                            .width = 32,
+                                            .height = 40,
+                                            .velocityX = 0,
+                                            .velocityY = 0,
+                                            .isActive = true,
+                                        },
+                                    .isFacingRight = true,
+                                    .hitPoints = 16,
+                                    .styleRow = STYLE_NES,
+                                    .currentPlayerState = STATE_IDLE};
+  if (!GameWorldLoadLevel(&game->gameWorld, "assets/levels/testroom.txt")) {
     SDL_Log("Failed to load level file. %s", SDL_GetError());
     // Clean up anything created so far:
     SDL_Log("Failed to load level file. %s", SDL_GetError());

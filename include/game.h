@@ -4,26 +4,23 @@
 #include "assetmanager.h"
 #include "common.h"
 #include "config.h"
+#include "gameworld.h"
 #include "graphics.h"
 #include "input.h"
 #include "level.h"
 #include "player.h"
 #include "projectile.h"
-
 typedef struct Game {
   SDL_Window *gameWindow;
   SDL_Renderer *gameRenderer;
+  AssetManager assetManager;
   SDL_Texture *spriteSheetTexture;
   SDL_Texture *playerProjectileTexture;
   SDL_Texture *levelEnemyTexture;
-  Player player;
-  Level level;
-  Camera camera;
+  GameWorld gameWorld;
   Input input;
-  Projectile projectiles[MAX_PROJECTILES];
   bool isRunning;
   Uint64 previousTime;
-  AssetManager assetManager;
 } Game;
 bool GameInitialize(Game *game);
 void GameShutdown(Game *game);
