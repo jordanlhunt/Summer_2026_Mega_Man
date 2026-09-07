@@ -1,6 +1,7 @@
 #include "player.h"
 
 #include "collision.h"
+#include "entity.h"
 #include "input.h"
 #include "level.h"
 
@@ -9,8 +10,8 @@
  * while moving downward, snap the box onto the top of the tile. Returns true if
  * snap has occurred
  */
-static bool IsSnappedToPlaform(AxisAlignedBoundingBox *boundingBox,
-                               float originalY, const Level *level) {
+static bool IsSnappedToPlatform(Entity *boundingBox, float originalY,
+                                const Level *level) {
   if (boundingBox->velocityY < 0.0f) {
     return false;
   }
@@ -64,7 +65,7 @@ static void PlayerMoveAndResolve(Player *player, const Level *level,
   CollisionResolveTileAxis(&player->entity, level, true);
   player->entity.y += player->entity.velocityY * deltaTime;
   CollisionResolveTileAxis(&player->entity, level, false);
-  IsSnappedToPlaform(&player->entity, originalY, level);
+  IsSnappedToPlatform(&player->entity, originalY, level);
 }
 
 void PlayerUpdate(Player *player, const Input *input, const Level *level,
@@ -76,7 +77,7 @@ void PlayerUpdate(Player *player, const Input *input, const Level *level,
   DecreaseTimer(&player->shootCooldown, deltaTime);
   DecreaseTimer(&player->jumpBufferTimer, deltaTime);
   DecreaseTimer(&player->shootAnimationTimer, deltaTime);
-  if (player->isOnGround) {
+  if (player->entity.isOnGround) {
     player->coyoteTimer = COYOTE_TIME;
   } else {
     DecreaseTimer(&player->coyoteTimer, deltaTime);
@@ -131,7 +132,7 @@ void PlayerUpdate(Player *player, const Input *input, const Level *level,
       player->isFacingRight = true;
   }
   float acceleration;
-  if (player->isOnGround) {
+  if (player->entity.isOnGround) {
     acceleration = GROUND_ACCELERATION;
   } else {
     acceleration = AIR_ACCELERATION;
@@ -143,7 +144,7 @@ void PlayerUpdate(Player *player, const Input *input, const Level *level,
   player->isWallSliding = false;
   player->canWallJump = false;
   player->wallDirection = 0;
-  if (!player->isOnGround && player->entity.velocityY > 0.0f) {
+  if (!player->entity.isOnGround && player->entity.velocityY > 0.0f) {
     bool isWallOnLeft = CollisionCheckWallLeft(
         level, player->entity.x, player->entity.y, player->entity.height);
     bool isWallOnRight =
