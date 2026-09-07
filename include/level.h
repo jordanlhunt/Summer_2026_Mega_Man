@@ -24,6 +24,16 @@ typedef enum TILETYPE {
   TILE_ENEMY_SPAWN = 7
 } TILETYPE;
 
+typedef struct LevelParseState {
+  unsigned char *tiles;
+  int width;
+  LevelEnemy *levelEnemies;
+  int *levelEnemiesCount;
+  bool *spawnPlayerFound;
+  float *playerSpawnX;
+  float *playerSpawnY;
+} LevelParseState;
+
 /**
  * Loads a level from a text file into `level`. On failure, `level` is left
  * untouched (any tiles it already owned are freed first, but no partial data is
