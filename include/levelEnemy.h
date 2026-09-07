@@ -3,9 +3,7 @@
 
 #include "common.h"
 #include "entity.h"
-
-typedef struct Level Level;
-typedef struct Camera Camera;
+#include "forwarddeclares.h"
 
 typedef enum LevelEnemyState {
   LEVELENEMY_STATE_GROUNDED,

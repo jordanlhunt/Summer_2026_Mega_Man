@@ -93,7 +93,7 @@ static bool PlayerHandleDash(Player *player, const Input *input,
       !player->isDashing && player->entity.isOnGround) {
     player->isDashing = true;
     player->dashTimer = DASH_DURATION;
-    player->dashTimer = DASH_COOLDOWN;
+    player->dashCooldown = DASH_COOLDOWN;
     if (player->isFacingRight) {
       player->entity.velocityX = DASH_SPEED;
     } else {

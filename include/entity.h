@@ -23,12 +23,6 @@ typedef struct Entity {
 bool EntityOverlaps(const Entity *a, const Entity *b);
 
 /**
- * Initialize entity with common defaults.
- */
-void EntityInitialize(Entity *entity, float x, float y, float width,
-                      float height);
-
-/**
  * Move entity by its velocity, with optional deltaTime scaling.
  */
 void EntityMove(Entity *entity, float deltaTime);

@@ -1,6 +1,17 @@
 #include "level.h"
 #include "config.h"
 #include "levelEnemy.h"
+
+typedef struct LevelParseState {
+  unsigned char *tiles;
+  int width;
+  LevelEnemy *levelEnemies;
+  int *levelEnemiesCount;
+  bool *spawnPlayerFound;
+  float *playerSpawnX;
+  float *playerSpawnY;
+} LevelParseState;
+
 static bool LevelParseTileChar(LevelParseState *state, char fileCharacter,
                                int x, int y, const char *filePath) {
   if (fileCharacter != '0' && fileCharacter != '1' && fileCharacter != '2' &&
@@ -122,12 +133,7 @@ int LevelGetEnemyCount(const Level *level) {
     return 0;
   }
 }
-const LevelEnemy *LevelGetEnemyAt(Level *level, int index) {
-  if (!level || index < 0 || index >= level->levelEnemiesCount) {
-    return NULL;
-  }
-  return &level->levelEnemies[index];
-}
+
 bool LevelAddEnemy(Level *level, float x, float y,
                    LevelEnemyState initialState) {
   if (level == NULL) {
@@ -185,7 +191,4 @@ unsigned char LevelGetTile(const Level *level, int tileX, int tileY) {
     return 0;
   }
   return level->tiles[tileY * level->width + tileX];
-}
-bool LevelIsSolidTile(const Level *level, int tileX, int tileY) {
-  return LevelGetTile(level, tileX, tileY) != 0;
 }

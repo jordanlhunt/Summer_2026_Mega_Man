@@ -6,14 +6,6 @@
 #include "forwarddeclares.h"
 
 /**
- * Returns true if two AABBs overlap
- */
-bool CollisionAABBBoxOverlap(float x1, float y1, float width1, float height1,
-                             float x2, float y2, float width2, float height2);
-
-bool CollisionIsSolidTile(const Level *level, int tileX, int tileY);
-
-/**
  * Checks if a line of tiles along a single row or column contains any solid
  * tile. If isVerticalLine is true, edgeTile is the X coordinate,
  * startTile/endTile are Y coordinates. If false, edgeTile is the Y coordinate,

@@ -24,16 +24,6 @@ typedef enum TILETYPE {
   TILE_ENEMY_SPAWN = 7
 } TILETYPE;
 
-typedef struct LevelParseState {
-  unsigned char *tiles;
-  int width;
-  LevelEnemy *levelEnemies;
-  int *levelEnemiesCount;
-  bool *spawnPlayerFound;
-  float *playerSpawnX;
-  float *playerSpawnY;
-} LevelParseState;
-
 /**
  * Loads a level from a text file into `level`. On failure, `level` is left
  * untouched (any tiles it already owned are freed first, but no partial data is
@@ -46,7 +36,7 @@ void LevelFree(Level *level);
  * Encapsulated enemy access
  */
 int LevelGetEnemyCount(const Level *level);
-const LevelEnemy *LevelGetEnemyAt(Level *level, int index);
+
 bool LevelAddEnemy(Level *level, float x, float y,
                    LevelEnemyState initialState);
 int LevelGetWidth(const Level *level);
@@ -59,5 +49,5 @@ float LevelGetPlayerSpawnX(const Level *level);
 float LevelGetPlayerSpawnY(const Level *level);
 
 unsigned char LevelGetTile(const Level *level, int tileX, int tileY);
-bool LevelIsSolidTile(const Level *level, int tileX, int tileY);
+
 #endif
