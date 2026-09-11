@@ -14,15 +14,18 @@ typedef struct Input {
   bool wasJumpKeyDown;
   bool wasDashKeyDown;
   bool wasShootKeyDown;
+  bool wasUseKeyDown;
   bool isJumpJustPressed;
   bool isDashJustPressed;
   bool isShootJustPressed;
+  bool isUseJustPressed;
   // Derived recomputed every call in InputUpate()
   bool moveLeft;
   bool moveRight;
   bool jumpDown;
   bool dashDown;
   bool shootDown;
+  bool useDown;
 } Input;
 
 void InputInitialize(Input *input);

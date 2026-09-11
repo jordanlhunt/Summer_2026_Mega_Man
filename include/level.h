@@ -4,6 +4,9 @@
 #include "config.h"
 #include "levelEnemy.h"
 #define MAX_LEVEL_ENEMIES 7
+#define MAX_DOORS 8
+#define MAX_LEVEL_PATH_LENGTH 128
+
 typedef struct Level {
   int width;
   int height;

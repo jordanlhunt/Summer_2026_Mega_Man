@@ -28,4 +28,7 @@ void InputUpdate(Input *input) {
   input->wasJumpKeyDown = input->jumpDown;
   input->wasDashKeyDown = input->dashDown;
   input->wasShootKeyDown = input->shootDown;
+  input->useDown = input->keys[SDL_SCANCODE_E];
+  input->isUseJustPressed = input->useDown && !input->wasUseKeyDown;
+  input->wasUseKeyDown = input->useDown;
 }
