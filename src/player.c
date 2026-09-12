@@ -8,9 +8,9 @@
 #include <stdbool.h>
 
 /**
- * If the bottom of the box has cross a one-wa platform (tile == TILE_ONE_WAY)
- * while moving downward, snap the box onto the top of the tile. Returns true if
- * snap has occurred
+ * If the bottom of the player's boundingBox has cross a one-way platform (tile
+ * == TILE_ONE_WAY) while moving downward, snap the box onto the top of the
+ * tile. Returns true if snap has occurred
  */
 static bool IsSnappedToPlatform(Entity *boundingBox, float originalY,
                                 const Level *level) {
@@ -19,30 +19,42 @@ static bool IsSnappedToPlatform(Entity *boundingBox, float originalY,
   }
   float playerCollisionBoxBottom = boundingBox->y + boundingBox->height;
   float originalBottom = originalY + boundingBox->height;
-  int tileX =
-      (int)floorf((boundingBox->x + boundingBox->width * .5f) / TILE_SIZE);
-  if (tileX < 0 || tileX >= level->width) {
-    return false;
-  }
-  // Calculate the range of tiles the player's bottom has passed through this
-  // frame
+  int startTileX = (int)floorf(boundingBox->x / TILE_SIZE);
+  int endTileX =
+      (int)floorf((boundingBox->x + boundingBox->width - 0.01f) / TILE_SIZE);
   int startTileY = (int)floorf(originalBottom / TILE_SIZE);
   int endTileY = (int)floorf(playerCollisionBoxBottom / TILE_SIZE);
-  // Iterate through all tiles to prevent tunneling
-  for (int tileY = startTileY; tileY <= endTileY; tileY++) {
-    if (tileY < 0 || tileY >= level->height) {
+  bool isFound = false;
+  int bestTileY = 0;
+  for (int tileX = startTileX; tileX <= endTileX; tileX++) {
+    if (tileX < 0 || tileX >= level->width) {
       continue;
     }
-    unsigned char tile = LevelGetTile(level, tileX, tileY);
-    if (tile == TILE_ONE_WAY) {
-      float tileTop = (float)(tileY * TILE_SIZE);
-      if (playerCollisionBoxBottom >= tileTop) {
-        boundingBox->y = tileTop - boundingBox->height;
-        boundingBox->isOnGround = true;
-        boundingBox->velocityY = 0.0f;
-        return true;
+    for (int tileY = startTileY; tileY <= endTileY; tileY++) {
+      if (tileY < 0 || tileY >= level->height) {
+        continue;
+      }
+      unsigned char tile = LevelGetTile(level, tileX, tileY);
+      if (tile == TILE_ONE_WAY) {
+        float tileTop = (float)(tileY * TILE_SIZE);
+        if (playerCollisionBoxBottom >= tileTop) {
+          if (isFound == false) {
+            isFound = true;
+            bestTileY = tileY;
+
+          } else if (tileY < bestTileY) {
+            bestTileY = tileY;
+          }
+        }
       }
     }
+  }
+  if (isFound) {
+    float tileTop = (float)(bestTileY * TILE_SIZE);
+    boundingBox->y = tileTop - boundingBox->height;
+    boundingBox->isOnGround = true;
+    boundingBox->velocityY = 0.0f;
+    return true;
   }
   return false;
 }
@@ -165,8 +177,6 @@ static void PlayerHandleWallSlide(Player *player, const Input *input,
     }
   }
   if (player->isWallSliding) {
-    player->entity.velocityY =
-        fminf(player->entity.velocityY, WALL_SLIDE_SPEED);
     player->wallSlideTimer += deltaTime;
     player->canWallJump = true;
   } else {
@@ -204,6 +214,9 @@ static void PlayerApplyGravity(Player *player, float deltaTime) {
   }
   if (player->entity.velocityY > MAX_FALL_SPEED) {
     player->entity.velocityY = MAX_FALL_SPEED;
+  }
+  if (player->isWallSliding && player->entity.velocityY > WALL_SLIDE_SPEED) {
+    player->entity.velocityY = WALL_SLIDE_SPEED;
   }
 }
 static void PlayerUpdateAnimationState(Player *player,

@@ -77,8 +77,6 @@ bool GameInitialize(Game *game) {
                .spriteSheetTexture = game->spriteSheetTexture};
   if (!GameWorldLoadLevel(&game->gameWorld, "assets/levels/testroom.txt")) {
     SDL_Log("Failed to load level file. %s", SDL_GetError());
-    // Clean up anything created so far:
-    SDL_Log("Failed to load level file. %s", SDL_GetError());
     AssetManagerShutdown(&game->assetManager);
     SDL_DestroyRenderer(game->gameRenderer);
     SDL_DestroyWindow(game->gameWindow);

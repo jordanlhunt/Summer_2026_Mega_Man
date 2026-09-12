@@ -28,6 +28,9 @@ SDL_Texture *AssetManagerLoadTexture(AssetManager *assetManager,
   }
   strncpy(assetManager->texturePaths[assetManager->numberOfAssets], filePath,
           MAX_ASSET_PATH_LENGTH - 1);
+  assetManager
+      ->texturePaths[assetManager->numberOfAssets][MAX_ASSET_PATH_LENGTH - 1] =
+      '\0';
   assetManager->textures[assetManager->numberOfAssets] = texture;
   assetManager->numberOfAssets += 1;
   return texture;

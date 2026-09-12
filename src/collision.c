@@ -5,7 +5,7 @@
 // ------------------------------------------------------------
 // Basic tile collision
 // ------------------------------------------------------------
-bool CollisionIsSolidTile(const Level *level, int tileX, int tileY) {
+static bool CollisionIsSolidTile(const Level *level, int tileX, int tileY) {
   unsigned char tile = LevelGetTile(level, tileX, tileY);
   return (tile == TILE_SOLID || tile == TILE_BREAKABLE);
 }
