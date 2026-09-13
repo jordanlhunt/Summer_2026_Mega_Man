@@ -101,7 +101,7 @@ static bool LevelParseDoorTransitions(FILE *levelFile,
       }
     }
     if (!isMatched) {
-      SDL_Log("Door transition at (%d, %d) has matching door tile: %s",
+      SDL_Log("Door transition at (%d, %d) has no matching door tile: %s",
               doorTileX, doorTileY, filePath);
       return false;
     }
@@ -112,6 +112,59 @@ static bool LevelParseDoorTransitions(FILE *levelFile,
     return false;
   }
   return true;
+}
+
+static bool LevelReadDimensions(FILE *levelFile, int *outWidth, int *outHeight,
+                                const char *filePath) {
+  if (fscanf(levelFile, "%d %d", outWidth, outHeight) != 2) {
+    SDL_Log("Could not read level dimensions from %s", filePath);
+    return false;
+  }
+  if (*outWidth <= 0 || *outHeight <= 0) {
+    SDL_Log("Invalid level dimensions in %s: %d x %d", filePath, *outWidth,
+            *outHeight);
+    return false;
+  }
+  if ((size_t)*outWidth > SIZE_MAX / (size_t)*outHeight) {
+    SDL_Log("Level dimensions are too large: %s", filePath);
+    return false;
+  }
+  return true;
+}
+static bool LevelParseGrid(FILE *levelFile, LevelParseState *parseState,
+                           int width, int height, const char *filePath) {
+  for (int y = 0; y < height; y++) {
+    for (int x = 0; x < width; x++) {
+      char fileCharacter;
+      if (fscanf(levelFile, " %c", &fileCharacter) != 1) {
+        SDL_Log("Level ended early at tile (%d, %d): %s", x, y, filePath);
+        return false;
+      }
+      if (!LevelParseTileChar(parseState, fileCharacter, x, y, filePath)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+static void LevelCommitLoadedData(Level *level, unsigned char *tiles, int width,
+                                  int height, bool spawnFound, float spawnX,
+                                  float spawnY, const LevelEnemy newEnemies[],
+                                  int newEnemyCount,
+                                  const DoorTransition newDoors[],
+                                  int newDoorCount) {
+  free(level->tiles);
+  level->tiles = tiles;
+  level->width = width;
+  level->height = height;
+  level->hasPlayerSpawn = spawnFound;
+  level->playerSpawnX = spawnX;
+  level->playerSpawnY = spawnY;
+  memcpy(level->levelEnemies, newEnemies, sizeof(level->levelEnemies));
+  level->levelEnemiesCount = newEnemyCount;
+  memcpy(level->doors, newDoors, sizeof(level->doors));
+  level->doorCount = newDoorCount;
 }
 /**
  * End of Helper functions
@@ -132,24 +185,13 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
     SDL_Log("Could not open level file '%s': %s", filePath, SDL_GetError());
     return false;
   }
-  int width;
-  int height;
 
-  if (fscanf(levelFile, "%d %d", &width, &height) != 2) {
-    SDL_Log("Could not read level dimensions from %s", filePath);
+  int width, height;
+  if (!LevelReadDimensions(levelFile, &width, &height, filePath)) {
     fclose(levelFile);
     return false;
   }
-  if (width <= 0 || height <= 0) {
-    SDL_Log("Invalid level dimensions in %s: %d x %d", filePath, width, height);
-    fclose(levelFile);
-    return false;
-  }
-  if ((size_t)width > SIZE_MAX / (size_t)height) {
-    SDL_Log("Level dimensions are too large: %s", filePath);
-    fclose(levelFile);
-    return false;
-  }
+
   size_t tileCount = (size_t)width * (size_t)height;
   unsigned char *newTiles = calloc(tileCount, sizeof(*newTiles));
   if (newTiles == NULL) {
@@ -157,6 +199,7 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
     fclose(levelFile);
     return false;
   }
+
   DoorTransition newDoors[MAX_DOORS] = {0};
   LevelEnemy newEnemies[MAX_LEVEL_ENEMIES] = {0};
   int newDoorCount = 0;
@@ -175,39 +218,23 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
       .doors = newDoors,
       .doorCount = &newDoorCount,
   };
-  for (int y = 0; y < height; y++) {
-    for (int x = 0; x < width; x++) {
-      char tileChar;
-      if (fscanf(levelFile, " %c", &tileChar) != 1) {
-        SDL_Log("Unexpected EOF while reading tiles from %s", filePath);
-        free(newTiles);
-        fclose(levelFile);
-        return false;
-      }
 
-      if (!LevelParseTileChar(&parseState, tileChar, x, y, filePath)) {
-        free(newTiles);
-        fclose(levelFile);
-        return false;
-      }
-    }
+  if (!LevelParseGrid(levelFile, &parseState, width, height, filePath)) {
+    free(newTiles);
+    fclose(levelFile);
+    return false;
   }
+
   if (!LevelParseDoorTransitions(levelFile, newDoors, newDoorCount, filePath)) {
     free(newTiles);
     fclose(levelFile);
     return false;
   }
-  free(level->tiles);
-  level->tiles = newTiles;
-  level->width = width;
-  level->height = height;
-  level->hasPlayerSpawn = spawnFound;
-  level->playerSpawnX = spawnX;
-  level->playerSpawnY = spawnY;
-  memcpy(level->levelEnemies, newEnemies, sizeof(newEnemies));
-  level->levelEnemiesCount = newEnemyCount;
-  memcpy(level->doors, newDoors, sizeof(newDoors));
-  level->doorCount = newDoorCount;
+
+  LevelCommitLoadedData(level, newTiles, width, height, spawnFound, spawnX,
+                        spawnY, newEnemies, newEnemyCount, newDoors,
+                        newDoorCount);
+  fclose(levelFile);
   return true;
 }
 int LevelGetEnemyCount(const Level *level) {
