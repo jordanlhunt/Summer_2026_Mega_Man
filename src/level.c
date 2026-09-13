@@ -50,12 +50,15 @@ static bool LevelParseTileChar(LevelParseState *state, char fileCharacter,
       SDL_Log("Too many doors at (%d, %d): %s", x, y, filePath);
       return false;
     }
+    DoorTransition *d = &state->doors[*state->doorCount];
+    d->tileX = x;
+    d->tileY = y;
     state->doors[*state->doorCount].targetLevelPath[0] = '\0';
     state->doors[*state->doorCount].targetDoorTileX = -1;
     state->doors[*state->doorCount].targetDoorTileY = -1;
     state->doors[*state->doorCount].spawnOffsetTileX = 0;
     state->doors[*state->doorCount].spawnOffsetTileY = 0;
-    state->doorCount += 1;
+    *state->doorCount += 1;
     // Make door tiles walkable
     state->tiles[index] = 0;
 
@@ -148,8 +151,6 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
   level->playerSpawnX = spawnX;
   level->playerSpawnY = spawnY;
   memcpy(level->levelEnemies, newEnemies, sizeof(newEnemies));
-  memcpy(level->doors, newDoors, sizeof(newDoors));
-  level->levelEnemiesCount = newEnemyCount;
   level->doorCount = newDoorCount;
 
   int doorTileX;
@@ -193,7 +194,8 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
     fclose(levelFile);
     return false;
   }
-
+  memcpy(level->doors, newDoors, sizeof(newDoors));
+  level->doorCount = newDoorCount;
   fclose(levelFile);
   return true;
 }

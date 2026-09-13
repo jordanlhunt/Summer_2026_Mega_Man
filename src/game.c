@@ -105,8 +105,54 @@ void GameShutdown(Game *game) {
   SDL_Quit();
 }
 void GameUpdate(Game *game, float deltaTime) {
+  GameWorld *world = &game->gameWorld;
+
   InputUpdate(&game->input);
-  GameWorldUpdate(&game->gameWorld, &game->input, deltaTime);
+
+  if (game->input.isUseJustPressed) {
+    const float pad = 6.0f;
+    for (int i = 0; i < world->level.doorCount; i++) {
+      const DoorTransition *d = &world->level.doors[i];
+      float doorX = (float)(d->tileX * TILE_SIZE);
+      float doorY = (float)(d->tileY * TILE_SIZE);
+      float px = world->player.entity.x - pad;
+      float py = world->player.entity.y - pad;
+      float pw = world->player.entity.width + pad * 2.0f;
+      float ph = world->player.entity.height + pad * 2.0f;
+
+      bool overlaps = (px < doorX + TILE_SIZE) && (px + pw > doorX) &&
+                      (py < doorY + TILE_SIZE) && (py + ph > doorY);
+      if (!overlaps) {
+        continue;
+      }
+      /* Copy out of d BEFORE the level swap invalidates it. */
+      char targetPath[MAX_LEVEL_PATH_LENGTH + 32];
+      snprintf(targetPath, sizeof(targetPath), "assets/levels/%s",
+               d->targetLevelPath);
+      int targetDoorX = d->targetDoorTileX;
+      int targetDoorY = d->targetDoorTileY;
+      /* d is now unsafe to read. */
+
+      if (GameChangeLevelAtDoor(game, targetPath, targetDoorX, targetDoorY)) {
+        return; /* world changed under us; skip the rest of the frame */
+      }
+      break; /* door found but transition failed; don't try another */
+    }
+  }
+
+  PlayerUpdate(&world->player, &game->input, &world->level, deltaTime);
+  ProjectileHandlePlayerShooting(world->projectiles, &world->player,
+                                 game->input.isShootJustPressed);
+  ProjectileUpdateAll(world->projectiles, &world->level, deltaTime);
+  LevelEnemyUpdateAll(world->level.levelEnemies,
+                      LevelGetEnemyCount(&world->level), deltaTime);
+  HandleProjectileEntityCollision(world->projectiles, world->level.levelEnemies,
+                                  LevelGetEnemyCount(&world->level));
+
+  float targetCameraX = world->player.entity.x - SCREEN_WIDTH / 2.0f;
+  float targetCameraY = world->player.entity.y - SCREEN_HEIGHT / 2.0f;
+  CameraUpdate(&world->camera, targetCameraX, targetCameraY, &world->level,
+               deltaTime);
 }
 void GameRender(Game *game) {
   GraphicsClear(game->gameRenderer);
@@ -133,8 +179,8 @@ bool GameChangeLevelAtDoor(Game *game, const char *levelPath,
   }
   LevelFree(&gameWorld->level);
   gameWorld->level = newLevelToLoad;
-  int spawnTileX = targetDoor->targetDoorTileX + targetDoor->spawnOffsetTileX;
-  int spawnTileY = targetDoor->targetDoorTileY + targetDoor->spawnOffsetTileY;
+  int spawnTileX = targetDoor->tileX + targetDoor->spawnOffsetTileX;
+  int spawnTileY = targetDoor->tileY + targetDoor->spawnOffsetTileY;
   gameWorld->player.entity.x =
       spawnTileX * TILE_SIZE +
       (TILE_SIZE - gameWorld->player.entity.width) * .5f;
@@ -162,9 +208,9 @@ bool GameChangeLevelAtDoor(Game *game, const char *levelPath,
   if (maxY < 0.0f) {
     maxY = 0.0f;
   }
-  gameWorld->camera.x = SDL_clamp(
-      gameWorld->player.entity.width - SCREEN_WIDTH / 2.0f, 0.0f, maxX);
-  gameWorld->camera.y = SDL_clamp(
-      gameWorld->player.entity.height - SCREEN_HEIGHT / 2.0f, 0.0f, maxY);
+  gameWorld->camera.x =
+      SDL_clamp(gameWorld->player.entity.x - SCREEN_WIDTH / 2.0f, 0.0f, maxX);
+  gameWorld->camera.y =
+      SDL_clamp(gameWorld->player.entity.y - SCREEN_HEIGHT / 2.0f, 0.0f, maxY);
   return true;
 }
