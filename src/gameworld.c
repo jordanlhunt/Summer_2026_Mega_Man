@@ -80,6 +80,7 @@ bool GameWorldChangeLevelAtDoor(GameWorld *gameWorld,
     return false;
   }
   LevelFree(&gameWorld->level);
+  gameWorld->level = newLevel;
   int spawnTileX = targetDoorTileX + spawnOffsetTileX;
   int spawnTileY = targetDoorTileY + spawnOffsetTileY;
   PlacePlayerAtDoorSpawn(&gameWorld->player, spawnTileX, spawnTileY);
