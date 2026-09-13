@@ -5,6 +5,9 @@
 #include "levelEnemy.h"
 #include "player.h"
 #include "projectile.h"
+#include <SDL3/SDL_log.h>
+#include <SDL3/SDL_stdinc.h>
+#include <string.h>
 
 /**
  * Helper functions
@@ -43,11 +46,74 @@ static void PlayerResetForRoomTransition(Player *player) {
   player->currentPlayerState = STATE_IDLE;
 }
 static void CameraSnapToPlayer(Camera *camera, const Player *player,
-                               const Level *level) {}
+                               const Level *level) {
+  float maxX = LevelGetWidthPixels(level) - SCREEN_WIDTH;
+  float maxY = LevelGetHeightPixels(level) - SCREEN_HEIGHT;
+  if (maxX < 0.0f) {
+    maxX = 0.0f;
+  }
+  if (maxY < 0.0f) {
+    maxY = 0.0f;
+  }
+  camera->x = SDL_clamp(player->entity.x - SCREEN_WIDTH / 2.0f, 0.0f, maxX);
+  camera->y = SDL_clamp(player->entity.y - SCREEN_HEIGHT / 2.0f, 0.0f, maxY);
+}
 
 /**
  * End of Helper functions
  */
+
+bool GameWorldChangeLevelAtDoor(GameWorld *gameWorld,
+                                const char *targetLevelPath,
+                                int targetDoorTileX, int targetDoorTileY,
+                                int spawnOffsetTileX, int spawnOffsetTileY) {
+  Level newLevel = {0};
+  if (!LevelLoadFromFile(&newLevel, targetLevelPath)) {
+    SDL_Log("Failed to load level '%s'", targetLevelPath);
+    return false;
+  }
+  if (LevelFindDoorAtTile(&newLevel, targetDoorTileX, targetDoorTileY) ==
+      NULL) {
+    SDL_Log("Level '%s' has no door at (%d, %d)", targetLevelPath,
+            targetDoorTileX, targetDoorTileY);
+    LevelFree(&newLevel);
+    return false;
+  }
+  LevelFree(&gameWorld->level);
+  int spawnTileX = targetDoorTileX + spawnOffsetTileX;
+  int spawnTileY = targetDoorTileY + spawnOffsetTileY;
+  PlacePlayerAtDoorSpawn(&gameWorld->player, spawnTileX, spawnTileY);
+  PlayerResetForRoomTransition(&gameWorld->player);
+  memset(gameWorld->projectiles, 0, sizeof(gameWorld->projectiles));
+  CameraSnapToPlayer(&gameWorld->camera, &gameWorld->player, &gameWorld->level);
+  return true;
+}
+bool GameWorldHandleDoorUse(GameWorld *gameWorld, const Input *input) {
+  if (!input->isUseJustPressed) {
+    return false;
+  }
+
+  for (int i = 0; i < gameWorld->level.doorCount; i++) {
+    const DoorTransition *doorTransition = &gameWorld->level.doors[i];
+    if (!DoorOverlapsPlayer(doorTransition, &gameWorld->player)) {
+      continue;
+    }
+    char targetLevelPath[MAX_LEVEL_PATH_LENGTH + 32];
+    snprintf(targetLevelPath, sizeof(targetLevelPath), "assets/level/%s",
+             doorTransition->targetLevelPath);
+    int targetDoorX = doorTransition->targetDoorTileX;
+    int targetDoorY = doorTransition->targetDoorTileY;
+    int spawnOffsetTileX = doorTransition->spawnOffsetTileX;
+    int spawnOffsetTileY = doorTransition->spawnOffsetTileY;
+    /**
+     * door is now unsafe to read, the level swap invalidates it
+     */
+    return GameWorldChangeLevelAtDoor(gameWorld, targetLevelPath, targetDoorX,
+                                      targetDoorY, spawnOffsetTileX,
+                                      spawnOffsetTileY);
+  }
+  return false;
+}
 
 bool GameWorldLoadLevel(GameWorld *gameWorld, const char *levelPath) {
   if (!LevelLoadFromFile(&gameWorld->level, levelPath)) {
@@ -67,6 +133,9 @@ bool GameWorldLoadLevel(GameWorld *gameWorld, const char *levelPath) {
 void GameWorldShutdown(GameWorld *gameWorld) { LevelFree(&gameWorld->level); }
 void GameWorldUpdate(GameWorld *gameWorld, const Input *input,
                      float deltaTime) {
+  if (GameWorldHandleDoorUse(gameWorld, input)) {
+    return;
+  }
   PlayerUpdate(&gameWorld->player, input, &gameWorld->level, deltaTime);
   ProjectileHandlePlayerShooting(gameWorld->projectiles, &gameWorld->player,
                                  input->isShootJustPressed);
