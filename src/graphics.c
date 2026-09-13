@@ -206,6 +206,23 @@ void GraphicsClear(SDL_Renderer *renderer) {
   SDL_SetRenderDrawColor(renderer, 147, 204, 234, 255);
   SDL_RenderClear(renderer);
 }
+void GraphicsRenderDoors(const Level *level, SDL_Renderer *renderer,
+                         const Camera *camera, SDL_Texture *doorTexture) {
+  for (int i = 0; i < level->doorCount; i++) {
+    const DoorTransition *door = &level->doors[i];
+    SDL_FRect destinationFRect = {
+        .x = (float)(door->tileX * TILE_SIZE) - camera->x,
+        .y = (float)(door->tileY * TILE_SIZE) - camera->y,
+        .w = (float)TILE_SIZE,
+        .h = (float)TILE_SIZE};
+    if (doorTexture == NULL) {
+      SDL_SetRenderDrawColor(renderer, 220, 40, 180, 255);
+      SDL_RenderFillRect(renderer, &destinationFRect);
+      continue;
+    }
+    SDL_RenderTexture(renderer, doorTexture, NULL, &destinationFRect);
+  }
+}
 void GraphicsRenderLevel(const Level *level, SDL_Renderer *renderer,
                          const Camera *camera) {
   int startX;

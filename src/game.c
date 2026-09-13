@@ -7,7 +7,9 @@
 #include "level.h"
 #include "levelEnemy.h"
 #include "projectile.h"
+#include <SDL3/SDL_render.h>
 #include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_video.h>
 bool GameInitialize(Game *game) {
   if (!SDL_Init(SDL_INIT_VIDEO)) {
     SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
@@ -37,6 +39,15 @@ bool GameInitialize(Game *game) {
       &game->assetManager, game->gameRenderer, SARABOT_ASSET_PATH);
   if (!game->spriteSheetTexture) {
     SDL_Log("Failed to load spritesheet texture");
+    AssetManagerShutdown(&game->assetManager);
+    SDL_DestroyRenderer(game->gameRenderer);
+    SDL_DestroyWindow(game->gameWindow);
+    return false;
+  }
+  game->doorTexture = AssetManagerLoadTexture(
+      &game->assetManager, game->gameRenderer, DOOR_ASSET_PATH);
+  if (!game->doorTexture) {
+    SDL_Log("Failed to load door texture");
     AssetManagerShutdown(&game->assetManager);
     SDL_DestroyRenderer(game->gameRenderer);
     SDL_DestroyWindow(game->gameWindow);
@@ -111,6 +122,7 @@ void GameUpdate(Game *game, float deltaTime) {
 void GameRender(Game *game) {
   GraphicsClear(game->gameRenderer);
   GameWorldRender(&game->gameWorld, game->gameRenderer,
-                  game->playerProjectileTexture, game->levelEnemyTexture);
+                  game->playerProjectileTexture, game->levelEnemyTexture,
+                  game->doorTexture);
   GraphicsPresent(game->gameRenderer);
 }

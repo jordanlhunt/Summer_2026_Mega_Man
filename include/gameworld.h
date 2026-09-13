@@ -35,7 +35,7 @@ void GameWorldUpdate(GameWorld *gameWorld, const Input *input, float deltaTime);
  */
 void GameWorldRender(const GameWorld *gameWorld, SDL_Renderer *renderer,
                      SDL_Texture *projectileTexture,
-                     SDL_Texture *levelEnemyTexture);
+                     SDL_Texture *levelEnemyTexture, SDL_Texture *doorTexture);
 
 bool GameWorldChangeLevelAtDoor(GameWorld *gameWorld, const char *levelPath,
                                 int targetDoorTileX, int targetDoorTileY,

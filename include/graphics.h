@@ -3,6 +3,7 @@
 #include "common.h"
 #include "config.h"
 #include "forwarddeclares.h"
+#include <SDL3/SDL_render.h>
 
 typedef struct Camera {
   float x;
@@ -25,4 +26,6 @@ void GraphicsRenderLevel(const Level *level, SDL_Renderer *renderer,
 void GraphicsRenderPlayer(const Player *player, SDL_Renderer *renderer,
                           const Camera *camera);
 void GraphicsPresent(SDL_Renderer *renderer);
+void GraphicsRenderDoors(const Level *level, SDL_Renderer *renderer,
+                         const Camera *camera, SDL_Texture *doorTexture);
 #endif

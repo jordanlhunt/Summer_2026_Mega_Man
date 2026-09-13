@@ -152,11 +152,13 @@ void GameWorldUpdate(GameWorld *gameWorld, const Input *input,
 }
 void GameWorldRender(const GameWorld *gameWorld, SDL_Renderer *renderer,
                      SDL_Texture *projectileTexture,
-                     SDL_Texture *levelEnemyTexture) {
+                     SDL_Texture *levelEnemyTexture, SDL_Texture *doorTexture) {
   GraphicsRenderLevel(&gameWorld->level, renderer, &gameWorld->camera);
   GraphicsRenderPlayer(&gameWorld->player, renderer, &gameWorld->camera);
   ProjectileRenderAll(gameWorld->projectiles, renderer, gameWorld->camera.x,
                       gameWorld->camera.y, projectileTexture);
+  GraphicsRenderDoors(&gameWorld->level, renderer, &gameWorld->camera,
+                      doorTexture);
   LevelEnemyRenderAll(gameWorld->level.levelEnemies,
                       LevelGetEnemyCount(&gameWorld->level), renderer,
                       &gameWorld->camera, levelEnemyTexture);
