@@ -1,6 +1,8 @@
 #include "level.h"
 #include "config.h"
 #include "levelEnemy.h"
+#include <stdio.h>
+#include <string.h>
 typedef struct LevelParseState {
   bool *spawnPlayerFound;
   DoorTransition *doors;
@@ -120,7 +122,7 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
       .playerSpawnX = &spawnX,
       .playerSpawnY = &spawnY,
       .doors = newDoors,
-      .doorCount = newDoorCount,
+      .doorCount = &newDoorCount,
   };
   for (int y = 0; y < height; y++) {
     for (int x = 0; x < width; x++) {
@@ -147,6 +149,49 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
   level->playerSpawnY = spawnY;
   memcpy(level->levelEnemies, newEnemies, sizeof(newEnemies));
   level->levelEnemiesCount = newEnemyCount;
+
+  int doorTileX;
+  int doorTileY;
+  int targetDoorTileX;
+  int targetDoorTileY;
+  int offsetX;
+  int offsetY;
+  char targetLevelPath[MAX_LEVEL_PATH_LENGTH];
+  int matchCount = 0;
+  while (fscanf(levelFile, " %d %d %127s %d %d %d %d", &doorTileX, &doorTileY,
+                targetLevelPath, &targetDoorTileX, &targetDoorTileY, &offsetX,
+                &offsetY) == 7) {
+    bool isMatched = false;
+    for (int i = 0; i < newDoorCount; i++) {
+      if (newDoors[i].tileX == doorTileX && newDoors[i].tileY == doorTileY) {
+        strncpy(newDoors[i].targetLevelPath, targetLevelPath,
+                MAX_LEVEL_PATH_LENGTH - 1);
+        newDoors[i].targetLevelPath[MAX_LEVEL_PATH_LENGTH - 1] = '\0';
+        newDoors[i].targetDoorTileX = targetDoorTileX;
+        newDoors[i].targetDoorTileY = targetDoorTileY;
+        newDoors[i].spawnOffsetTileX = offsetX;
+        newDoors[i].spawnOffsetTileY = offsetY;
+        isMatched = true;
+        matchCount += 1;
+        break;
+      }
+    }
+    if (!isMatched) {
+      SDL_Log("Door transition at (%d, %d) has no matching door tile: %s",
+              doorTileX, doorTileY, filePath);
+      free(newTiles);
+      fclose(levelFile);
+      return false;
+    }
+  }
+  if (matchCount != newDoorCount) {
+    SDL_Log("Level has %d door tiles but %d transition lines: %s", newDoorCount,
+            matchCount, filePath);
+    free(newTiles);
+    fclose(levelFile);
+    return false;
+  }
+
   fclose(levelFile);
   return true;
 }
