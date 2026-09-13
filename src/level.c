@@ -148,7 +148,9 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
   level->playerSpawnX = spawnX;
   level->playerSpawnY = spawnY;
   memcpy(level->levelEnemies, newEnemies, sizeof(newEnemies));
+  memcpy(level->doors, newDoors, sizeof(newDoors));
   level->levelEnemiesCount = newEnemyCount;
+  level->doorCount = newDoorCount;
 
   int doorTileX;
   int doorTileY;
@@ -259,4 +261,16 @@ unsigned char LevelGetTile(const Level *level, int tileX, int tileY) {
     return 0;
   }
   return level->tiles[tileY * level->width + tileX];
+}
+const DoorTransition *LevelFindDoorAtTile(const Level *level, int tileX,
+                                          int tileY) {
+  if (level == NULL) {
+    return NULL;
+  }
+  for (int i = 0; i < level->doorCount; i++) {
+    if (level->doors[i].tileX == tileX && level->doors[i].tileY == tileY) {
+      return &level->doors[i];
+    }
+  }
+  return NULL;
 }
