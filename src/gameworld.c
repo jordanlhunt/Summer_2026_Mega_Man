@@ -99,7 +99,7 @@ bool GameWorldHandleDoorUse(GameWorld *gameWorld, const Input *input) {
       continue;
     }
     char targetLevelPath[MAX_LEVEL_PATH_LENGTH + 32];
-    snprintf(targetLevelPath, sizeof(targetLevelPath), "assets/level/%s",
+    snprintf(targetLevelPath, sizeof(targetLevelPath), "assets/levels/%s",
              doorTransition->targetLevelPath);
     int targetDoorX = doorTransition->targetDoorTileX;
     int targetDoorY = doorTransition->targetDoorTileY;

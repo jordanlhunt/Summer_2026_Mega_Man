@@ -17,6 +17,7 @@ typedef struct Game {
   SDL_Texture *spriteSheetTexture;
   SDL_Texture *playerProjectileTexture;
   SDL_Texture *levelEnemyTexture;
+  SDL_Texture *doorTexture;
   GameWorld gameWorld;
   Input input;
   bool isRunning;

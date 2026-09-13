@@ -6,6 +6,7 @@
 #define SARABOT_ASSET_PATH "assets/sarabot-alpha.png"
 #define PLAYER_PROJECTILE_ASSET_PATH "assets/shot.png"
 #define BIG_PROPELLER_BOT_ASSET_PATH "assets/Big_Propeller_Bot.png"
+#define DOOR_ASSET_PATH "assets/DoorTexture.png"
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 #define TILE_SIZE 32
