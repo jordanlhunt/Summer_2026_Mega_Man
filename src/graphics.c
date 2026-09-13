@@ -1,7 +1,61 @@
 #include "graphics.h"
+#include "config.h"
 #include "level.h"
 #include "player.h"
-
+#include <SDL3/SDL_rect.h>
+#include <SDL3/SDL_render.h>
+#include <SDL3/SDL_surface.h>
+#include <wchar.h>
+/**
+ * Helper functions
+ */
+static void RenderPlayerDashTrail(SDL_Renderer *renderer, const Player *player,
+                                  SDL_FRect destinationFRect,
+                                  SDL_FRect sourceFRect, SDL_FlipMode sdlFlip) {
+  const int numberOfGhostTrails = 3;
+  const float ghostSpacing = 1.5f;
+  const Uint8 alphas[] = {200, 150, 90, 50};
+  for (int i = 0; i < numberOfGhostTrails; i++) {
+    float offset = DASH_TRAIL_OFFSET * (i + 1) * ghostSpacing;
+    SDL_FRect trailRect = destinationFRect;
+    if (player->isFacingRight) {
+      trailRect.x -= offset;
+    } else {
+      trailRect.x += offset;
+    }
+    SDL_SetTextureAlphaMod(player->spriteSheetTexture, alphas[i]);
+    SDL_RenderTextureRotated(renderer, player->spriteSheetTexture, &sourceFRect,
+                             &trailRect, 0.0f, NULL, sdlFlip);
+  }
+  SDL_SetTextureAlphaMod(player->spriteSheetTexture, 255);
+}
+static void RenderPlayerFallback(SDL_Renderer *renderer, const Player *player,
+                                 SDL_FRect destinationRect) {
+  switch (player->currentPlayerState) {
+  case STATE_IDLE:
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    break;
+  case STATE_RUNNING:
+    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+    break;
+  case STATE_JUMPING:
+    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+    break;
+  case STATE_FALLING:
+    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+    break;
+  case STATE_WALL_SLIDING:
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    break;
+  case STATE_DASHING:
+    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+    break;
+  case STATE_SLIDING:
+    SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);
+    break;
+  }
+  SDL_RenderFillRect(renderer, &destinationRect);
+}
 static SDL_FRect PlayerGetSourceRect(const Player *player) {
   int frameColumn = 0;
   int frameRow = player->styleRow;
@@ -43,7 +97,6 @@ static SDL_FRect PlayerGetSourceRect(const Player *player) {
   return (SDL_FRect){frameColumn * SPRITE_WIDTH, frameRow * SPRITE_HEIGHT,
                      SPRITE_WIDTH, SPRITE_HEIGHT};
 }
-
 static void GraphicsGetVisibleTileRange(const Level *level,
                                         const Camera *camera, int *outStartX,
                                         int *outStartY, int *outEndX,
@@ -64,13 +117,11 @@ static void GraphicsGetVisibleTileRange(const Level *level,
   if (endY > level->height) {
     endY = level->height;
   }
-
   *outStartX = startX;
   *outStartY = startY;
   *outEndX = endX;
   *outEndY = endY;
 }
-
 static void GraphicsDrawOneWayPlatformTile(SDL_Renderer *renderer,
                                            SDL_FRect tile) {
   // Main body:
@@ -79,7 +130,6 @@ static void GraphicsDrawOneWayPlatformTile(SDL_Renderer *renderer,
   SDL_SetRenderDrawColor(renderer, 239, 191, 4, 255);
   SDL_FRect topEdge = {tile.x, tile.y, tile.w, 4.0f};
   SDL_RenderFillRect(renderer, &topEdge);
-
   // Small bottom shadow to give depth
   SDL_SetRenderDrawColor(renderer, 100, 60, 30, 200);
   SDL_FRect bottomShadow = {tile.x, tile.y + tile.h - 2.0f, tile.w, 2.0f};
@@ -91,7 +141,6 @@ static void GraphicsDrawSolidTile(SDL_Renderer *renderer, SDL_FRect tile,
   bool isWall = (x == 0 || x == level->width - 1);
   bool hasOpenBelow =
       (y + 1 < level->height && level->tiles[(y + 1) * level->width + x] == 0);
-
   if (hasOpenBelow && !isFloor) {
     SDL_SetRenderDrawColor(renderer, 255, 70, 60, 255); // ledge edge
   } else if (isWall) {
@@ -101,24 +150,23 @@ static void GraphicsDrawSolidTile(SDL_Renderer *renderer, SDL_FRect tile,
   }
   SDL_RenderFillRect(renderer, &tile);
 }
-
 static void GraphicsDrawBreakableTile(SDL_Renderer *renderer, SDL_FRect tile) {
   // Base colour: light grey stone
   SDL_SetRenderDrawColor(renderer, 180, 180, 180, 255);
   SDL_RenderFillRect(renderer, &tile);
-
   // Darker border / cracks
   SDL_SetRenderDrawColor(renderer, 80, 80, 80, 255);
   // Two diagonal cracks
   SDL_RenderLine(renderer, tile.x, tile.y, tile.x + tile.w, tile.y + tile.h);
   SDL_RenderLine(renderer, tile.x + tile.w, tile.y, tile.x, tile.y + tile.h);
-
   // Optional: a small highlight to suggest depth
   SDL_SetRenderDrawColor(renderer, 220, 220, 220, 255);
   SDL_RenderLine(renderer, tile.x + 2, tile.y + 2, tile.x + tile.w - 2,
                  tile.y + 2);
 }
-
+/**
+ * End Helper functions
+ */
 void CameraUpdate(Camera *camera, float targetX, float targetY,
                   const Level *level, float deltaTime) {
   float maxCameraX = level->width * TILE_SIZE - SCREEN_WIDTH;
@@ -185,7 +233,6 @@ void GraphicsRenderLevel(const Level *level, SDL_Renderer *renderer,
     }
   }
 }
-
 void GraphicsRenderPlayer(const Player *player, SDL_Renderer *renderer,
                           const Camera *camera) {
   float drawX = floorf(player->entity.x - camera->x -
@@ -196,6 +243,9 @@ void GraphicsRenderPlayer(const Player *player, SDL_Renderer *renderer,
                         player->entity.height)); // align feet to hitbox bottom
   SDL_FRect destinationFRect = {drawX, drawY, SPRITE_WIDTH * 2.0f,
                                 SPRITE_HEIGHT * 2.0f};
+  if (player->spriteSheetTexture == NULL) {
+    RenderPlayerFallback(renderer, player, destinationFRect);
+  }
   if (player->spriteSheetTexture) {
     SDL_FRect sourceFRect = PlayerGetSourceRect(player);
     SDL_FlipMode flip;
@@ -204,61 +254,12 @@ void GraphicsRenderPlayer(const Player *player, SDL_Renderer *renderer,
     } else {
       flip = SDL_FLIP_HORIZONTAL;
     }
-
-    /* Dash trail effect */
     if (player->isDashing) {
-      // Number of ghosts and their spacing
-      const int numberOfGhostTrails = 3; // how many ghosts
-      const float spacing = 1.5f;        // multiplier for offset distance
-      const Uint8 alphas[] = {200, 150, 90, 50}; // alpha per ghost
-
-      for (int i = 0; i < numberOfGhostTrails; i++) {
-        // Offset increases with each ghost
-        float offset = DASH_TRAIL_OFFSET * (i + 1) * spacing;
-        SDL_FRect trailRect = destinationFRect;
-        if (player->isFacingRight) {
-          trailRect.x -= offset; // trail behind (opposite to facing)
-        } else {
-          trailRect.x += offset;
-        }
-
-        SDL_SetTextureAlphaMod(player->spriteSheetTexture, alphas[i]);
-        SDL_RenderTextureRotated(renderer, player->spriteSheetTexture,
-                                 &sourceFRect, &trailRect, 0.0, NULL, flip);
-      }
-      // Restore alpha for the main player sprite
-      SDL_SetTextureAlphaMod(player->spriteSheetTexture, 255);
+      RenderPlayerDashTrail(renderer, player, destinationFRect, sourceFRect,
+                            flip);
     }
     SDL_RenderTextureRotated(renderer, player->spriteSheetTexture, &sourceFRect,
-                             &destinationFRect, 0.0, NULL, flip);
-  } else {
-    /* Fallback so the game is still visible/debuggable without art. */
-    SDL_FRect renderRect = {drawX, drawY, SPRITE_WIDTH * 2.0f,
-                            SPRITE_HEIGHT * 2.0f};
-    switch (player->currentPlayerState) {
-    case STATE_IDLE:
-      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-      break;
-    case STATE_RUNNING:
-      SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-      break;
-    case STATE_JUMPING:
-      SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-      break;
-    case STATE_FALLING:
-      SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-      break;
-    case STATE_WALL_SLIDING:
-      SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-      break;
-    case STATE_DASHING:
-      SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
-      break;
-    case STATE_SLIDING:
-      SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);
-      break;
-    }
-    SDL_RenderFillRect(renderer, &renderRect);
+                             &destinationFRect, 0.0f, NULL, flip);
   }
 }
 void GraphicsPresent(SDL_Renderer *renderer) { SDL_RenderPresent(renderer); }
