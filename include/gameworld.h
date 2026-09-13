@@ -36,4 +36,16 @@ void GameWorldUpdate(GameWorld *gameWorld, const Input *input, float deltaTime);
 void GameWorldRender(const GameWorld *gameWorld, SDL_Renderer *renderer,
                      SDL_Texture *projectileTexture,
                      SDL_Texture *levelEnemyTexture);
+
+bool GameWorldChangeLevelAtDoor(GameWorld *gameWorld, const char *levelPath,
+                                int targetDoorTileX, int targetDoorTileY,
+                                int spawnOffsetTileX, int spawnOffsetTileY);
+
+/**
+ * If "use" was just pressed and the player is standing in a door, transitions
+ * the world to that door's target room. Returns true if a transition
+ * happened this frame. The caller should skip the rest of its update, since
+ * the world just changed underneath it.
+ */
+bool GameWorldHandleDoorUse(GameWorld *gameWorld, const Input *input);
 #endif

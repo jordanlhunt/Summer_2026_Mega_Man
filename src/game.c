@@ -105,54 +105,8 @@ void GameShutdown(Game *game) {
   SDL_Quit();
 }
 void GameUpdate(Game *game, float deltaTime) {
-  GameWorld *world = &game->gameWorld;
-
   InputUpdate(&game->input);
-
-  if (game->input.isUseJustPressed) {
-    const float pad = 6.0f;
-    for (int i = 0; i < world->level.doorCount; i++) {
-      const DoorTransition *d = &world->level.doors[i];
-      float doorX = (float)(d->tileX * TILE_SIZE);
-      float doorY = (float)(d->tileY * TILE_SIZE);
-      float px = world->player.entity.x - pad;
-      float py = world->player.entity.y - pad;
-      float pw = world->player.entity.width + pad * 2.0f;
-      float ph = world->player.entity.height + pad * 2.0f;
-
-      bool overlaps = (px < doorX + TILE_SIZE) && (px + pw > doorX) &&
-                      (py < doorY + TILE_SIZE) && (py + ph > doorY);
-      if (!overlaps) {
-        continue;
-      }
-      /* Copy out of d BEFORE the level swap invalidates it. */
-      char targetPath[MAX_LEVEL_PATH_LENGTH + 32];
-      snprintf(targetPath, sizeof(targetPath), "assets/levels/%s",
-               d->targetLevelPath);
-      int targetDoorX = d->targetDoorTileX;
-      int targetDoorY = d->targetDoorTileY;
-      /* d is now unsafe to read. */
-
-      if (GameChangeLevelAtDoor(game, targetPath, targetDoorX, targetDoorY)) {
-        return; /* world changed under us; skip the rest of the frame */
-      }
-      break; /* door found but transition failed; don't try another */
-    }
-  }
-
-  PlayerUpdate(&world->player, &game->input, &world->level, deltaTime);
-  ProjectileHandlePlayerShooting(world->projectiles, &world->player,
-                                 game->input.isShootJustPressed);
-  ProjectileUpdateAll(world->projectiles, &world->level, deltaTime);
-  LevelEnemyUpdateAll(world->level.levelEnemies,
-                      LevelGetEnemyCount(&world->level), deltaTime);
-  HandleProjectileEntityCollision(world->projectiles, world->level.levelEnemies,
-                                  LevelGetEnemyCount(&world->level));
-
-  float targetCameraX = world->player.entity.x - SCREEN_WIDTH / 2.0f;
-  float targetCameraY = world->player.entity.y - SCREEN_HEIGHT / 2.0f;
-  CameraUpdate(&world->camera, targetCameraX, targetCameraY, &world->level,
-               deltaTime);
+  GameWorldUpdate(&game->gameWorld, &game->input, deltaTime);
 }
 void GameRender(Game *game) {
   GraphicsClear(game->gameRenderer);

@@ -1,8 +1,53 @@
 #include "gameworld.h"
+#include "config.h"
 #include "graphics.h"
 #include "level.h"
 #include "levelEnemy.h"
+#include "player.h"
 #include "projectile.h"
+
+/**
+ * Helper functions
+ */
+static bool DoorOverlapsPlayer(const DoorTransition *doorTransition,
+                               const Player *player) {
+  const float padding = 6.0f;
+  float doorX = (float)(doorTransition->tileX * TILE_SIZE);
+  float doorY = (float)(doorTransition->tileY * TILE_SIZE);
+  float playerX = player->entity.x - padding;
+  float playerY = player->entity.y - padding;
+  float playerWidth = player->entity.width + padding * 2.0f;
+  float playerHeight = player->entity.height + padding * 2.0f;
+  return (playerX < doorX + TILE_SIZE) && (playerX + playerWidth > doorX) &&
+         (playerY < doorY + TILE_SIZE) && (playerY + playerHeight > doorY);
+}
+
+static void PlacePlayerAtDoorSpawn(Player *player, int spawnTileX,
+                                   int spawnTileY) {
+  player->entity.x =
+      spawnTileX * TILE_SIZE + (TILE_SIZE - player->entity.width) * .5f;
+  player->entity.y = spawnTileY * TILE_SIZE + TILE_SIZE - player->entity.height;
+}
+static void PlayerResetForRoomTransition(Player *player) {
+  player->entity.velocityX = 0.0f;
+  player->entity.velocityY = 0.0f;
+  player->entity.isOnGround = false;
+  player->isDashing = false;
+  player->isWallSliding = false;
+  player->dashTimer = 0.0f;
+  player->wallSlideTimer = 0.0f;
+  player->coyoteTimer = 0.0f;
+  player->jumpBufferTimer = 0.0f;
+  player->shootAnimationTimer = 0.0f;
+  player->animationTimer = 0.0f;
+  player->currentPlayerState = STATE_IDLE;
+}
+static void CameraSnapToPlayer(Camera *camera, const Player *player,
+                               const Level *level) {}
+
+/**
+ * End of Helper functions
+ */
 
 bool GameWorldLoadLevel(GameWorld *gameWorld, const char *levelPath) {
   if (!LevelLoadFromFile(&gameWorld->level, levelPath)) {

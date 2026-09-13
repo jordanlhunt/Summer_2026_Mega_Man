@@ -26,6 +26,5 @@ bool GameInitialize(Game *game);
 void GameShutdown(Game *game);
 void GameUpdate(Game *game, float deltaTime);
 void GameRender(Game *game);
-bool GameChangeLevelAtDoor(Game *game, const char *levelPath,
-                           int targetDoorTileX, int targetDoorTileY);
+
 #endif
