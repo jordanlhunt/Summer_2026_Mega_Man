@@ -7,6 +7,7 @@
 #include "level.h"
 #include "levelEnemy.h"
 #include "projectile.h"
+#include <SDL3/SDL_stdinc.h>
 bool GameInitialize(Game *game) {
   if (!SDL_Init(SDL_INIT_VIDEO)) {
     SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
@@ -112,4 +113,58 @@ void GameRender(Game *game) {
   GameWorldRender(&game->gameWorld, game->gameRenderer,
                   game->playerProjectileTexture, game->levelEnemyTexture);
   GraphicsPresent(game->gameRenderer);
+}
+bool GameChangeLevelAtDoor(Game *game, const char *levelPath,
+                           int targetDoorTileX, int targetDoorTileY) {
+  Level newLevelToLoad = {0};
+  GameWorld *gameWorld = &game->gameWorld;
+  if (!LevelLoadFromFile(&newLevelToLoad, levelPath)) {
+    SDL_Log("Failed to load level '%s'", levelPath);
+    return false;
+  }
+
+  const DoorTransition *targetDoor =
+      LevelFindDoorAtTile(&newLevelToLoad, targetDoorTileX, targetDoorTileY);
+  if (targetDoor == NULL) {
+    SDL_Log("Level '%s' has no door at (%d, %d)", levelPath, targetDoorTileX,
+            targetDoorTileY);
+    LevelFree(&newLevelToLoad);
+    return false;
+  }
+  LevelFree(&gameWorld->level);
+  gameWorld->level = newLevelToLoad;
+  int spawnTileX = targetDoor->targetDoorTileX + targetDoor->spawnOffsetTileX;
+  int spawnTileY = targetDoor->targetDoorTileY + targetDoor->spawnOffsetTileY;
+  gameWorld->player.entity.x =
+      spawnTileX * TILE_SIZE +
+      (TILE_SIZE - gameWorld->player.entity.width) * .5f;
+  gameWorld->player.entity.y =
+      spawnTileY * TILE_SIZE + TILE_SIZE - gameWorld->player.entity.height;
+  gameWorld->player.entity.velocityX = 0.0f;
+  gameWorld->player.entity.velocityY = 0.0f;
+  gameWorld->player.isDashing = false;
+  gameWorld->player.isWallSliding = false;
+  gameWorld->player.entity.isOnGround = false;
+  gameWorld->player.dashTimer = 0.0f;
+  gameWorld->player.dashCooldown = 0.0f;
+  gameWorld->player.wallSlideTimer = 0.0f;
+  gameWorld->player.coyoteTimer = 0.0f;
+  gameWorld->player.jumpBufferTimer = 0.0f;
+  gameWorld->player.shootAnimationTimer = 0.0f;
+  gameWorld->player.animationTimer = 0.0f;
+  gameWorld->player.currentPlayerState = STATE_IDLE;
+  memset(gameWorld->projectiles, 0, sizeof(gameWorld->projectiles));
+  float maxX = LevelGetWidthPixels(&gameWorld->level) - SCREEN_WIDTH;
+  float maxY = LevelGetHeightPixels(&gameWorld->level) - SCREEN_HEIGHT;
+  if (maxX < 0.0f) {
+    maxX = 0.0f;
+  }
+  if (maxY < 0.0f) {
+    maxY = 0.0f;
+  }
+  gameWorld->camera.x = SDL_clamp(
+      gameWorld->player.entity.width - SCREEN_WIDTH / 2.0f, 0.0f, maxX);
+  gameWorld->camera.y = SDL_clamp(
+      gameWorld->player.entity.height - SCREEN_HEIGHT / 2.0f, 0.0f, maxY);
+  return true;
 }
