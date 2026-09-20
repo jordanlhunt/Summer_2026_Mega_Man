@@ -117,6 +117,24 @@ static void PlacePlayerForEdgeArrival(Player *player, const Level *level,
                                roomHeightInPixels - player->entity.height);
 }
 
+static const char *EdgeTargetFor(const Level *level, Direction direction) {
+  switch (direction) {
+  case LEFT: {
+    return level->edgeLeft;
+  }
+  case RIGHT: {
+    return level->edgeRight;
+  }
+  case UP: {
+    return level->edgeUp;
+  }
+  case DOWN: {
+    return level->edgeDown;
+  }
+  }
+  return NULL;
+}
+
 /**
  * End of Helper functions
  */
