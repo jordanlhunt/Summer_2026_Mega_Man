@@ -59,6 +59,19 @@ static void CameraSnapToPlayer(Camera *camera, const Player *player,
   camera->y = SDL_clamp(player->entity.y - SCREEN_HEIGHT / 2.0f, 0.0f, maxY);
 }
 
+static void ResolveLevelPath(char *out, size_t outSize,
+                             const char *currentLevelPath,
+                             const char *targetFileName) {
+  const char *lastSlash = strchr(currentLevelPath, '/');
+  if (lastSlash == NULL) {
+    snprintf(out, outSize, "%s", targetFileName);
+    return;
+  }
+  int directoryLength = (int)(lastSlash - currentLevelPath + 1);
+  snprintf(out, outSize, "%.*s%s", directoryLength, currentLevelPath,
+           targetFileName);
+}
+
 /**
  * End of Helper functions
  */
@@ -100,8 +113,7 @@ bool GameWorldHandleDoorUse(GameWorld *gameWorld, const Input *input) {
       continue;
     }
     char targetLevelPath[MAX_LEVEL_PATH_LENGTH + 32];
-    snprintf(targetLevelPath, sizeof(targetLevelPath), "assets/levels/%s",
-             doorTransition->targetLevelPath);
+    ResolveLevelPath(targetLevelPath,sizeof(targetLevelPath), gameWorld->currentLevelPath,doorTransition->targetLevelPath);
     int targetDoorX = doorTransition->targetDoorTileX;
     int targetDoorY = doorTransition->targetDoorTileY;
     int spawnOffsetTileX = doorTransition->spawnOffsetTileX;
