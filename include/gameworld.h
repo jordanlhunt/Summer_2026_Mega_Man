@@ -52,4 +52,9 @@ bool GameWorldChangeLevelAtDoor(GameWorld *gameWorld,
  * the world just changed underneath it.
  */
 bool GameWorldHandleDoorUse(GameWorld *gameWorld, const Input *input);
+
+/**
+ * If the player walks of the edge of a map 
+ */
+bool GameWorldChangeLevelAtEdge(GameWorld *gameWorld, const char *path, Direction exitDirection)
 #endif

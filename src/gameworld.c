@@ -216,4 +216,15 @@ void GameWorldRender(const GameWorld *gameWorld, SDL_Renderer *renderer,
                       &gameWorld->camera, levelEnemyTexture);
 }
 
-bool GameWorldChangeLevelAtEdge()
+bool GameWorldChangeLevelAtEdge(GameWorld *gameWorld, const char *path,
+                                Direction exitDirection) {
+  Level newLevel = {0};
+  if (!LevelLoadFromFile(&newLevel, Path)) {
+    return false;
+  }
+  GameWorldCommitTransition(gameWorld, &newLevel, path);
+  PlacePlayerForEdgeArrival(&gameWorld->player, &gameWorld->level,
+                            exitDirection);
+  CameraSnapToPlayer(&gameWorld->camera, &gameWorld->player, &gameWorld->level);
+  return true;
+}
