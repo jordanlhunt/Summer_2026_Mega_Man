@@ -72,33 +72,70 @@ static void ResolveLevelPath(char *out, size_t outSize,
            targetFileName);
 }
 
+// Extracted commit from the GameWOrldChangeLevelAtDoor()
+static void GameWorldCommitTransition(GameWorld *gameWorld, Level *newLevel,
+                                      const *pathToNewLevel) {
+  LevelFree(&gameWorld->level);
+  gameWorld->level = *newLevel;
+  PlayerResetForRoomTransition(&gameWorld->player);
+  memset(gameWorld->projectiles, 0, sizeof(gameWorld->projectiles));
+  strncpy(gameWorld->currentLevelPath, pathToNewLevel,
+          MAX_LEVEL_PATH_LENGTH - 1);
+  gameWorld->currentLevelPath[MAX_LEVEL_PATH_LENGTH - 1] = '\0';
+}
+
+// The Mega-Man transition from the edge of a room into the next
+static void PlacePlayerForEdgeArrival(Player *player, const Level *level,
+                                      Direction exitDirection) {
+  float roomWidthInPixels = LevelGetWidthPixels(level);
+  float roomHeightInPixels = LevelGetHeight(level);
+  const float inset = 2.0f;
+  switch (exitDirection) {
+  case RIGHT: {
+    player->entity.x = inset;
+
+    break;
+  }
+  case LEFT: {
+    player->entity.x = roomWidthInPixels - player->entity.width - inset;
+    break;
+  }
+  case DOWN: {
+    player->entity.y = inset;
+    break;
+  }
+  case UP: {
+    player->entity.y = roomHeightInPixels - player->entity.height - inset;
+    break;
+  }
+  default:
+    break;
+  }
+  player->entity.x =
+      SDL_clamp(player->entity.x, 0, roomWidthInPixels - player->entity.width);
+  player->entity.y = SDL_clamp(player->entity.y, 0,
+                               roomHeightInPixels - player->entity.height);
+}
+
 /**
  * End of Helper functions
  */
 
 bool GameWorldChangeLevelAtDoor(GameWorld *gameWorld,
-                                const char *targetLevelPath,
-                                int targetDoorTileX, int targetDoorTileY,
-                                int spawnOffsetTileX, int spawnOffsetTileY) {
+                                const char *targetLevelPath, int targetDoorX,
+                                int targetDoorY, int spawnOffsetX,
+                                int spawnOffSetY) {
   Level newLevel = {0};
-  if (!LevelLoadFromFile(&newLevel, targetLevelPath)) {
-    SDL_Log("Failed to load level '%s'", targetLevelPath);
+  if (!LevelLoadFromFile(&newLevel, path)) {
     return false;
   }
-  if (LevelFindDoorAtTile(&newLevel, targetDoorTileX, targetDoorTileY) ==
-      NULL) {
-    SDL_Log("Level '%s' has no door at (%d, %d)", targetLevelPath,
-            targetDoorTileX, targetDoorTileY);
+  if (LevelFindDoorAtTile(&newLevel, targeDoorX, targetDoorY) == NULL) {
     LevelFree(&newLevel);
     return false;
   }
-  LevelFree(&gameWorld->level);
-  gameWorld->level = newLevel;
-  int spawnTileX = targetDoorTileX + spawnOffsetTileX;
-  int spawnTileY = targetDoorTileY + spawnOffsetTileY;
-  PlacePlayerAtDoorSpawn(&gameWorld->player, spawnTileX, spawnTileY);
-  PlayerResetForRoomTransition(&gameWorld->player);
-  memset(gameWorld->projectiles, 0, sizeof(gameWorld->projectiles));
+  GameWorldCommitTransition(gameWorld, &newLevel, path);
+  PlacePlayerAtDoorSpawn(&gameWorld->player, targetDoorX + spawnOffsetX,
+                         targetDoorY + spawnOffSetY);
   CameraSnapToPlayer(&gameWorld->camera, &gameWorld->player, &gameWorld->level);
   return true;
 }
@@ -113,7 +150,9 @@ bool GameWorldHandleDoorUse(GameWorld *gameWorld, const Input *input) {
       continue;
     }
     char targetLevelPath[MAX_LEVEL_PATH_LENGTH + 32];
-    ResolveLevelPath(targetLevelPath,sizeof(targetLevelPath), gameWorld->currentLevelPath,doorTransition->targetLevelPath);
+    ResolveLevelPath(targetLevelPath, sizeof(targetLevelPath),
+                     gameWorld->currentLevelPath,
+                     doorTransition->targetLevelPath);
     int targetDoorX = doorTransition->targetDoorTileX;
     int targetDoorY = doorTransition->targetDoorTileY;
     int spawnOffsetTileX = doorTransition->spawnOffsetTileX;
@@ -176,3 +215,5 @@ void GameWorldRender(const GameWorld *gameWorld, SDL_Renderer *renderer,
                       LevelGetEnemyCount(&gameWorld->level), renderer,
                       &gameWorld->camera, levelEnemyTexture);
 }
+
+bool GameWorldChangeLevelAtEdge()

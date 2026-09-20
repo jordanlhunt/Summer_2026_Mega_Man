@@ -15,7 +15,10 @@ typedef struct GameWorld {
   Level level;
   Camera camera;
   Projectile projectiles[MAX_PROJECTILES];
+  char currentLevelPath[MAX_LEVEL_PATH_LENGTH];
 } GameWorld;
+
+typedef enum Direction { LEFT, RIGHT, UP, DOWN } Direction;
 
 /**
  * Loads 'levelPath' into the world, resets the camera, places the player at the
@@ -37,9 +40,10 @@ void GameWorldRender(const GameWorld *gameWorld, SDL_Renderer *renderer,
                      SDL_Texture *projectileTexture,
                      SDL_Texture *levelEnemyTexture, SDL_Texture *doorTexture);
 
-bool GameWorldChangeLevelAtDoor(GameWorld *gameWorld, const char *levelPath,
-                                int targetDoorTileX, int targetDoorTileY,
-                                int spawnOffsetTileX, int spawnOffsetTileY);
+bool GameWorldChangeLevelAtDoor(GameWorld *gameWorld,
+                                const char *targetLevelPath, int targetDoorX,
+                                int targetDoorY, int spawnOffsetX,
+                                int spawnOffSetY);
 
 /**
  * If "use" was just pressed and the player is standing in a door, transitions
