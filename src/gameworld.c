@@ -8,7 +8,6 @@
 #include <SDL3/SDL_log.h>
 #include <SDL3/SDL_stdinc.h>
 #include <string.h>
-
 /**
  * Helper functions
  */
@@ -24,7 +23,6 @@ static bool DoorOverlapsPlayer(const DoorTransition *doorTransition,
   return (playerX < doorX + TILE_SIZE) && (playerX + playerWidth > doorX) &&
          (playerY < doorY + TILE_SIZE) && (playerY + playerHeight > doorY);
 }
-
 static void PlacePlayerAtDoorSpawn(Player *player, int spawnTileX,
                                    int spawnTileY) {
   player->entity.x =
@@ -58,34 +56,126 @@ static void CameraSnapToPlayer(Camera *camera, const Player *player,
   camera->x = SDL_clamp(player->entity.x - SCREEN_WIDTH / 2.0f, 0.0f, maxX);
   camera->y = SDL_clamp(player->entity.y - SCREEN_HEIGHT / 2.0f, 0.0f, maxY);
 }
-
+static void ResolveLevelPath(char *out, size_t outSize,
+                             const char *currentLevelPath,
+                             const char *targetFileName) {
+  const char *lastSlash = strchr(currentLevelPath, '/');
+  if (lastSlash == NULL) {
+    snprintf(out, outSize, "%s", targetFileName);
+    return;
+  }
+  int directoryLength = (int)(lastSlash - currentLevelPath + 1);
+  snprintf(out, outSize, "%.*s%s", directoryLength, currentLevelPath,
+           targetFileName);
+}
+// Extracted commit from the GameWOrldChangeLevelAtDoor()
+static void GameWorldCommitTransition(GameWorld *gameWorld, Level *newLevel,
+                                      const char *pathToNewLevel) {
+  LevelFree(&gameWorld->level);
+  gameWorld->level = *newLevel;
+  PlayerResetForRoomTransition(&gameWorld->player);
+  memset(gameWorld->projectiles, 0, sizeof(gameWorld->projectiles));
+  strncpy(gameWorld->currentLevelPath, pathToNewLevel,
+          MAX_LEVEL_PATH_LENGTH - 1);
+  gameWorld->currentLevelPath[MAX_LEVEL_PATH_LENGTH - 1] = '\0';
+}
+// The Mega-Man transition from the edge of a room into the next
+static void PlacePlayerForEdgeArrival(Player *player, const Level *level,
+                                      Direction exitDirection) {
+  float roomWidthInPixels = LevelGetWidthPixels(level);
+  float roomHeightInPixels = LevelGetHeight(level);
+  const float inset = 2.0f;
+  switch (exitDirection) {
+  case RIGHT: {
+    player->entity.x = inset;
+    break;
+  }
+  case LEFT: {
+    player->entity.x = roomWidthInPixels - player->entity.width - inset;
+    break;
+  }
+  case DOWN: {
+    player->entity.y = inset;
+    break;
+  }
+  case UP: {
+    player->entity.y = roomHeightInPixels - player->entity.height - inset;
+    break;
+  }
+  default:
+    break;
+  }
+  player->entity.x =
+      SDL_clamp(player->entity.x, 0, roomWidthInPixels - player->entity.width);
+  player->entity.y = SDL_clamp(player->entity.y, 0,
+                               roomHeightInPixels - player->entity.height);
+}
+static const char *EdgeTargetFor(const Level *level, Direction direction) {
+  switch (direction) {
+  case LEFT: {
+    return level->edgeLeft;
+  }
+  case RIGHT: {
+    return level->edgeRight;
+  }
+  case UP: {
+    return level->edgeUp;
+  }
+  case DOWN: {
+    return level->edgeDown;
+  }
+  }
+  return NULL;
+}
+static bool GameWorldHandleEdgeTrasition(GameWorld *gameWorld) {
+  const Level *level = &gameWorld->level;
+  float roomWidthInPixels = LevelGetWidthPixels(level);
+  float roomHeightinPixels = LevelGetHeightPixels(level);
+  const float margin = 2.0f;
+  const Player *player = &gameWorld->player;
+  Direction direction;
+  if (player->entity.x <= margin && player->entity.velocityX < 0.0f) {
+    direction = LEFT;
+  } else if (player->entity.x + player->entity.width >=
+                 roomWidthInPixels - margin &&
+             player->entity.velocityX > 0.0f) {
+    direction = RIGHT;
+  } else if (player->entity.y <= margin && player->entity.velocityX < 0.0f) {
+    direction = UP;
+  } else if (player->entity.y + player->entity.height >=
+                 roomHeightinPixels - margin &&
+             player->entity.velocityY > 0.0f) {
+    direction = DOWN;
+  } else {
+    return false;
+  }
+  const char *target = EdgeTargetFor(level, direction);
+  if (target == NULL || target[0] == '\0') {
+    return false;
+  }
+  char resolvedLevelPath[MAX_LEVEL_PATH_LENGTH];
+  ResolveLevelPath(resolvedLevelPath, sizeof(resolvedLevelPath),
+                   gameWorld->currentLevelPath, target);
+  return GameWorldChangeLevelAtEdge(gameWorld, resolve, direction);
+}
 /**
  * End of Helper functions
  */
-
 bool GameWorldChangeLevelAtDoor(GameWorld *gameWorld,
-                                const char *targetLevelPath,
-                                int targetDoorTileX, int targetDoorTileY,
-                                int spawnOffsetTileX, int spawnOffsetTileY) {
+                                const char *targetLevelPath, int targetDoorX,
+                                int targetDoorY, int spawnOffsetX,
+                                int spawnOffSetY) {
   Level newLevel = {0};
-  if (!LevelLoadFromFile(&newLevel, targetLevelPath)) {
-    SDL_Log("Failed to load level '%s'", targetLevelPath);
+  if (!LevelLoadFromFile(&newLevel, path)) {
     return false;
   }
-  if (LevelFindDoorAtTile(&newLevel, targetDoorTileX, targetDoorTileY) ==
-      NULL) {
-    SDL_Log("Level '%s' has no door at (%d, %d)", targetLevelPath,
-            targetDoorTileX, targetDoorTileY);
+  if (LevelFindDoorAtTile(&newLevel, targeDoorX, targetDoorY) == NULL) {
     LevelFree(&newLevel);
     return false;
   }
-  LevelFree(&gameWorld->level);
-  gameWorld->level = newLevel;
-  int spawnTileX = targetDoorTileX + spawnOffsetTileX;
-  int spawnTileY = targetDoorTileY + spawnOffsetTileY;
-  PlacePlayerAtDoorSpawn(&gameWorld->player, spawnTileX, spawnTileY);
-  PlayerResetForRoomTransition(&gameWorld->player);
-  memset(gameWorld->projectiles, 0, sizeof(gameWorld->projectiles));
+  GameWorldCommitTransition(gameWorld, &newLevel, path);
+  PlacePlayerAtDoorSpawn(&gameWorld->player, targetDoorX + spawnOffsetX,
+                         targetDoorY + spawnOffSetY);
   CameraSnapToPlayer(&gameWorld->camera, &gameWorld->player, &gameWorld->level);
   return true;
 }
@@ -93,15 +183,15 @@ bool GameWorldHandleDoorUse(GameWorld *gameWorld, const Input *input) {
   if (!input->isUseJustPressed) {
     return false;
   }
-
   for (int i = 0; i < gameWorld->level.doorCount; i++) {
     const DoorTransition *doorTransition = &gameWorld->level.doors[i];
     if (!DoorOverlapsPlayer(doorTransition, &gameWorld->player)) {
       continue;
     }
     char targetLevelPath[MAX_LEVEL_PATH_LENGTH + 32];
-    snprintf(targetLevelPath, sizeof(targetLevelPath), "assets/levels/%s",
-             doorTransition->targetLevelPath);
+    ResolveLevelPath(targetLevelPath, sizeof(targetLevelPath),
+                     gameWorld->currentLevelPath,
+                     doorTransition->targetLevelPath);
     int targetDoorX = doorTransition->targetDoorTileX;
     int targetDoorY = doorTransition->targetDoorTileY;
     int spawnOffsetTileX = doorTransition->spawnOffsetTileX;
@@ -115,7 +205,6 @@ bool GameWorldHandleDoorUse(GameWorld *gameWorld, const Input *input) {
   }
   return false;
 }
-
 bool GameWorldLoadLevel(GameWorld *gameWorld, const char *levelPath) {
   if (!LevelLoadFromFile(&gameWorld->level, levelPath)) {
     return false;
@@ -130,7 +219,6 @@ bool GameWorldLoadLevel(GameWorld *gameWorld, const char *levelPath) {
   memset(gameWorld->projectiles, 0, sizeof(gameWorld->projectiles));
   return true;
 }
-
 void GameWorldShutdown(GameWorld *gameWorld) { LevelFree(&gameWorld->level); }
 void GameWorldUpdate(GameWorld *gameWorld, const Input *input,
                      float deltaTime) {
@@ -138,6 +226,9 @@ void GameWorldUpdate(GameWorld *gameWorld, const Input *input,
     return;
   }
   PlayerUpdate(&gameWorld->player, input, &gameWorld->level, deltaTime);
+  if (GameWorldHandleEdgeTrasition(gameWorld)) {
+    return;
+  }
   ProjectileHandlePlayerShooting(gameWorld->projectiles, &gameWorld->player,
                                  input->isShootJustPressed);
   ProjectileUpdateAll(gameWorld->projectiles, &gameWorld->level, deltaTime);
@@ -163,4 +254,16 @@ void GameWorldRender(const GameWorld *gameWorld, SDL_Renderer *renderer,
   LevelEnemyRenderAll(gameWorld->level.levelEnemies,
                       LevelGetEnemyCount(&gameWorld->level), renderer,
                       &gameWorld->camera, levelEnemyTexture);
+}
+bool GameWorldChangeLevelAtEdge(GameWorld *gameWorld, const char *path,
+                                Direction exitDirection) {
+  Level newLevel = {0};
+  if (!LevelLoadFromFile(&newLevel, Path)) {
+    return false;
+  }
+  GameWorldCommitTransition(gameWorld, &newLevel, path);
+  PlacePlayerForEdgeArrival(&gameWorld->player, &gameWorld->level,
+                            exitDirection);
+  CameraSnapToPlayer(&gameWorld->camera, &gameWorld->player, &gameWorld->level);
+  return true;
 }

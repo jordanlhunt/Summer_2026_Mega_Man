@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+
 typedef struct LevelParseState {
   bool *spawnPlayerFound;
   DoorTransition *doors;
@@ -70,46 +71,57 @@ static bool LevelParseTileChar(LevelParseState *state, char fileCharacter,
   }
   return true;
 }
-static bool LevelParseDoorTransitions(FILE *levelFile,
-                                      DoorTransition doorTransitions[],
-                                      int doorCount, const char *filePath) {
-  int doorTileX;
-  int doorTileY;
-  int targetDoorTileX;
-  int targetDoorTileY;
-  int offsetX;
-  int offsetY;
-  char targetLevelPath[MAX_LEVEL_PATH_LENGTH];
-  int matchCount = 0;
-  while (fscanf(levelFile, " %d %d %127s %d %d %d %d", &doorTileX, &doorTileY,
-                targetLevelPath, &targetDoorTileX, &targetDoorTileY, &offsetX,
-                &offsetY) == 7) {
-    bool isMatched = false;
-    for (int i = 0; i < doorCount; i++) {
-      if (doorTransitions[i].tileX == doorTileX &&
-          doorTransitions[i].tileY == doorTileY) {
-        strncpy(doorTransitions[i].targetLevelPath, targetLevelPath,
-                MAX_LEVEL_PATH_LENGTH - 1);
-        doorTransitions[i].targetLevelPath[MAX_LEVEL_PATH_LENGTH - 1] = '\0';
-        doorTransitions[i].targetDoorTileX = targetDoorTileX;
-        doorTransitions[i].targetDoorTileY = targetDoorTileY;
-        doorTransitions[i].spawnOffsetTileX = offsetX;
-        doorTransitions[i].spawnOffsetTileY = offsetY;
-        isMatched = true;
-        matchCount += 1;
-        break;
+static bool LevelParseTransitions(File *newRoom, Level *newLevel,
+                                  LevelEnemy *levelEnemies,
+                                  int *levelEnemyCount,
+                                  DoorTransition *doorTransitions,
+                                  int *doorCount, const char *filePath) {
+  char transitionType[16];
+  while (fscanf(targetRoom, " %15s", transitionType) == 1) {
+    if (strcmp(transitionType, TRANSITION_TYPE_DOOR) == 0) {
+      int doorTileX, doorTileY, targetDoorTileX, targetDoorTileY, spawnOffsetX,
+          spawnOffsetY;
+      char targetLevelFileName[MAX_LEVEL_PATH_LENGTH];
+      if (fscanf(newRoom, " %d %d %127s %d %d %d %d", &doorTileX, &doorTileY,
+                 targetLevelFileName, &targetDoorTileX, &targetDoorTileY,
+                 &spawnOffsetX, &spawnOffsetY) != 7) {
+        SDL_Log("Malformed door line in %s", filePath);
+        return false;
       }
-    }
-    if (!isMatched) {
-      SDL_Log("Door transition at (%d, %d) has no matching door tile: %s",
-              doorTileX, doorTileY, filePath);
+      if (*doorCount >= MAX_DOORS) {
+        return false;
+      }
+      DoorTransition *door = &doorTransitions[*doorCount];
+      door->tileX = doorTileX;
+      door->tileY = doorTileY;
+      strncpy(door->targetLevelPath, targetLevelFileName,
+              MAX_LEVEL_PATH_LENGTH - 1);
+      door->targetDoorTileX = targetDoorTileX;
+      door->targetDoorTileY = targetDoorTileY;
+      door->spawnOffsetTileX = spawnOffsetX;
+      door->spawnOffsetTileY = spawnOffsetY;
+      (*doorCount) += 1;
+    } else if (strcmp(transitionType, "edge") == 0) {
+      char directionType[16], targetLevelFileName[MAX_LEVEL_PATH_LENGTH];
+      if (fscanf(newRoom, " %15s %127s", directionType, targetLevelFileName) !=
+          2) {
+        SDL_Log("Malformed edge line in %s", filePath);
+        return false;
+      }
+      char *destination = NULL;
+      if (strcmp(directionType, "left") == 0) {
+        destination = newLevel->edgeLeft;
+      } else if (strcmp(directionType, "right") == 0) {
+        destination = newLevel->edgeRight;
+      } else if (strcmp(directionType, "up") == 0) {
+        destination = newLevel->edgeUp;
+      } else if (strcmp(directionType, "down") == 0) {
+        destination = newLevel->edgeDown;
+      }
+    } else {
+      SDL_Log("Unknown edge direction '%s'", directionType);
       return false;
     }
-  }
-  if (matchCount != doorCount) {
-    SDL_Log("Level has %d door tile but %d transition line: %s", doorCount,
-            matchCount, filePath);
-    return false;
   }
   return true;
 }
