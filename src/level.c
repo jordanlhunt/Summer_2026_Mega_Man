@@ -87,11 +87,23 @@ static bool LevelParseTransitions(FILE *newRoom, char *edgeLeft,
         SDL_Log("Malformed door line in %s", filePath);
         return false;
       }
-      if (*doorCount >= MAX_DOORS)
-        return false;
-      DoorTransition *door = &doorTransitions[*doorCount];
-      door->tileX = doorTileX;
-      door->tileY = doorTileY;
+
+      // Find the existing door created by the '8' tile in the grid
+      DoorTransition *door = NULL;
+      for (int i = 0; i < *doorCount; i++) {
+        if (doorTransitions[i].tileX == doorTileX &&
+            doorTransitions[i].tileY == doorTileY) {
+          door = &doorTransitions[i];
+          break;
+        }
+      }
+
+      if (door == NULL) {
+        SDL_Log("Transition points to door at (%d, %d), but no '8' tile exists "
+                "there.",
+                doorTileX, doorTileY);
+        continue;
+      }
       strncpy(door->targetLevelPath, targetLevelFileName,
               MAX_LEVEL_PATH_LENGTH - 1);
       door->targetLevelPath[MAX_LEVEL_PATH_LENGTH - 1] = '\0';
@@ -99,7 +111,7 @@ static bool LevelParseTransitions(FILE *newRoom, char *edgeLeft,
       door->targetDoorTileY = targetDoorTileY;
       door->spawnOffsetTileX = spawnOffsetX;
       door->spawnOffsetTileY = spawnOffsetY;
-      (*doorCount)++;
+      // Note: We no longer increment (*doorCount)++ here!
     } else if (strcmp(transitionType, TRANSITION_TYPE_EDGE) == 0) {
       char directionType[16];
       char targetLevelFileName[MAX_LEVEL_PATH_LENGTH];
@@ -261,7 +273,7 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
 
   LevelCommitLoadedData(level, newTiles, width, height, spawnFound, spawnX,
                         spawnY, newEnemies, newEnemyCount, newDoors,
-                        newDoorCount);
+                        newDoorCount, edgeLeft, edgeRight, edgeUp, edgeDown);
   fclose(levelFile);
   return true;
 }

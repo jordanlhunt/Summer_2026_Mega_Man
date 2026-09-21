@@ -6,3 +6,4 @@
 0000000001
 0000000001
 1111111111
+edge right testroom.txt

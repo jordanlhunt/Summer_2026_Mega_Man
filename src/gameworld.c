@@ -166,7 +166,7 @@ bool GameWorldChangeLevelAtDoor(GameWorld *gameWorld,
                                 int targetDoorY, int spawnOffsetX,
                                 int spawnOffSetY) {
   Level newLevel = {0};
-  if (!LevelLoadFromFile(&targetLevelPath, path)) {
+  if (!LevelLoadFromFile(&newLevel, targetLevelPath)) {
     return false;
   }
   if (LevelFindDoorAtTile(&newLevel, targetDoorX, targetDoorY) == NULL) {
