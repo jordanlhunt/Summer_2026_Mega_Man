@@ -126,6 +126,8 @@ static bool LevelParseTransitions(File *newRoom, Level *newLevel,
   return true;
 }
 
+
+
 static bool LevelReadDimensions(FILE *levelFile, int *outWidth, int *outHeight,
                                 const char *filePath) {
   if (fscanf(levelFile, "%d %d", outWidth, outHeight) != 2) {

@@ -70,7 +70,11 @@ static void ResolveLevelPath(char *out, size_t outSize,
 }
 // Extracted commit from the GameWOrldChangeLevelAtDoor()
 static void GameWorldCommitTransition(GameWorld *gameWorld, Level *newLevel,
+<<<<<<< HEAD
                                       const char *pathToNewLevel) {
+=======
+                                      const *pathToNewLevel) {
+>>>>>>> a1abf27e7b3eddc7c7216ebca890fd6222e36cfc
   LevelFree(&gameWorld->level);
   gameWorld->level = *newLevel;
   PlayerResetForRoomTransition(&gameWorld->player);

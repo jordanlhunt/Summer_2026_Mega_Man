@@ -13,6 +13,8 @@
 #define TILE_PLAYER_SPAWN_CHAR '6'
 #define TILE_ENEMY_SPAWN_CHAR '7'
 #define TILE_DOOR_CHAR '8'
+#define TRANSITION_TYPE_DOOR 'door'
+#define TRANSTITION_TYPE_EDGE 'edge'
 typedef struct DoorTransition {
   char targetLevelPath[MAX_LEVEL_PATH_LENGTH];
   int spawnOffsetTileX;
@@ -33,6 +35,10 @@ typedef struct Level {
   int width;
   LevelEnemy levelEnemies[MAX_LEVEL_ENEMIES];
   unsigned char *tiles;
+  char edgeLeft[MAX_LEVEL_PATH_LENGTH];
+  char edgeRight[MAX_LEVEL_PATH_LENGTH];
+  char edgeUp[MAX_LEVEL_PATH_LENGTH];
+  char edgeDown[MAX_LEVEL_PATH_LENGTH];
 } Level;
 typedef enum TILETYPE {
   TILE_EMPTY = 0,
