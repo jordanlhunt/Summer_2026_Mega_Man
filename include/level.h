@@ -13,8 +13,8 @@
 #define TILE_PLAYER_SPAWN_CHAR '6'
 #define TILE_ENEMY_SPAWN_CHAR '7'
 #define TILE_DOOR_CHAR '8'
-#define TRANSITION_TYPE_DOOR 'door'
-#define TRANSTITION_TYPE_EDGE 'edge'
+#define TRANSITION_TYPE_DOOR "door"
+#define TRANSITION_TYPE_EDGE "edge"
 typedef struct DoorTransition {
   char targetLevelPath[MAX_LEVEL_PATH_LENGTH];
   int spawnOffsetTileX;

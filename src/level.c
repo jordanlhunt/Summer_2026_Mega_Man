@@ -71,16 +71,15 @@ static bool LevelParseTileChar(LevelParseState *state, char fileCharacter,
   }
   return true;
 }
-static bool LevelParseTransitions(File *newRoom, Level *newLevel,
-                                  LevelEnemy *levelEnemies,
-                                  int *levelEnemyCount,
+static bool LevelParseTransitions(FILE *newRoom, char *edgeLeft,
+                                  char *edgeRight, char *edgeUp, char *edgeDown,
                                   DoorTransition *doorTransitions,
                                   int *doorCount, const char *filePath) {
   char transitionType[16];
-  while (fscanf(targetRoom, " %15s", transitionType) == 1) {
+  while (fscanf(newRoom, " %15s", transitionType) == 1) {
     if (strcmp(transitionType, TRANSITION_TYPE_DOOR) == 0) {
-      int doorTileX, doorTileY, targetDoorTileX, targetDoorTileY, spawnOffsetX,
-          spawnOffsetY;
+      int doorTileX, doorTileY, targetDoorTileX, targetDoorTileY;
+      int spawnOffsetX, spawnOffsetY;
       char targetLevelFileName[MAX_LEVEL_PATH_LENGTH];
       if (fscanf(newRoom, " %d %d %127s %d %d %d %d", &doorTileX, &doorTileY,
                  targetLevelFileName, &targetDoorTileX, &targetDoorTileY,
@@ -88,21 +87,22 @@ static bool LevelParseTransitions(File *newRoom, Level *newLevel,
         SDL_Log("Malformed door line in %s", filePath);
         return false;
       }
-      if (*doorCount >= MAX_DOORS) {
+      if (*doorCount >= MAX_DOORS)
         return false;
-      }
       DoorTransition *door = &doorTransitions[*doorCount];
       door->tileX = doorTileX;
       door->tileY = doorTileY;
       strncpy(door->targetLevelPath, targetLevelFileName,
               MAX_LEVEL_PATH_LENGTH - 1);
+      door->targetLevelPath[MAX_LEVEL_PATH_LENGTH - 1] = '\0';
       door->targetDoorTileX = targetDoorTileX;
       door->targetDoorTileY = targetDoorTileY;
       door->spawnOffsetTileX = spawnOffsetX;
       door->spawnOffsetTileY = spawnOffsetY;
-      (*doorCount) += 1;
-    } else if (strcmp(transitionType, "edge") == 0) {
-      char directionType[16], targetLevelFileName[MAX_LEVEL_PATH_LENGTH];
+      (*doorCount)++;
+    } else if (strcmp(transitionType, TRANSITION_TYPE_EDGE) == 0) {
+      char directionType[16];
+      char targetLevelFileName[MAX_LEVEL_PATH_LENGTH];
       if (fscanf(newRoom, " %15s %127s", directionType, targetLevelFileName) !=
           2) {
         SDL_Log("Malformed edge line in %s", filePath);
@@ -110,23 +110,26 @@ static bool LevelParseTransitions(File *newRoom, Level *newLevel,
       }
       char *destination = NULL;
       if (strcmp(directionType, "left") == 0) {
-        destination = newLevel->edgeLeft;
+        destination = edgeLeft;
       } else if (strcmp(directionType, "right") == 0) {
-        destination = newLevel->edgeRight;
+        destination = edgeRight;
       } else if (strcmp(directionType, "up") == 0) {
-        destination = newLevel->edgeUp;
+        destination = edgeUp;
       } else if (strcmp(directionType, "down") == 0) {
-        destination = newLevel->edgeDown;
+        destination = edgeDown;
+      } else {
+        SDL_Log("Unknown edge direction '%s' in %s", directionType, filePath);
+        return false;
       }
+      strncpy(destination, targetLevelFileName, MAX_LEVEL_PATH_LENGTH - 1);
+      destination[MAX_LEVEL_PATH_LENGTH - 1] = '\0';
     } else {
-      SDL_Log("Unknown edge direction '%s'", directionType);
+      SDL_Log("Unknown transition type '%s' in %s", transitionType, filePath);
       return false;
     }
   }
   return true;
 }
-
-
 
 static bool LevelReadDimensions(FILE *levelFile, int *outWidth, int *outHeight,
                                 const char *filePath) {
@@ -167,7 +170,9 @@ static void LevelCommitLoadedData(Level *level, unsigned char *tiles, int width,
                                   float spawnY, const LevelEnemy newEnemies[],
                                   int newEnemyCount,
                                   const DoorTransition newDoors[],
-                                  int newDoorCount) {
+                                  int newDoorCount, const char *edgeLeft,
+                                  const char *edgeRight, const char *edgeUp,
+                                  const char *edgeDown) {
   free(level->tiles);
   level->tiles = tiles;
   level->width = width;
@@ -179,6 +184,14 @@ static void LevelCommitLoadedData(Level *level, unsigned char *tiles, int width,
   level->levelEnemiesCount = newEnemyCount;
   memcpy(level->doors, newDoors, sizeof(level->doors));
   level->doorCount = newDoorCount;
+  strncpy(level->edgeLeft, edgeLeft, MAX_LEVEL_PATH_LENGTH - 1);
+  strncpy(level->edgeRight, edgeRight, MAX_LEVEL_PATH_LENGTH - 1);
+  strncpy(level->edgeUp, edgeUp, MAX_LEVEL_PATH_LENGTH - 1);
+  strncpy(level->edgeDown, edgeDown, MAX_LEVEL_PATH_LENGTH - 1);
+  level->edgeLeft[MAX_LEVEL_PATH_LENGTH - 1] = '\0';
+  level->edgeRight[MAX_LEVEL_PATH_LENGTH - 1] = '\0';
+  level->edgeUp[MAX_LEVEL_PATH_LENGTH - 1] = '\0';
+  level->edgeDown[MAX_LEVEL_PATH_LENGTH - 1] = '\0';
 }
 /**
  * End of Helper functions
@@ -239,7 +252,8 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
     return false;
   }
 
-  if (!LevelParseDoorTransitions(levelFile, newDoors, newDoorCount, filePath)) {
+  if (!LevelParseTransitions(levelFile, edgeLeft, edgeRight, edgeUp, edgeDown,
+                             newDoors, &newDoorCount, filePath)) {
     free(newTiles);
     fclose(levelFile);
     return false;
