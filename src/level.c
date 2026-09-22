@@ -241,6 +241,11 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
 
   DoorTransition newDoors[MAX_DOORS] = {0};
   LevelEnemy newEnemies[MAX_LEVEL_ENEMIES] = {0};
+  char edgeLeft[MAX_LEVEL_PATH_LENGTH] = {0};
+  char edgeRight[MAX_LEVEL_PATH_LENGTH] = {0};
+  char edgeUp[MAX_LEVEL_PATH_LENGTH] = {0};
+  char edgeDown[MAX_LEVEL_PATH_LENGTH] = {0};
+  int newDoorCount = 0;
   int newDoorCount = 0;
   int newEnemyCount = 0;
   bool spawnFound = false;
