@@ -259,6 +259,7 @@ bool GameWorldChangeLevelAtEdge(GameWorld *gameWorld, const char *path,
                                 Direction exitDirection) {
   Level newLevel = {0};
   if (!LevelLoadFromFile(&newLevel, path)) {
+    SDL_Log("Edge transition failed: could not load %s", path);
     return false;
   }
   GameWorldCommitTransition(gameWorld, &newLevel, path);
