@@ -246,7 +246,6 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
   char edgeUp[MAX_LEVEL_PATH_LENGTH] = {0};
   char edgeDown[MAX_LEVEL_PATH_LENGTH] = {0};
   int newDoorCount = 0;
-  int newDoorCount = 0;
   int newEnemyCount = 0;
   bool spawnFound = false;
   float spawnX = 0.0f;
