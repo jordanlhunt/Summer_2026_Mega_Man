@@ -217,6 +217,9 @@ bool GameWorldLoadLevel(GameWorld *gameWorld, const char *levelPath) {
   gameWorld->player.entity.y = gameWorld->level.playerSpawnY;
   // Initialize the player projectile pool
   memset(gameWorld->projectiles, 0, sizeof(gameWorld->projectiles));
+  // Remember currrent location so transitions can resolve relative path
+  strncpy(gameWorld->currentLevelPath, levelPath, MAX_LEVEL_PATH_LENGTH - 1);
+  gameWorld->currentLevelPath[MAX_LEVEL_PATH_LENGTH - 1] = '\0';
   return true;
 }
 void GameWorldShutdown(GameWorld *gameWorld) { LevelFree(&gameWorld->level); }
