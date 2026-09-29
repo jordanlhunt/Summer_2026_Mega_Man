@@ -1,9 +1,5 @@
 #include "level.h"
-#include "config.h"
-#include "levelEnemy.h"
-#include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
+
 
 typedef struct LevelParseState {
   bool *spawnPlayerFound;

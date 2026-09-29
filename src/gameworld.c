@@ -1,13 +1,4 @@
 #include "gameworld.h"
-#include "config.h"
-#include "graphics.h"
-#include "level.h"
-#include "levelEnemy.h"
-#include "player.h"
-#include "projectile.h"
-#include <SDL3/SDL_log.h>
-#include <SDL3/SDL_stdinc.h>
-#include <string.h>
 /**
  * Helper functions
  */
