@@ -10,6 +10,8 @@
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 #define TILE_SIZE 32
+#define LEVEL_DIMENSIONS_X 40
+#define LEVEL_DIMENSIONS_Y 22
 
 /* -------------------------------------------------------------------- */
 /* Physics                                                              */

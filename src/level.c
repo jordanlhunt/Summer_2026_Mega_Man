@@ -226,6 +226,11 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
     fclose(levelFile);
     return false;
   }
+  if(width != LEVEL_DIMENSIONS_X || height != LEVEL_DIMENSIONS_Y){
+    SDL_Log("Level '%s' is %dx%d, expected %dx%d. Standarize the file.", filePath, width,height,LEVEL_DIMENSIONS_X, LEVEL_DIMENSIONS_Y);
+    fclose(levelFile);
+    return false;
+  }
 
   size_t tileCount = (size_t)width * (size_t)height;
   unsigned char *newTiles = calloc(tileCount, sizeof(*newTiles));

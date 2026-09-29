@@ -5,8 +5,7 @@
 #include "levelEnemy.h"
 
 #define LEVEL_FLOOR_ROW 21
-#define LEVEL_DIMENSIONS_X 40
-#define LEVEL_DIMENSIONS_Y 22
+
 #define MAX_LEVEL_ENEMIES 7
 #define MAX_DOORS 8
 #define MAX_LEVEL_PATH_LENGTH 128
