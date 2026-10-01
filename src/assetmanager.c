@@ -1,7 +1,5 @@
 #include "assetmanager.h"
 #include "graphics.h"
-#include <SDL3/SDL_render.h>
-#include <string.h>
 
 void AssetManagerInitialize(AssetManager *assetManager) {
   memset(assetManager, 0, sizeof(*assetManager));
