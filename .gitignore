@@ -27,3 +27,5 @@ vgcore.*
 # Operating-system files
 .DS_Store
 Thumbs.db
+
+assets/docs/Roadmap.txt
