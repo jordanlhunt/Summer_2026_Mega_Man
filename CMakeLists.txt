@@ -46,25 +46,14 @@ target_link_libraries(sdl_man PRIVATE
     ${SDL3_IMAGE_LIBRARY}
     m
 )
-# Copy assets (unchanged)
+# Copy assets 
 add_custom_command(
     TARGET sdl_man
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory
     "$<TARGET_FILE_DIR:sdl_man>/assets"
-    COMMAND ${CMAKE_COMMAND} -E make_directory
-    "$<TARGET_FILE_DIR:sdl_man>/assets/levels"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "${CMAKE_SOURCE_DIR}/assets/sarabot-alpha.png"
-    "$<TARGET_FILE_DIR:sdl_man>/assets/sarabot-alpha.png"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "${CMAKE_SOURCE_DIR}/assets/levels/testroom.txt"
-    "$<TARGET_FILE_DIR:sdl_man>/assets/levels/testroom.txt"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "${CMAKE_SOURCE_DIR}/assets/shot.png"
-    "$<TARGET_FILE_DIR:sdl_man>/assets/shot.png"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "${CMAKE_SOURCE_DIR}/assets/Big_Propeller_Bot.png"
-    "$<TARGET_FILE_DIR:sdl_man>/assets/Big_Propeller_Bot.png"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_SOURCE_DIR}/assets"
+    "$<TARGET_FILE_DIR:sdl_man>/assets"
     VERBATIM
 )

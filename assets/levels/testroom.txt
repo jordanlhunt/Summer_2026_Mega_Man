@@ -23,4 +23,4 @@
 1111111111111111111111111111111111111111
 door 29 19 testroom2_TestDoorMechanic.txt 1 6 1 0
 edge left  testroom4_TestTransitionAtEdgeEnterFromTheRight.txt
-edge right testroom3_TestTransitionAtEdgeEnterFromTheLeft.txt
+edge right testroom2.txt
