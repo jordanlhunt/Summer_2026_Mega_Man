@@ -15,8 +15,12 @@
 #define DASH_GRAVITY_SCALE 0.2f
 #define DASH_SPEED 550.0f
 #define GROUND_ACCELERATION 25.0f
+#define INVINCIBLE_FRAMES_DURATION 1.1f
 #define JUMP_BUFFER_TIME 0.1f
 #define JUMP_FORCE 520.0f
+#define KNOCKBACK_DURATION .3f
+#define KNOCKBACK_SPEED_X 180.0f
+#define KNOCKBACK_SPEEDY -260.0f
 #define PLAYER_SPEED 220.0f
 #define SHOOT_ANIMATION_DURATION 0.18f
 #define SHOOT_FLASH_DURATION 0.05f
@@ -27,6 +31,7 @@
 #define WALL_JUMP_FORCE_Y 480.0f
 #define WALL_SLIDE_GRAVITY_SCALE 0.3f
 #define WALL_SLIDE_SPEED 120.0f
+
 /* Animation frame indices (column within a style block) */
 typedef enum ANIMATION_INDEX {
   ANIMATION_IDLE_1,
@@ -58,13 +63,15 @@ typedef struct Player {
   bool isDashing;
   bool isFacingRight;
   bool isWallSliding;
+  Entity entity;
   float animationTimer;
-  float shootAnimationTimer;
   float coyoteTimer;
   float dashCooldown;
   float dashTimer;
-  Entity entity;
+  float invincibleFramesTimer;
   float jumpBufferTimer;
+  float knockbackTimer;
+  float shootAnimationTimer;
   float shootCooldown;
   float wallSlideTimer;
   int hitPoints;
@@ -75,4 +82,5 @@ typedef struct Player {
 } Player;
 void PlayerUpdate(Player *player, const Input *input, const Level *level,
                   float deltaTime);
+void PlayerTakeDamage(Player *player, int damage, float sourceX);
 #endif
