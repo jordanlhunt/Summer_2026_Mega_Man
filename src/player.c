@@ -256,3 +256,33 @@ void PlayerUpdate(Player *player, const Input *input, const Level *level,
   PlayerMoveAndResolve(player, level, deltaTime);
   PlayerUpdateAnimationState(player, previousPlayerState, deltaTime);
 }
+
+// Allow the player to take damage
+void PlayerTakeDamage(Player *player, int damage, float damageSourceX) {
+  // If the timer is still going don't take damage
+  if (player->invincibleFramesTimer > 0.0f) {
+    return;
+  }
+  // If player hitpoints are zero don't take more damage
+  if (player->hitPoints <= 0) {
+    SDL_Log("SDL-Man has died\n");
+    return;
+  }
+  // Take the damage and activate the timers for iframes and knockback
+  player->hitPoints -= damage;
+  player->invincibleFramesTimer = INVINCIBLE_FRAMES_DURATION;
+  player->knockbackTimer = KNOCKBACK_DURATION;
+  // Interrupt current player action
+  player->isDashing = false;
+  player->dashTimer = 0.0f;
+  player->isWallSliding = false;
+  player->wallSlideTimer = 0.0f;
+  // Push the player back
+  if (player->entity.x < damageSourceX) {
+    player->entity.velocityX -= KNOCKBACK_SPEED_X;
+  } else {
+    player->entity.velocityX = KNOCKBACK_SPEED_X;
+  }
+  player->entity.velocityY = KNOCKBACK_SPEED_Y;
+  player->entity.isOnGround = false;
+}

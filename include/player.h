@@ -20,7 +20,7 @@
 #define JUMP_FORCE 520.0f
 #define KNOCKBACK_DURATION .3f
 #define KNOCKBACK_SPEED_X 180.0f
-#define KNOCKBACK_SPEEDY -260.0f
+#define KNOCKBACK_SPEED_Y -260.0f
 #define PLAYER_SPEED 220.0f
 #define SHOOT_ANIMATION_DURATION 0.18f
 #define SHOOT_FLASH_DURATION 0.05f
@@ -82,5 +82,5 @@ typedef struct Player {
 } Player;
 void PlayerUpdate(Player *player, const Input *input, const Level *level,
                   float deltaTime);
-void PlayerTakeDamage(Player *player, int damage, float sourceX);
+void PlayerTakeDamage(Player *player, int damage, float damageSourceX);
 #endif
