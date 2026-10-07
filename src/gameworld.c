@@ -101,6 +101,7 @@ static void PlacePlayerForEdgeArrival(Player *player, const Level *level,
   player->entity.y = SDL_clamp(player->entity.y, 0,
                                roomHeightInPixels - player->entity.height);
 }
+
 static const char *EdgeTargetFor(const Level *level, Direction direction) {
   switch (direction) {
   case LEFT: {
@@ -149,6 +150,23 @@ static bool GameWorldHandleEdgeTransition(GameWorld *gameWorld) {
                    gameWorld->currentLevelPath, target);
   return GameWorldChangeLevelAtEdge(gameWorld, resolvedLevelPath, direction);
 }
+
+// If the player collides with an enemy take damage
+static void GameWorldHandleEnemyContact(Gameworld *gameWorld) {
+  int enemyCount = LevelGetEnemyCount(&gameWorld->level);
+  for (int i = 0; i < enemyCount; i++) {
+    LevelEnemy *enemy = &gameWorld->level.levelEnemies[i];
+    if (!enemy->entity.isActive) {
+      continue;
+    }
+    if(!EntityOverlaps(&gameWorld->player.entity, &enemy->entity){
+      continue;
+    }
+    PlayerTakeDamage(&gameWorld->player, 1, enemy->entity.x);
+    break;
+  }
+}
+
 /**
  * End of Helper functions
  */
@@ -220,6 +238,7 @@ void GameWorldUpdate(GameWorld *gameWorld, const Input *input,
     return;
   }
   PlayerUpdate(&gameWorld->player, input, &gameWorld->level, deltaTime);
+  GameWorldHandleEnemyContact(gameWorld);
   if (GameWorldHandleEdgeTransition(gameWorld)) {
     return;
   }
