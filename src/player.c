@@ -85,6 +85,8 @@ static void PlayerUpdateTimers(Player *player, const Input *input,
   DecreaseTimer(&player->shootCooldown, deltaTime);
   DecreaseTimer(&player->jumpBufferTimer, deltaTime);
   DecreaseTimer(&player->shootAnimationTimer, deltaTime);
+  DecreaseTimer(&player->invincibleFramesTimer, deltaTime);
+  DecreaseTimer(&player->knockbackTimer, deltaTime);
   if (player->entity.isOnGround) {
     player->coyoteTimer = COYOTE_TIME;
   } else {
@@ -133,6 +135,9 @@ static bool PlayerHandleDash(Player *player, const Input *input,
 }
 static void PlayerHandleGroundToAirMovement(Player *player, const Input *input,
                                             float deltaTime) {
+  if (player->knockbackTimer > 0.0f) {
+    return;
+  }
   float targetVelocityX = 0.0f;
   if (input->moveLeft) {
     targetVelocityX = -PLAYER_SPEED;
