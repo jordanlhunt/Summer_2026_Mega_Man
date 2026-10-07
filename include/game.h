@@ -10,6 +10,13 @@
 #include "level.h"
 #include "player.h"
 #include "projectile.h"
+
+typedef enum GameState {
+  GAME_STATE_PLAYING,
+  GAME_STATE_DYING,
+  GAME_STATE_DEAD
+} GameState;
+
 typedef struct Game {
   SDL_Window *gameWindow;
   SDL_Renderer *gameRenderer;
@@ -22,6 +29,8 @@ typedef struct Game {
   Input input;
   bool isRunning;
   Uint64 previousTime;
+  GameState currentGameState;
+  float deathTimer;
 } Game;
 bool GameInitialize(Game *game);
 void GameShutdown(Game *game);
