@@ -152,14 +152,14 @@ static bool GameWorldHandleEdgeTransition(GameWorld *gameWorld) {
 }
 
 // If the player collides with an enemy take damage
-static void GameWorldHandleEnemyContact(Gameworld *gameWorld) {
+static void GameWorldHandleEnemyContact(GameWorld *gameWorld) {
   int enemyCount = LevelGetEnemyCount(&gameWorld->level);
   for (int i = 0; i < enemyCount; i++) {
     LevelEnemy *enemy = &gameWorld->level.levelEnemies[i];
     if (!enemy->entity.isActive) {
       continue;
     }
-    if(!EntityOverlaps(&gameWorld->player.entity, &enemy->entity){
+    if (!EntityOverlaps(&gameWorld->player.entity, &enemy->entity)) {
       continue;
     }
     PlayerTakeDamage(&gameWorld->player, 1, enemy->entity.x);

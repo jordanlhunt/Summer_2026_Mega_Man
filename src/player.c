@@ -284,7 +284,7 @@ void PlayerTakeDamage(Player *player, int damage, float damageSourceX) {
   player->wallSlideTimer = 0.0f;
   // Push the player back
   if (player->entity.x < damageSourceX) {
-    player->entity.velocityX -= KNOCKBACK_SPEED_X;
+    player->entity.velocityX = -KNOCKBACK_SPEED_X;
   } else {
     player->entity.velocityX = KNOCKBACK_SPEED_X;
   }
