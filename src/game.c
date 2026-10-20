@@ -97,6 +97,8 @@ bool GameInitialize(Game *game) {
   }
   game->isRunning = true;
   game->previousTime = SDL_GetTicks();
+  game->currentGameState = GAME_STATE_PLAYING;
+  game->deathTimer = 0.0f;
   InputInitialize(&game->input);
   return true;
 }
