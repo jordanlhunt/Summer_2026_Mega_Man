@@ -118,8 +118,38 @@ void GameShutdown(Game *game) {
   SDL_Quit();
 }
 void GameUpdate(Game *game, float deltaTime) {
-  InputUpdate(&game->input);
-  GameWorldUpdate(&game->gameWorld, &game->input, deltaTime);
+  switch (game->currentGameState) {
+  case GAME_STATE_PLAYING: {
+    InputUpdate(&game->input);
+    GameWorldUpdate(&game->gameWorld, &game->input, deltaTime);
+    if (game->gameWorld.player.hitPoints <= 0) {
+      game->currentGameState = GAME_STATE_DYING;
+      game->deathTimer = 1.0f;
+    }
+    break;
+  }
+  case GAME_STATE_DYING: {
+    game->deathTimer -= deltaTime;
+    if (game->deathTimer <= 0.0f) {
+      game->currentGameState = GAME_STATE_DEAD;
+    }
+    break;
+  }
+  case GAME_STATE_DEAD: {
+    char savedPath[MAX_LEVEL_PATH_LENGTH];
+    strncpy(savedPath, game->gameWorld.currentLevelPath,
+            MAX_LEVEL_PATH_LENGTH - 1);
+    savedPath[MAX_LEVEL_PATH_LENGTH - 1] = '\0';
+    GameWorldLoadLevel(&game->gameWorld, savedPath);
+    game->gameWorld.player.hitPoints = STARTING_HITPOINTS;
+    game->state = GAME_STATE_PLAYING;
+    break;
+  }
+  default: {
+    SDL_log("Game Update Default Case Reached");
+    break;
+  }
+  }
 }
 void GameRender(Game *game) {
   GraphicsClear(game->gameRenderer);
