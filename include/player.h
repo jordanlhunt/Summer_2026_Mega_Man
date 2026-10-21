@@ -31,7 +31,7 @@
 #define WALL_JUMP_FORCE_Y 480.0f
 #define WALL_SLIDE_GRAVITY_SCALE 0.3f
 #define WALL_SLIDE_SPEED 120.0f
-#define STARTING_HITPOINTS 16f
+#define STARTING_HITPOINTS 16
 
 /* Animation frame indices (column within a style block) */
 typedef enum ANIMATION_INDEX {

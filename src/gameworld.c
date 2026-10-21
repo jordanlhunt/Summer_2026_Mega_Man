@@ -32,6 +32,8 @@ static void PlayerResetForRoomTransition(Player *player) {
   player->jumpBufferTimer = 0.0f;
   player->shootAnimationTimer = 0.0f;
   player->animationTimer = 0.0f;
+  player->invincibleFramesTimer = 0.0f;
+  player->knockbackTimer = 0.0f;
   player->currentPlayerState = STATE_IDLE;
 }
 static void CameraSnapToPlayer(Camera *camera, const Player *player,

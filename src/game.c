@@ -83,7 +83,7 @@ bool GameInitialize(Game *game) {
                        .isActive = true,
                    },
                .isFacingRight = true,
-               .hitPoints = 16,
+               .hitPoints = STARTING_HITPOINTS,
                .styleRow = STYLE_NES,
                .currentPlayerState = STATE_IDLE,
                .spriteSheetTexture = game->spriteSheetTexture};
@@ -142,11 +142,13 @@ void GameUpdate(Game *game, float deltaTime) {
     savedPath[MAX_LEVEL_PATH_LENGTH - 1] = '\0';
     GameWorldLoadLevel(&game->gameWorld, savedPath);
     game->gameWorld.player.hitPoints = STARTING_HITPOINTS;
-    game->state = GAME_STATE_PLAYING;
+    game->currentGameState = GAME_STATE_PLAYING;
+    game->gameWorld.player.invincibleFramesTimer = 0.0f;
+    game->gameWorld.player.knockbackTimer = 0.0f;
     break;
   }
   default: {
-    SDL_log("Game Update Default Case Reached");
+    SDL_Log("Game Update Default Case Reached");
     break;
   }
   }
