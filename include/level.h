@@ -2,7 +2,7 @@
 #define LEVEL_H
 #include "common.h"
 #include "config.h"
-#include "healthpick.h"
+#include "healthpickup.h"
 #include "levelEnemy.h"
 
 #define LEVEL_FLOOR_ROW 21
@@ -45,6 +45,8 @@ typedef struct Level {
   char edgeRight[MAX_LEVEL_PATH_LENGTH];
   char edgeUp[MAX_LEVEL_PATH_LENGTH];
   char edgeDown[MAX_LEVEL_PATH_LENGTH];
+  HealthPickup healthPickups[MAX_HEALTH_PICKUPS];
+  int healthPickupCount;
 } Level;
 typedef enum TILETYPE {
   TILE_EMPTY = 0,
@@ -66,10 +68,12 @@ void LevelFree(Level *level);
  * Encapsulated enemy access
  */
 int LevelGetEnemyCount(const Level *level);
+bool LevelAddHealthPickup(Level *level, float x, float y);
 bool LevelAddEnemy(Level *level, float x, float y,
                    LevelEnemyState initialState);
 int LevelGetWidth(const Level *level);
 int LevelGetHeight(const Level *level);
+
 float LevelGetWidthPixels(const Level *level);
 float LevelGetHeightPixels(const Level *level);
 float LevelGetPlayerSpawnX(const Level *level);

@@ -31,6 +31,10 @@ bool CollisionCheckWallLeft(const Level *level, float x, float y, float height);
 bool CollisionCheckWallRight(const Level *level, float x, float y, float width,
                              float height);
 
+bool COllisionCheckAABBForTileType(const Level *level, float x, float y,
+                                   float width, float height,
+                                   unsigned char tileType);
+
 /**
  * Scans the tiles overlapping the given AAB and sets any tile matching
  'tileType' to 0 (empty). This level is modified in place
