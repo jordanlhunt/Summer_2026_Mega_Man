@@ -2,22 +2,25 @@
 #define LEVEL_H
 #include "common.h"
 #include "config.h"
+#include "healthpick.h"
 #include "levelEnemy.h"
 
 #define LEVEL_FLOOR_ROW 21
-
-#define MAX_LEVEL_ENEMIES 7
 #define MAX_DOORS 8
+#define MAX_LEVEL_ENEMIES 7
 #define MAX_LEVEL_PATH_LENGTH 128
-#define TILE_EMPTY_CHAR '0'
-#define TILE_SOLID_CHAR '1'
-#define TILE_ONE_WAY_CHAR '2'
 #define TILE_BREAKABLE_CHAR '3'
-#define TILE_PLAYER_SPAWN_CHAR '6'
-#define TILE_ENEMY_SPAWN_CHAR '7'
 #define TILE_DOOR_CHAR '8'
+#define TILE_EMPTY_CHAR '0'
+#define TILE_ENEMY_SPAWN_CHAR '7'
+#define TILE_ONE_WAY_CHAR '2'
+#define TILE_PLAYER_SPAWN_CHAR '6'
+#define TILE_SOLID_CHAR '1'
+#define TILE_SPIKE_CHAR 'S'
+#define TILE_HEALTH_CHR 'H'
 #define TRANSITION_TYPE_DOOR "door"
 #define TRANSITION_TYPE_EDGE "edge"
+
 typedef struct DoorTransition {
   char targetLevelPath[MAX_LEVEL_PATH_LENGTH];
   int spawnOffsetTileX;
@@ -48,6 +51,7 @@ typedef enum TILETYPE {
   TILE_SOLID = 1,
   TILE_ONE_WAY = 2,
   TILE_BREAKABLE = 3,
+  TILE_SPIKE = 4,
   TILE_PLAYER_SPAWN = 6,
   TILE_ENEMY_SPAWN = 7
 } TILETYPE;
