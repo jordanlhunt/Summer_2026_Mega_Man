@@ -142,9 +142,7 @@ void GameUpdate(Game *game, float deltaTime) {
     savedPath[MAX_LEVEL_PATH_LENGTH - 1] = '\0';
     GameWorldLoadLevel(&game->gameWorld, savedPath);
     game->gameWorld.player.hitPoints = STARTING_HITPOINTS;
-    game->gameWorld.player.invincibleFramesTimer = 0.0f;
-    game->gameWorld.player.knockbackTimer = 0.0f;
-    game->currentGameState = GAME_STATE_PLAYING;
+    game->state = GAME_STATE_PLAYING;
     break;
   }
   default: {
