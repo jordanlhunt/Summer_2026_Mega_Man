@@ -144,3 +144,9 @@ bool CollisionCheckWallRight(const Level *level, float x, float y, float width,
   int tileYBottom = (int)floorf((y + height - 2.0f) / TILE_SIZE);
   return CollisionCheckTileEdge(level, tileX, tileYTop, tileYBottom, true);
 }
+
+bool CollisionCheckAABBForTileType(const Level *level, float x, float y,
+                                   float width, float height,
+                                   unsigned char tileType) {
+  int startTileX = (int)floorf(x / TILE_SIZE);
+}
