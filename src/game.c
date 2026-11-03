@@ -44,15 +44,7 @@ bool GameInitialize(Game *game) {
     SDL_DestroyWindow(game->gameWindow);
     return false;
   }
-  game->doorTexture = AssetManagerLoadTexture(
-      &game->assetManager, game->gameRenderer, DOOR_ASSET_PATH);
-  if (!game->doorTexture) {
-    SDL_Log("Failed to load door texture");
-    AssetManagerShutdown(&game->assetManager);
-    SDL_DestroyRenderer(game->gameRenderer);
-    SDL_DestroyWindow(game->gameWindow);
-    return false;
-  }
+
   game->levelEnemyTexture = AssetManagerLoadTexture(
       &game->assetManager, game->gameRenderer, BIG_PROPELLER_BOT_ASSET_PATH);
   if (!game->levelEnemyTexture) {
@@ -154,7 +146,6 @@ void GameUpdate(Game *game, float deltaTime) {
 void GameRender(Game *game) {
   GraphicsClear(game->gameRenderer);
   GameWorldRender(&game->gameWorld, game->gameRenderer,
-                  game->playerProjectileTexture, game->levelEnemyTexture,
-                  game->doorTexture);
+                  game->playerProjectileTexture, game->levelEnemyTexture);
   GraphicsPresent(game->gameRenderer);
 }

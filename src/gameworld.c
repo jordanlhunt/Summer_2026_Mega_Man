@@ -1,25 +1,5 @@
 #include "gameworld.h"
-/**
- * Helper functions
- */
-static bool DoorOverlapsPlayer(const DoorTransition *doorTransition,
-                               const Player *player) {
-  const float padding = 6.0f;
-  float doorX = (float)(doorTransition->tileX * TILE_SIZE);
-  float doorY = (float)(doorTransition->tileY * TILE_SIZE);
-  float playerX = player->entity.x - padding;
-  float playerY = player->entity.y - padding;
-  float playerWidth = player->entity.width + padding * 2.0f;
-  float playerHeight = player->entity.height + padding * 2.0f;
-  return (playerX < doorX + TILE_SIZE) && (playerX + playerWidth > doorX) &&
-         (playerY < doorY + TILE_SIZE) && (playerY + playerHeight > doorY);
-}
-static void PlacePlayerAtDoorSpawn(Player *player, int spawnTileX,
-                                   int spawnTileY) {
-  player->entity.x =
-      spawnTileX * TILE_SIZE + (TILE_SIZE - player->entity.width) * .5f;
-  player->entity.y = spawnTileY * TILE_SIZE + TILE_SIZE - player->entity.height;
-}
+
 static void PlayerResetForRoomTransition(Player *player) {
   player->entity.velocityX = 0.0f;
   player->entity.velocityY = 0.0f;
@@ -61,7 +41,7 @@ static void ResolveLevelPath(char *out, size_t outSize,
   snprintf(out, outSize, "%.*s%s", directoryLength, currentLevelPath,
            targetFileName);
 }
-// Extracted commit from the GameWOrldChangeLevelAtDoor()
+
 static void GameWorldCommitTransition(GameWorld *gameWorld, Level *newLevel,
                                       const char *pathToNewLevel) {
   LevelFree(&gameWorld->level);
@@ -169,53 +149,6 @@ static void GameWorldHandleEnemyContact(GameWorld *gameWorld) {
   }
 }
 
-/**
- * End of Helper functions
- */
-bool GameWorldChangeLevelAtDoor(GameWorld *gameWorld,
-                                const char *targetLevelPath, int targetDoorX,
-                                int targetDoorY, int spawnOffsetX,
-                                int spawnOffSetY) {
-  Level newLevel = {0};
-  if (!LevelLoadFromFile(&newLevel, targetLevelPath)) {
-    return false;
-  }
-  if (LevelFindDoorAtTile(&newLevel, targetDoorX, targetDoorY) == NULL) {
-    LevelFree(&newLevel);
-    return false;
-  }
-  GameWorldCommitTransition(gameWorld, &newLevel, targetLevelPath);
-  PlacePlayerAtDoorSpawn(&gameWorld->player, targetDoorX + spawnOffsetX,
-                         targetDoorY + spawnOffSetY);
-  CameraSnapToPlayer(&gameWorld->camera, &gameWorld->player, &gameWorld->level);
-  return true;
-}
-bool GameWorldHandleDoorUse(GameWorld *gameWorld, const Input *input) {
-  if (!input->isUseJustPressed) {
-    return false;
-  }
-  for (int i = 0; i < gameWorld->level.doorCount; i++) {
-    const DoorTransition *doorTransition = &gameWorld->level.doors[i];
-    if (!DoorOverlapsPlayer(doorTransition, &gameWorld->player)) {
-      continue;
-    }
-    char targetLevelPath[MAX_LEVEL_PATH_LENGTH + 32];
-    ResolveLevelPath(targetLevelPath, sizeof(targetLevelPath),
-                     gameWorld->currentLevelPath,
-                     doorTransition->targetLevelPath);
-    int targetDoorX = doorTransition->targetDoorTileX;
-    int targetDoorY = doorTransition->targetDoorTileY;
-    int spawnOffsetTileX = doorTransition->spawnOffsetTileX;
-    int spawnOffsetTileY = doorTransition->spawnOffsetTileY;
-    /**
-     * door is now unsafe to read, the level swap invalidates it
-     */
-    return GameWorldChangeLevelAtDoor(gameWorld, targetLevelPath, targetDoorX,
-                                      targetDoorY, spawnOffsetTileX,
-                                      spawnOffsetTileY);
-  }
-  return false;
-}
 bool GameWorldLoadLevel(GameWorld *gameWorld, const char *levelPath) {
   if (!LevelLoadFromFile(&gameWorld->level, levelPath)) {
     return false;
@@ -236,9 +169,6 @@ bool GameWorldLoadLevel(GameWorld *gameWorld, const char *levelPath) {
 void GameWorldShutdown(GameWorld *gameWorld) { LevelFree(&gameWorld->level); }
 void GameWorldUpdate(GameWorld *gameWorld, const Input *input,
                      float deltaTime) {
-  if (GameWorldHandleDoorUse(gameWorld, input)) {
-    return;
-  }
   PlayerUpdate(&gameWorld->player, input, &gameWorld->level, deltaTime);
   GameWorldHandleEnemyContact(gameWorld);
   if (GameWorldHandleEdgeTransition(gameWorld)) {
@@ -259,13 +189,11 @@ void GameWorldUpdate(GameWorld *gameWorld, const Input *input,
 }
 void GameWorldRender(const GameWorld *gameWorld, SDL_Renderer *renderer,
                      SDL_Texture *projectileTexture,
-                     SDL_Texture *levelEnemyTexture, SDL_Texture *doorTexture) {
+                     SDL_Texture *levelEnemyTexture) {
   GraphicsRenderLevel(&gameWorld->level, renderer, &gameWorld->camera);
   GraphicsRenderPlayer(&gameWorld->player, renderer, &gameWorld->camera);
   ProjectileRenderAll(gameWorld->projectiles, renderer, gameWorld->camera.x,
                       gameWorld->camera.y, projectileTexture);
-  GraphicsRenderDoors(&gameWorld->level, renderer, &gameWorld->camera,
-                      doorTexture);
   LevelEnemyRenderAll(gameWorld->level.levelEnemies,
                       LevelGetEnemyCount(&gameWorld->level), renderer,
                       &gameWorld->camera, levelEnemyTexture);

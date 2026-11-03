@@ -1,15 +1,16 @@
 #include "level.h"
-
 typedef struct LevelParseState {
   bool *spawnPlayerFound;
-  DoorTransition *doors;
+
   float *playerSpawnX;
   float *playerSpawnY;
-  int *doorCount;
+
   int *levelEnemiesCount;
   int width;
   LevelEnemy *levelEnemies;
   unsigned char *tiles;
+  HealthPickup *healthPickups;
+  int *healthPickupCount;
 } LevelParseState;
 /**
  * Helper Functions
@@ -21,7 +22,7 @@ static bool LevelParseTileChar(LevelParseState *state, char fileCharacter,
       fileCharacter != TILE_BREAKABLE_CHAR &&
       fileCharacter != TILE_PLAYER_SPAWN_CHAR &&
       fileCharacter != TILE_ENEMY_SPAWN_CHAR &&
-      fileCharacter != TILE_DOOR_CHAR) {
+      fileCharacter != TILE_SPIKE_CHAR && fileCharacter != TILE_HEALTH_CHAR) {
     SDL_Log("Invalid tile '%c' at (%d, %d): %s", fileCharacter, x, y, filePath);
     return false;
   }
@@ -45,22 +46,21 @@ static bool LevelParseTileChar(LevelParseState *state, char fileCharacter,
                          LEVELENEMY_STATE_FLYING);
     *state->levelEnemiesCount += 1;
     state->tiles[index] = 0;
-  } else if (fileCharacter == '8') {
-    if (*state->doorCount >= MAX_DOORS) {
-      SDL_Log("Too many doors at (%d, %d): %s", x, y, filePath);
+  } else if (fileCharacter == TILE_SPIKE_CHAR) {
+    state->tiles[index] = TILE_SPIKE;
+  } else if (fileCharacter == TILE_HEALTH_CHAR) {
+    if (*state->healthPickupCount >= MAX_HEALTH_PICKUPS) {
+      SDL_Log("Too many health pickups at (%d, %d): %s", x, y, filePath);
       return false;
     }
-    DoorTransition *doorTransition = &state->doors[*state->doorCount];
-    doorTransition->tileX = x;
-    doorTransition->tileY = y;
-    state->doors[*state->doorCount].targetLevelPath[0] = '\0';
-    state->doors[*state->doorCount].targetDoorTileX = -1;
-    state->doors[*state->doorCount].targetDoorTileY = -1;
-    state->doors[*state->doorCount].spawnOffsetTileX = 0;
-    state->doors[*state->doorCount].spawnOffsetTileY = 0;
-    *state->doorCount += 1;
-    // Make door tiles walkable
-    state->tiles[index] = 0;
+    float pickupX =
+        (float)(x * TILE_SIZE) + (TILE_SIZE - HEALTH_PICKUP_SIZE) * 0.5f;
+    float pickupY =
+        (float)(y * TILE_SIZE) + (TILE_SIZE - HEALTH_PICKUP_SIZE) * 0.5f;
+    HealthPickupInitialize(&state->healthPickups[*state->healthPickupCount],
+                           pickupX, pickupY);
+    *state->healthPickupCount += 1;
+    state->tiles[index] = TILE_EMPTY;
   } else {
     state->tiles[index] = (unsigned char)(fileCharacter - TILE_EMPTY_CHAR);
   }
@@ -68,46 +68,10 @@ static bool LevelParseTileChar(LevelParseState *state, char fileCharacter,
 }
 static bool LevelParseTransitions(FILE *newRoom, char *edgeLeft,
                                   char *edgeRight, char *edgeUp, char *edgeDown,
-                                  DoorTransition *doorTransitions,
-                                  int *doorCount, const char *filePath) {
+                                  const char *filePath) {
   char transitionType[16];
   while (fscanf(newRoom, " %15s", transitionType) == 1) {
-    if (strcmp(transitionType, TRANSITION_TYPE_DOOR) == 0) {
-      int doorTileX, doorTileY, targetDoorTileX, targetDoorTileY;
-      int spawnOffsetX, spawnOffsetY;
-      char targetLevelFileName[MAX_LEVEL_PATH_LENGTH];
-      if (fscanf(newRoom, " %d %d %127s %d %d %d %d", &doorTileX, &doorTileY,
-                 targetLevelFileName, &targetDoorTileX, &targetDoorTileY,
-                 &spawnOffsetX, &spawnOffsetY) != 7) {
-        SDL_Log("Malformed door line in %s", filePath);
-        return false;
-      }
-
-      // Find the existing door created by the '8' tile in the grid
-      DoorTransition *door = NULL;
-      for (int i = 0; i < *doorCount; i++) {
-        if (doorTransitions[i].tileX == doorTileX &&
-            doorTransitions[i].tileY == doorTileY) {
-          door = &doorTransitions[i];
-          break;
-        }
-      }
-
-      if (door == NULL) {
-        SDL_Log("Transition points to door at (%d, %d), but no '8' tile exists "
-                "there.",
-                doorTileX, doorTileY);
-        continue;
-      }
-      strncpy(door->targetLevelPath, targetLevelFileName,
-              MAX_LEVEL_PATH_LENGTH - 1);
-      door->targetLevelPath[MAX_LEVEL_PATH_LENGTH - 1] = '\0';
-      door->targetDoorTileX = targetDoorTileX;
-      door->targetDoorTileY = targetDoorTileY;
-      door->spawnOffsetTileX = spawnOffsetX;
-      door->spawnOffsetTileY = spawnOffsetY;
-      // Note: We no longer increment (*doorCount)++ here!
-    } else if (strcmp(transitionType, TRANSITION_TYPE_EDGE) == 0) {
+    if (strcmp(transitionType, TRANSITION_TYPE_EDGE) == 0) {
       char directionType[16];
       char targetLevelFileName[MAX_LEVEL_PATH_LENGTH];
       if (fscanf(newRoom, " %15s %127s", directionType, targetLevelFileName) !=
@@ -137,7 +101,6 @@ static bool LevelParseTransitions(FILE *newRoom, char *edgeLeft,
   }
   return true;
 }
-
 static bool LevelReadDimensions(FILE *levelFile, int *outWidth, int *outHeight,
                                 const char *filePath) {
   if (fscanf(levelFile, "%d %d", outWidth, outHeight) != 2) {
@@ -171,13 +134,10 @@ static bool LevelParseGrid(FILE *levelFile, LevelParseState *parseState,
   }
   return true;
 }
-
 static void LevelCommitLoadedData(Level *level, unsigned char *tiles, int width,
                                   int height, bool spawnFound, float spawnX,
                                   float spawnY, const LevelEnemy newEnemies[],
-                                  int newEnemyCount,
-                                  const DoorTransition newDoors[],
-                                  int newDoorCount, const char *edgeLeft,
+                                  int newEnemyCount, const char *edgeLeft,
                                   const char *edgeRight, const char *edgeUp,
                                   const char *edgeDown) {
   free(level->tiles);
@@ -189,8 +149,7 @@ static void LevelCommitLoadedData(Level *level, unsigned char *tiles, int width,
   level->playerSpawnY = spawnY;
   memcpy(level->levelEnemies, newEnemies, sizeof(level->levelEnemies));
   level->levelEnemiesCount = newEnemyCount;
-  memcpy(level->doors, newDoors, sizeof(level->doors));
-  level->doorCount = newDoorCount;
+
   strncpy(level->edgeLeft, edgeLeft, MAX_LEVEL_PATH_LENGTH - 1);
   strncpy(level->edgeRight, edgeRight, MAX_LEVEL_PATH_LENGTH - 1);
   strncpy(level->edgeUp, edgeUp, MAX_LEVEL_PATH_LENGTH - 1);
@@ -219,7 +178,6 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
     SDL_Log("Could not open level file '%s': %s", filePath, SDL_GetError());
     return false;
   }
-
   int width, height;
   if (!LevelReadDimensions(levelFile, &width, &height, filePath)) {
     fclose(levelFile);
@@ -231,7 +189,6 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
     fclose(levelFile);
     return false;
   }
-
   size_t tileCount = (size_t)width * (size_t)height;
   unsigned char *newTiles = calloc(tileCount, sizeof(*newTiles));
   if (newTiles == NULL) {
@@ -239,46 +196,38 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
     fclose(levelFile);
     return false;
   }
-
-  DoorTransition newDoors[MAX_DOORS] = {0};
+  HealthPickup newHealthPickups[MAX_HEALTH_PICKUPS] = {0};
   LevelEnemy newEnemies[MAX_LEVEL_ENEMIES] = {0};
   char edgeLeft[MAX_LEVEL_PATH_LENGTH] = {0};
   char edgeRight[MAX_LEVEL_PATH_LENGTH] = {0};
   char edgeUp[MAX_LEVEL_PATH_LENGTH] = {0};
   char edgeDown[MAX_LEVEL_PATH_LENGTH] = {0};
-  int newDoorCount = 0;
+
   int newEnemyCount = 0;
   bool spawnFound = false;
   float spawnX = 0.0f;
   float spawnY = 0.0f;
-  LevelParseState parseState = {
-      .tiles = newTiles,
-      .width = width,
-      .levelEnemies = newEnemies,
-      .levelEnemiesCount = &newEnemyCount,
-      .spawnPlayerFound = &spawnFound,
-      .playerSpawnX = &spawnX,
-      .playerSpawnY = &spawnY,
-      .doors = newDoors,
-      .doorCount = &newDoorCount,
-  };
-
+  LevelParseState parseState = {.tiles = newTiles,
+                                .width = width,
+                                .levelEnemies = newEnemies,
+                                .levelEnemiesCount = &newEnemyCount,
+                                .spawnPlayerFound = &spawnFound,
+                                .playerSpawnX = &spawnX,
+                                .playerSpawnY = &spawnY};
   if (!LevelParseGrid(levelFile, &parseState, width, height, filePath)) {
     free(newTiles);
     fclose(levelFile);
     return false;
   }
-
   if (!LevelParseTransitions(levelFile, edgeLeft, edgeRight, edgeUp, edgeDown,
-                             newDoors, &newDoorCount, filePath)) {
+                             filePath)) {
     free(newTiles);
     fclose(levelFile);
     return false;
   }
-
   LevelCommitLoadedData(level, newTiles, width, height, spawnFound, spawnX,
-                        spawnY, newEnemies, newEnemyCount, newDoors,
-                        newDoorCount, edgeLeft, edgeRight, edgeUp, edgeDown);
+                        spawnY, newEnemies, newEnemyCount, edgeLeft, edgeRight,
+                        edgeUp, edgeDown);
   fclose(levelFile);
   return true;
 }
@@ -346,16 +295,4 @@ unsigned char LevelGetTile(const Level *level, int tileX, int tileY) {
     return 0;
   }
   return level->tiles[tileY * level->width + tileX];
-}
-const DoorTransition *LevelFindDoorAtTile(const Level *level, int tileX,
-                                          int tileY) {
-  if (level == NULL) {
-    return NULL;
-  }
-  for (int i = 0; i < level->doorCount; i++) {
-    if (level->doors[i].tileX == tileX && level->doors[i].tileY == tileY) {
-      return &level->doors[i];
-    }
-  }
-  return NULL;
 }

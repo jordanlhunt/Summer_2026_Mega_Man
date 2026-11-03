@@ -6,36 +6,23 @@
 #include "levelEnemy.h"
 
 #define LEVEL_FLOOR_ROW 21
-#define MAX_DOORS 8
 #define MAX_LEVEL_ENEMIES 7
 #define MAX_LEVEL_PATH_LENGTH 128
 #define TILE_BREAKABLE_CHAR '3'
-#define TILE_DOOR_CHAR '8'
 #define TILE_EMPTY_CHAR '0'
 #define TILE_ENEMY_SPAWN_CHAR '7'
 #define TILE_ONE_WAY_CHAR '2'
 #define TILE_PLAYER_SPAWN_CHAR '6'
 #define TILE_SOLID_CHAR '1'
 #define TILE_SPIKE_CHAR 'S'
-#define TILE_HEALTH_CHR 'H'
-#define TRANSITION_TYPE_DOOR "door"
+#define TILE_HEALTH_CHAR 'H'
 #define TRANSITION_TYPE_EDGE "edge"
 
-typedef struct DoorTransition {
-  char targetLevelPath[MAX_LEVEL_PATH_LENGTH];
-  int spawnOffsetTileX;
-  int spawnOffsetTileY;
-  int targetDoorTileX;
-  int targetDoorTileY;
-  int tileX;
-  int tileY;
-} DoorTransition;
 typedef struct Level {
   bool hasPlayerSpawn;
-  DoorTransition doors[MAX_DOORS];
+
   float playerSpawnX;
   float playerSpawnY;
-  int doorCount;
   int height;
   int levelEnemiesCount;
   int width;
@@ -79,6 +66,4 @@ float LevelGetHeightPixels(const Level *level);
 float LevelGetPlayerSpawnX(const Level *level);
 float LevelGetPlayerSpawnY(const Level *level);
 unsigned char LevelGetTile(const Level *level, int tileX, int tileY);
-const DoorTransition *LevelFindDoorAtTile(const Level *level, int tileX,
-                                          int tileY);
 #endif
