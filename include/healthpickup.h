@@ -6,13 +6,18 @@
 #include "forwarddeclares.h"
 
 #define MAX_HEALTH_PICKUPS 16
-#define HEALTH_PICKUP_SIZE 16
+#define HEALTH_PICKUP_SIZE 16.0f
 #define HEALTH_PICKUP_HP_RESTORE 4
+#define HEALTH_DROP_CHANCE 0.35f
+#define HEALTH_PICKUP_BOB_SPEED 4.0f
+#define HEALTH_PICKUP_BOB_HEIGHT 3.0f
+#define HEALTH_PICKUP_FRAME_SIZE 16
+#define HEALTH_PICKUP_FRAME_X 0
+#define HEALTH_PICKUP_FRAME_Y 0
 
 typedef struct HealthPickup {
   Entity entity;
   float sinCurveBobTimer;
-  bool isActive;
 } HealthPickup;
 
 void HealthPickupInitialize(HealthPickup *healthPickUp, float x, float y);
