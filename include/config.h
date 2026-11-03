@@ -7,6 +7,7 @@
 #define PLAYER_PROJECTILE_ASSET_PATH "assets/shot.png"
 #define BIG_PROPELLER_BOT_ASSET_PATH "assets/Big_Propeller_Bot.png"
 #define DOOR_ASSET_PATH "assets/DoorTexture.png"
+#define HEALTH_PICKUP_ASSET_PATH "assets/potions.png"
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 #define TILE_SIZE 32

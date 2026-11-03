@@ -275,6 +275,9 @@ void PlayerTakeDamage(Player *player, int damage, float damageSourceX) {
   }
   // Take the damage and activate the timers for iframes and knockback
   player->hitPoints -= damage;
+  if (player->hitPoints <= 0) {
+    player->hitPoints = 0;
+  }
   player->invincibleFramesTimer = INVINCIBLE_FRAMES_DURATION;
   player->knockbackTimer = KNOCKBACK_DURATION;
   // Interrupt current player action
