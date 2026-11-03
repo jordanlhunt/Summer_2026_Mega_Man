@@ -1,0 +1,89 @@
+#include "collision.h"
+#include "config.h"
+#include "healthpickup.h"
+#include "level.h"
+#include "player.h"
+
+void HealthPickUpInitialize(HealthPickup *healthPickup, float x, float y) {
+  *healthPickup = (HealthPickup){
+      .entity = {.x = x,
+                 .y = y,
+                 .width = HEALTH_PICKUP_SIZE,
+                 .height = HEALTH_PICKUP_SIZE,
+                 .velocityX = 0.0f,
+                 .velocityY = 0.0f,
+                 .isActive = true,
+                 .isOnGround = false},
+      .sinCurveBobTimer = 0.0f,
+  };
+}
+
+void HealthPickupUpdate(HealthPickup *healthPickup, const Level *level,
+                        float deltaTime) {
+  if (!healthPickup->entity.isActive) {
+    return;
+  }
+  healthPickup->sinCurveBobTimer += deltaTime;
+  // Give picks a semi random trajectory to fall toward the player's direction
+  healthPickup->entity.velocityY += GRAVITY * deltaTime;
+  if (healthPickup->entity.velocityY > MAX_FALL_SPEED) {
+    healthPickup->entity.velocityY = MAX_FALL_SPEED;
+  }
+  EntityMove(&healthPickup->entity, deltaTime);
+  CollisionResolveTileAxis(&healthPickup->entity, level, false);
+  // If the healthPickup falls of the map delete it
+  if (healthPickup->entity.y > LevelGetHeight(level)) {
+    healthPickup->entity.isActive = false;
+  }
+}
+void HealthPickupUpdateAll(HealthPickup healthPickups[], int count,
+                           const Level *level, float deltaTime) {
+  for (int i = 0; i < count; i++) {
+    HealthPickupUpdate(&healthPickups[i], level, deltaTime);
+  }
+}
+
+void HealthPickupCollectAll(HealthPickup healthPickups[], int count,
+                            Player *player) {
+  if (player->hitPoints <= 0) {
+    return;
+  }
+  for (int i = 0; i < count; i++) {
+    HealthPickup *healthPickup = &healthPickups[i];
+    if (!healthPickup->entity.isActive) {
+      continue;
+    }
+    if (!EntityOverlaps(&healthPickup->entity, &player->entity)) {
+      continue;
+    }
+    // If player is already at MAX_HITPOINTS leave healthPickup on the ground
+    if (player->hitPoints >= MAX_HITPOINTS) {
+      continue;
+    }
+    player->hitPoints += HEALTH_PICKUP_HP_RESTORE;
+    if (players->hitPoints > MAX_HITPOINTS) {
+      player->hitPoints = MAX_HITPOINTS;
+    }
+    healthPickup->entity.isActive = false;
+  }
+}
+
+// Private Helpers
+static void HealthPickupRenderFallback(SDL_Renderer *renderer,
+                                       SDL_FRect destination) {
+  SDL_SetRenderDrawColor(renderer, 40, 220, 90, 255);
+  SDL_RenderFillRect(renderer, &destination);
+
+  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+  SDL_FRect vertical = {.x = destination.x + destination.w * 0.35f,
+                        .y = destination.y + destination.h * 0.10f,
+                        .w = destination.w * 0.30f,
+                        .h = destination.h * 0.80f};
+  SDL_FRect horizontal = {.x = destination.x + destination.w * 0.10f,
+                          .y = destination.y + destination.h * 0.35f,
+                          .w = destination.w * 0.80f,
+                          .h = destination.h * 0.30f};
+
+  SDL_RenderFillRect(renderer, &vertical);
+  SDL_RenderFillRect(renderer, &horizontal);
+}
