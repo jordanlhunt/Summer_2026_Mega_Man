@@ -137,9 +137,11 @@ static bool LevelParseGrid(FILE *levelFile, LevelParseState *parseState,
 static void LevelCommitLoadedData(Level *level, unsigned char *tiles, int width,
                                   int height, bool spawnFound, float spawnX,
                                   float spawnY, const LevelEnemy newEnemies[],
-                                  int newEnemyCount, const char *edgeLeft,
-                                  const char *edgeRight, const char *edgeUp,
-                                  const char *edgeDown) {
+                                  int newEnemyCount,
+                                  const HealthPickup newHealthPickups[],
+                                  int newHealthPickupCount,
+                                  const char *edgeLeft, const char *edgeRight,
+                                  const char *edgeUp, const char *edgeDown) {
   free(level->tiles);
   level->tiles = tiles;
   level->width = width;
@@ -197,6 +199,7 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
     return false;
   }
   HealthPickup newHealthPickups[MAX_HEALTH_PICKUPS] = {0};
+  int newHealthPickupCount = 0;
   LevelEnemy newEnemies[MAX_LEVEL_ENEMIES] = {0};
   char edgeLeft[MAX_LEVEL_PATH_LENGTH] = {0};
   char edgeRight[MAX_LEVEL_PATH_LENGTH] = {0};
@@ -213,7 +216,9 @@ bool LevelLoadFromFile(Level *level, const char *filePath) {
                                 .levelEnemiesCount = &newEnemyCount,
                                 .spawnPlayerFound = &spawnFound,
                                 .playerSpawnX = &spawnX,
-                                .playerSpawnY = &spawnY};
+                                .playerSpawnY = &spawnY,
+                                .healthPickups = newHealthPickups,
+                                .healthPickupCount = &newHealthPickupCount};
   if (!LevelParseGrid(levelFile, &parseState, width, height, filePath)) {
     free(newTiles);
     fclose(levelFile);
