@@ -1,6 +1,7 @@
 #include "collision.h"
 #include "entity.h"
 #include "level.h"
+#include <cstddef>
 
 // ------------------------------------------------------------
 // Basic tile collision
@@ -145,8 +146,30 @@ bool CollisionCheckWallRight(const Level *level, float x, float y, float width,
   return CollisionCheckTileEdge(level, tileX, tileYTop, tileYBottom, true);
 }
 
+bool CollisionFindTileOfType(const Level *level, float x, float y, float width,
+                             float height, unsigned char tileType,
+                             int *outTileX, int *outTileY) {
+  int startTileX = (int)floorf(x / TILE_SIZE);
+  int startTileY = (int)floorf(y / TILE_SIZE);
+  int endTileX = (int)floorf((x + width - 0.01f) / TILE_SIZE);
+  int endTileY = (int)floorf((y + height - .01f) / TILE_SIZE);
+  for (int tileY = startTileY; tileY <= endTileY; tileY++) {
+    for (int tileX = startTileX; tileX <= endTileX; tileX++) {
+      if (outTileX != NULL) {
+        *outTileX = tileX;
+      }
+      if (outTileY != NULL) {
+        *outTileY = tileY;
+      }
+      return true;
+    }
+  }
+  return false;
+}
+
 bool CollisionCheckAABBForTileType(const Level *level, float x, float y,
                                    float width, float height,
                                    unsigned char tileType) {
-  int startTileX = (int)floorf(x / TILE_SIZE);
+  return CollisionFindTileOfType(level, x, y, width, height, tileType, NULL,
+                                 NULL);
 }

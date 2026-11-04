@@ -31,9 +31,17 @@ bool CollisionCheckWallLeft(const Level *level, float x, float y, float height);
 bool CollisionCheckWallRight(const Level *level, float x, float y, float width,
                              float height);
 
-bool COllisionCheckAABBForTileType(const Level *level, float x, float y,
+bool CollisionCheckAABBForTileType(const Level *level, float x, float y,
                                    float width, float height,
                                    unsigned char tileType);
+
+/**
+ * Finds the first tile of tileType overlapping the AABB.
+ * Returns true and writes the tile coordinates if found.
+ */
+bool CollisionFindTileOfType(const Level *level, float x, float y, float width,
+                             float height, unsigned char tileType,
+                             int *outTileX, int *outTileY);
 
 /**
  * Scans the tiles overlapping the given AAB and sets any tile matching

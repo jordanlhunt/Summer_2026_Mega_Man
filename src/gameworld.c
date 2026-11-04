@@ -149,6 +149,25 @@ static void GameWorldHandleEnemyContact(GameWorld *gameWorld) {
   }
 }
 
+static void GameWorldHandleSpikeContact(GameWorld *gameWorld) {
+  int spikeTileX = 0;
+
+  /* Shrink the sample box so corner grazes don't kill. */
+  const float inset = 3.0f;
+
+  if (!CollisionFindTileOfType(&gameWorld->level,
+                               gameWorld->player.entity.x + inset,
+                               gameWorld->player.entity.y + inset,
+                               gameWorld->player.entity.width - inset * 2.0f,
+                               gameWorld->player.entity.height - inset * 2.0f,
+                               TILE_SPIKE, &spikeTileX, NULL)) {
+    return;
+  }
+
+  float spikeCenterX = (float)(spikeTileX * TILE_SIZE) + TILE_SIZE * 0.5f;
+  PlayerTakeDamage(&gameWorld->player, SPIKE_DAMAGE, spikeCenterX);
+}
+
 bool GameWorldLoadLevel(GameWorld *gameWorld, const char *levelPath) {
   if (!LevelLoadFromFile(&gameWorld->level, levelPath)) {
     return false;
@@ -166,10 +185,12 @@ bool GameWorldLoadLevel(GameWorld *gameWorld, const char *levelPath) {
   gameWorld->currentLevelPath[MAX_LEVEL_PATH_LENGTH - 1] = '\0';
   return true;
 }
+
 void GameWorldShutdown(GameWorld *gameWorld) { LevelFree(&gameWorld->level); }
 void GameWorldUpdate(GameWorld *gameWorld, const Input *input,
                      float deltaTime) {
   PlayerUpdate(&gameWorld->player, input, &gameWorld->level, deltaTime);
+  GameWorldHandleSpikeContact(gameWorld);
   GameWorldHandleEnemyContact(gameWorld);
   if (GameWorldHandleEdgeTransition(gameWorld)) {
     return;
