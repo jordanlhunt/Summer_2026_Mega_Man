@@ -4,13 +4,19 @@
 #include "level.h"
 #include "levelEnemy.h"
 bool ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
-                     float originY, bool isFacingRight) {
-  for (int i = 0; i < MAX_PROJECTILES; i++) {
-    if (!projectiles[i].entity.isActive) {
+                     float originY, bool isFacingRight)
+{
+  for (int i = 0; i < MAX_PROJECTILES; i++)
+  {
+    if (!projectiles[i].entity.isActive)
+    {
       float velocityX;
-      if (isFacingRight) {
+      if (isFacingRight)
+      {
         velocityX = PROJECTILE_SPEED;
-      } else {
+      }
+      else
+      {
         velocityX = -PROJECTILE_SPEED;
       }
       projectiles[i] = (Projectile){
@@ -32,28 +38,35 @@ bool ProjectileSpawn(Projectile projectiles[MAX_PROJECTILES], float originX,
   return false;
 }
 void ProjectileUpdateAll(Projectile projectiles[MAX_PROJECTILES], Level *level,
-                         float deltaTime) {
-  for (int i = 0; i < MAX_PROJECTILES; i++) {
+                         float deltaTime)
+{
+  for (int i = 0; i < MAX_PROJECTILES; i++)
+  {
     Projectile *projectile = &projectiles[i];
-    if (!projectile->entity.isActive) {
+    if (!projectile->entity.isActive)
+    {
       continue;
     }
     projectile->lifeTimer -= deltaTime;
-    if (projectile->lifeTimer <= 0.0f) {
+    if (projectile->lifeTimer <= 0.0f)
+    {
       projectile->entity.isActive = false;
       continue;
     }
     float totalMoveX = projectile->entity.velocityX * deltaTime;
     float stepSize = PROJECTILE_SUBSTEP_SIZE;
     int steps = (int)ceilf(fabsf(totalMoveX) / stepSize);
-    if (steps < 1) {
+    if (steps < 1)
+    {
       steps = 1;
     }
     float stepX = totalMoveX / steps;
-    for (int step = 0; step < steps; step++) {
+    for (int step = 0; step < steps; step++)
+    {
       projectile->entity.x += stepX;
       if (CollisionCheckAABB(level, projectile->entity.x, projectile->entity.y,
-                             PROJECTILE_WIDTH, PROJECTILE_HEIGHT)) {
+                             PROJECTILE_WIDTH, PROJECTILE_HEIGHT))
+      {
         // Remove any breakable tiles (type 3) at the impact position
         CollisionRemoveTilesOfType(level, projectile->entity.x,
                                    projectile->entity.y, PROJECTILE_WIDTH,
@@ -66,10 +79,13 @@ void ProjectileUpdateAll(Projectile projectiles[MAX_PROJECTILES], Level *level,
 }
 void ProjectileRenderAll(const Projectile projectiles[MAX_PROJECTILES],
                          SDL_Renderer *renderer, float cameraX, float cameraY,
-                         SDL_Texture *projectileTexture) {
-  for (int i = 0; i < MAX_PROJECTILES; i++) {
+                         SDL_Texture *projectileTexture)
+{
+  for (int i = 0; i < MAX_PROJECTILES; i++)
+  {
     const Projectile *projectile = &projectiles[i];
-    if (!projectile->entity.isActive) {
+    if (!projectile->entity.isActive)
+    {
       continue;
     }
     SDL_FRect destinationRect = {.x = projectile->entity.x - cameraX,
@@ -80,40 +96,58 @@ void ProjectileRenderAll(const Projectile projectiles[MAX_PROJECTILES],
   }
 }
 void ProjectileHandlePlayerShooting(Projectile projectiles[MAX_PROJECTILES],
-                                    Player *player, bool isShootJustPressed) {
-  if (isShootJustPressed && player->shootCooldown <= 0.0f) {
+                                    Player *player, bool isShootJustPressed)
+{
+  if (isShootJustPressed && player->shootCooldown <= 0.0f)
+  {
     float originY = player->entity.y + player->entity.height * 0.5f -
                     PROJECTILE_HEIGHT * 0.5f - PROJECTILE_MUZZLE_OFFSET_Y;
     float originX;
-    if (player->isFacingRight) {
+    if (player->isFacingRight)
+    {
       originX = player->entity.x + player->entity.width;
-    } else {
+    }
+    else
+    {
       originX = player->entity.x - PROJECTILE_WIDTH;
     }
-    if (ProjectileSpawn(projectiles, originX, originY, player->isFacingRight)) {
+    if (ProjectileSpawn(projectiles, originX, originY, player->isFacingRight))
+    {
       player->shootCooldown = PROJECTILE_COOLDOWN;
       player->shootAnimationTimer = SHOOT_ANIMATION_DURATION;
     }
   }
 }
 void HandleProjectileEntityCollision(Projectile projectiles[MAX_PROJECTILES],
-                                     LevelEnemy enemies[], int enemyCount) {
-  for (int projectileIndex = 0; projectileIndex < MAX_PROJECTILES;
-       projectileIndex++) {
+                                     Level *level)
+{
+  int enemyCount = LevelGetEnemyCount(level);
+  for (int projectileIndex = 0; projectileIndex < MAX_PROJECTILES; projectileIndex++)
+  {
     Projectile *projectile = &projectiles[projectileIndex];
-    if (!projectile->entity.isActive) {
+    if (!projectile->entity.isActive)
+    {
       continue;
     }
-    for (int enemyIndex = 0; enemyIndex < enemyCount; enemyIndex++) {
-      LevelEnemy *levelEnemy = &enemies[enemyIndex];
-      if (!levelEnemy->entity.isActive) {
+    for (int enemyIndex = 0; enemyIndex < enemyCount; enemyIndex++)
+    {
+      LevelEnemy *levelEnemy = &level->levelEnemies[enemyIndex];
+      if (!levelEnemy->entity.isActive)
+      {
         continue;
       }
-      if (!EntityOverlaps(&projectile->entity, &levelEnemy->entity)) {
+      if (!EntityOverlaps(&projectile->entity, &levelEnemy->entity))
+      {
         continue;
       }
       projectile->entity.isActive = false;
-      LevelEnemyApplyDamage(levelEnemy, 1);
+      bool isEnemySlain = LevelEnemyApplyDamage(levelEnemy, PLAYER_PROJECTILE_BASE_DAMAGE);
+      if (isEnemySlain && SDL_randf() < HEALTH_DROP_CHANCE)
+      {
+        float healthDropX = level->entity.x + (levelEnemy->entity.width - HEALTH_PICKUP_SIZE) * .5f;
+        float healthDropY = level->entity.y + (levelEnemy->entity.height - HEALTH_PICKUP_SIZE) * .5f;
+        LevelAddHealthPickup(level, healthDropX, healthDropY);
+      }
       break;
     }
   }
