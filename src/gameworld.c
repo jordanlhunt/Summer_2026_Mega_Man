@@ -1,6 +1,7 @@
 #include "gameworld.h"
 
-static void PlayerResetForRoomTransition(Player *player) {
+static void PlayerResetForRoomTransition(Player *player)
+{
   player->entity.velocityX = 0.0f;
   player->entity.velocityY = 0.0f;
   player->entity.isOnGround = false;
@@ -17,13 +18,16 @@ static void PlayerResetForRoomTransition(Player *player) {
   player->currentPlayerState = STATE_IDLE;
 }
 static void CameraSnapToPlayer(Camera *camera, const Player *player,
-                               const Level *level) {
+                               const Level *level)
+{
   float maxX = LevelGetWidthPixels(level) - SCREEN_WIDTH;
   float maxY = LevelGetHeightPixels(level) - SCREEN_HEIGHT;
-  if (maxX < 0.0f) {
+  if (maxX < 0.0f)
+  {
     maxX = 0.0f;
   }
-  if (maxY < 0.0f) {
+  if (maxY < 0.0f)
+  {
     maxY = 0.0f;
   }
   camera->x = SDL_clamp(player->entity.x - SCREEN_WIDTH / 2.0f, 0.0f, maxX);
@@ -31,9 +35,11 @@ static void CameraSnapToPlayer(Camera *camera, const Player *player,
 }
 static void ResolveLevelPath(char *out, size_t outSize,
                              const char *currentLevelPath,
-                             const char *targetFileName) {
+                             const char *targetFileName)
+{
   const char *lastSlash = strrchr(currentLevelPath, '/');
-  if (lastSlash == NULL) {
+  if (lastSlash == NULL)
+  {
     snprintf(out, outSize, "%s", targetFileName);
     return;
   }
@@ -43,7 +49,8 @@ static void ResolveLevelPath(char *out, size_t outSize,
 }
 
 static void GameWorldCommitTransition(GameWorld *gameWorld, Level *newLevel,
-                                      const char *pathToNewLevel) {
+                                      const char *pathToNewLevel)
+{
   LevelFree(&gameWorld->level);
   gameWorld->level = *newLevel;
   PlayerResetForRoomTransition(&gameWorld->player);
@@ -54,24 +61,30 @@ static void GameWorldCommitTransition(GameWorld *gameWorld, Level *newLevel,
 }
 // The Mega-Man transition from the edge of a room into the next
 static void PlacePlayerForEdgeArrival(Player *player, const Level *level,
-                                      Direction exitDirection) {
+                                      Direction exitDirection)
+{
   float roomWidthInPixels = LevelGetWidthPixels(level);
   float roomHeightInPixels = LevelGetHeightPixels(level);
   const float inset = 2.0f;
-  switch (exitDirection) {
-  case RIGHT: {
+  switch (exitDirection)
+  {
+  case RIGHT:
+  {
     player->entity.x = inset;
     break;
   }
-  case LEFT: {
+  case LEFT:
+  {
     player->entity.x = roomWidthInPixels - player->entity.width - inset;
     break;
   }
-  case DOWN: {
+  case DOWN:
+  {
     player->entity.y = inset;
     break;
   }
-  case UP: {
+  case UP:
+  {
     player->entity.y = roomHeightInPixels - player->entity.height - inset;
     break;
   }
@@ -84,47 +97,64 @@ static void PlacePlayerForEdgeArrival(Player *player, const Level *level,
                                roomHeightInPixels - player->entity.height);
 }
 
-static const char *EdgeTargetFor(const Level *level, Direction direction) {
-  switch (direction) {
-  case LEFT: {
+static const char *EdgeTargetFor(const Level *level, Direction direction)
+{
+  switch (direction)
+  {
+  case LEFT:
+  {
     return level->edgeLeft;
   }
-  case RIGHT: {
+  case RIGHT:
+  {
     return level->edgeRight;
   }
-  case UP: {
+  case UP:
+  {
     return level->edgeUp;
   }
-  case DOWN: {
+  case DOWN:
+  {
     return level->edgeDown;
   }
   }
   return NULL;
 }
-static bool GameWorldHandleEdgeTransition(GameWorld *gameWorld) {
+static bool GameWorldHandleEdgeTransition(GameWorld *gameWorld)
+{
   const Level *level = &gameWorld->level;
   float roomWidthInPixels = LevelGetWidthPixels(level);
   float roomHeightinPixels = LevelGetHeightPixels(level);
   const float margin = 2.0f;
   const Player *player = &gameWorld->player;
   Direction direction;
-  if (player->entity.x <= margin && player->entity.velocityX < 0.0f) {
+  if (player->entity.x <= margin && player->entity.velocityX < 0.0f)
+  {
     direction = LEFT;
-  } else if (player->entity.x + player->entity.width >=
-                 roomWidthInPixels - margin &&
-             player->entity.velocityX > 0.0f) {
+  }
+  else if (player->entity.x + player->entity.width >=
+               roomWidthInPixels - margin &&
+           player->entity.velocityX > 0.0f)
+  {
     direction = RIGHT;
-  } else if (player->entity.y <= margin && player->entity.velocityY < 0.0f) {
+  }
+  else if (player->entity.y <= margin && player->entity.velocityY < 0.0f)
+  {
     direction = UP;
-  } else if (player->entity.y + player->entity.height >=
-                 roomHeightinPixels - margin &&
-             player->entity.velocityY > 0.0f) {
+  }
+  else if (player->entity.y + player->entity.height >=
+               roomHeightinPixels - margin &&
+           player->entity.velocityY > 0.0f)
+  {
     direction = DOWN;
-  } else {
+  }
+  else
+  {
     return false;
   }
   const char *target = EdgeTargetFor(level, direction);
-  if (target == NULL || target[0] == '\0') {
+  if (target == NULL || target[0] == '\0')
+  {
     return false;
   }
   char resolvedLevelPath[MAX_LEVEL_PATH_LENGTH];
@@ -134,14 +164,18 @@ static bool GameWorldHandleEdgeTransition(GameWorld *gameWorld) {
 }
 
 // If the player collides with an enemy take damage
-static void GameWorldHandleEnemyContact(GameWorld *gameWorld) {
+static void GameWorldHandleEnemyContact(GameWorld *gameWorld)
+{
   int enemyCount = LevelGetEnemyCount(&gameWorld->level);
-  for (int i = 0; i < enemyCount; i++) {
+  for (int i = 0; i < enemyCount; i++)
+  {
     LevelEnemy *enemy = &gameWorld->level.levelEnemies[i];
-    if (!enemy->entity.isActive) {
+    if (!enemy->entity.isActive)
+    {
       continue;
     }
-    if (!EntityOverlaps(&gameWorld->player.entity, &enemy->entity)) {
+    if (!EntityOverlaps(&gameWorld->player.entity, &enemy->entity))
+    {
       continue;
     }
     PlayerTakeDamage(&gameWorld->player, 1, enemy->entity.x);
@@ -188,11 +222,13 @@ bool GameWorldLoadLevel(GameWorld *gameWorld, const char *levelPath) {
 
 void GameWorldShutdown(GameWorld *gameWorld) { LevelFree(&gameWorld->level); }
 void GameWorldUpdate(GameWorld *gameWorld, const Input *input,
-                     float deltaTime) {
+                     float deltaTime)
+{
   PlayerUpdate(&gameWorld->player, input, &gameWorld->level, deltaTime);
   GameWorldHandleSpikeContact(gameWorld);
   GameWorldHandleEnemyContact(gameWorld);
-  if (GameWorldHandleEdgeTransition(gameWorld)) {
+  if (GameWorldHandleEdgeTransition(gameWorld))
+  {
     return;
   }
   ProjectileHandlePlayerShooting(gameWorld->projectiles, &gameWorld->player,
@@ -201,8 +237,13 @@ void GameWorldUpdate(GameWorld *gameWorld, const Input *input,
   LevelEnemyUpdateAll(gameWorld->level.levelEnemies,
                       LevelGetEnemyCount(&gameWorld->level), deltaTime);
   HandleProjectileEntityCollision(gameWorld->projectiles,
-                                  gameWorld->level.levelEnemies,
-                                  LevelGetEnemyCount(&gameWorld->level));
+                                  &gameWorld->level);
+  HealthPickupUpdateAll(gameWorld->level.healthPickups,
+                        gameWorld->level.healthPickupCount,
+                        &gameWorld->level, deltaTime);
+  HealthPickupCollectAll(gameWorld->level.healthPickups,
+                         gameWorld->level.healthPickupCount,
+                         &gameWorld->player);
   float targetCameraX = gameWorld->player.entity.x - SCREEN_WIDTH / 2.0f;
   float targetCameraY = gameWorld->player.entity.y - SCREEN_HEIGHT / 2.0f;
   CameraUpdate(&gameWorld->camera, targetCameraX, targetCameraY,
@@ -210,9 +251,14 @@ void GameWorldUpdate(GameWorld *gameWorld, const Input *input,
 }
 void GameWorldRender(const GameWorld *gameWorld, SDL_Renderer *renderer,
                      SDL_Texture *projectileTexture,
-                     SDL_Texture *levelEnemyTexture) {
+                     SDL_Texture *levelEnemyTexture, SDL_Texture *healthPickupTexture)
+{
   GraphicsRenderLevel(&gameWorld->level, renderer, &gameWorld->camera);
+  HealthPickupRenderAll(gameWorld->level.healthPickups,
+                        gameWorld->level.healthPickupCount, renderer,
+                        &gameWorld->camera, healthPickupTexture);
   GraphicsRenderPlayer(&gameWorld->player, renderer, &gameWorld->camera);
+
   ProjectileRenderAll(gameWorld->projectiles, renderer, gameWorld->camera.x,
                       gameWorld->camera.y, projectileTexture);
   LevelEnemyRenderAll(gameWorld->level.levelEnemies,
@@ -220,9 +266,11 @@ void GameWorldRender(const GameWorld *gameWorld, SDL_Renderer *renderer,
                       &gameWorld->camera, levelEnemyTexture);
 }
 bool GameWorldChangeLevelAtEdge(GameWorld *gameWorld, const char *path,
-                                Direction exitDirection) {
+                                Direction exitDirection)
+{
   Level newLevel = {0};
-  if (!LevelLoadFromFile(&newLevel, path)) {
+  if (!LevelLoadFromFile(&newLevel, path))
+  {
     SDL_Log("Edge transition failed: could not load %s", path);
     return false;
   }

@@ -5,7 +5,7 @@
 #include "config.h"
 #include "entity.h"
 #include "forwarddeclares.h"
-
+#include "healthpickup.h"
 #include "level.h"
 #include "levelEnemy.h"
 #include "player.h"
@@ -18,7 +18,9 @@
 #define PROJECTILE_COOLDOWN 0.22f
 #define PROJECTILE_SUBSTEP_SIZE (TILE_SIZE * 0.5f)
 #define PROJECTILE_MUZZLE_OFFSET_Y 7.0f
-typedef struct Projectile {
+#define PLAYER_PROJECTILE_BASE_DAMAGE 1
+typedef struct Projectile
+{
   Entity entity;
   float lifeTimer;
 } Projectile;
@@ -52,6 +54,5 @@ void ProjectileHandlePlayerShooting(Projectile projectiles[MAX_PROJECTILES],
  * Handles projectile collision from the player to a levelEnemy
  * TODO: Make this a general soultion for all projectiles
  */
-void HandleProjectileEntityCollision(Projectile projectiles[MAX_PROJECTILES],
-                                     LevelEnemy levelEnemies[], int enemyCount);
+void HandleProjectileEntityCollision(Projectile projectiles[MAX_PROJECTILES], Level *level);
 #endif

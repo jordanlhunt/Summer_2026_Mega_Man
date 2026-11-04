@@ -9,7 +9,8 @@
 static void LevelEnemyRenderOneEnemy(const LevelEnemy *enemy,
                                      SDL_Renderer *renderer,
                                      const Camera *camera,
-                                     SDL_Texture *enemyTexture) {
+                                     SDL_Texture *enemyTexture)
+{
   int spriteWidth = LEVELENEMY_WIDTH;
   int spriteHeight = LEVELENEMY_FRAME_HEIGHT;
   SDL_FRect destinationRect = {.x = enemy->entity.x - camera->x -
@@ -18,7 +19,8 @@ static void LevelEnemyRenderOneEnemy(const LevelEnemy *enemy,
                                     (spriteHeight - enemy->entity.height),
                                .w = (float)spriteWidth,
                                .h = (float)spriteHeight};
-  if (enemyTexture == NULL) {
+  if (enemyTexture == NULL)
+  {
     SDL_SetRenderDrawColor(renderer, 200, 0, 0, 255);
     SDL_RenderFillRect(renderer, &destinationRect);
     return;
@@ -26,20 +28,25 @@ static void LevelEnemyRenderOneEnemy(const LevelEnemy *enemy,
 
   int frameColumn;
   int frameRow = 0;
-  switch (enemy->state) {
-  case LEVELENEMY_STATE_GROUNDED: {
+  switch (enemy->state)
+  {
+  case LEVELENEMY_STATE_GROUNDED:
+  {
     frameColumn = ((int)(enemy->animationTimer * 4.0f) % 2);
     break;
   }
-  case LEVELENEMY_STATE_FLYING: {
+  case LEVELENEMY_STATE_FLYING:
+  {
     frameColumn = 1 + ((int)(enemy->animationTimer * 4.0f) % 2);
     break;
   }
-  case LEVELENEMY_STATE_TURNING: {
+  case LEVELENEMY_STATE_TURNING:
+  {
     frameColumn = 5;
     break;
   }
-  default: {
+  default:
+  {
     frameColumn = 0;
   }
   }
@@ -48,17 +55,26 @@ static void LevelEnemyRenderOneEnemy(const LevelEnemy *enemy,
                           .w = spriteWidth,
                           .h = spriteHeight};
   SDL_FlipMode flip;
-  if (enemy->isFacingRight) {
+  if (enemy->isFacingRight)
+  {
     flip = SDL_FLIP_NONE;
-  } else {
+  }
+  else
+  {
     flip = SDL_FLIP_HORIZONTAL;
   }
   SDL_RenderTextureRotated(renderer, enemyTexture, &sourceRect,
                            &destinationRect, 0.0, NULL, flip);
 }
 
+static void LevelEnemyDie(LevelEnemy *enemy)
+{
+  enemy->entity.isActive = false;
+}
+
 void LevelEnemyInitialize(LevelEnemy *enemy, float x, float y,
-                          LevelEnemyState initialState) {
+                          LevelEnemyState initialState)
+{
   *enemy = (LevelEnemy){
       .entity =
           {
@@ -77,12 +93,15 @@ void LevelEnemyInitialize(LevelEnemy *enemy, float x, float y,
   };
 }
 
-void LevelEnemyUpdate(LevelEnemy *enemy, float deltaTime) {
-  if (!enemy->entity.isActive) {
+void LevelEnemyUpdate(LevelEnemy *enemy, float deltaTime)
+{
+  if (!enemy->entity.isActive)
+  {
     return;
   }
 
-  switch (enemy->state) {
+  switch (enemy->state)
+  {
   case LEVELENEMY_STATE_GROUNDED:
     enemy->entity.velocityY = 0.0f;
     break;
@@ -98,29 +117,41 @@ void LevelEnemyUpdate(LevelEnemy *enemy, float deltaTime) {
   enemy->animationTimer += deltaTime;
 }
 void LevelEnemyUpdateAll(LevelEnemy enemies[], int enemyCount,
-                         float deltaTime) {
-  for (int i = 0; i < enemyCount; i++) {
+                         float deltaTime)
+{
+  for (int i = 0; i < enemyCount; i++)
+  {
     LevelEnemyUpdate(&enemies[i], deltaTime);
   }
 }
 void LevelEnemyRenderAll(const LevelEnemy enemies[], int count,
                          SDL_Renderer *renderer, const Camera *camera,
-                         SDL_Texture *enemyTexture) {
-  for (int i = 0; i < count; i++) {
-    if (!enemies[i].entity.isActive) {
+                         SDL_Texture *enemyTexture)
+{
+  for (int i = 0; i < count; i++)
+  {
+    if (!enemies[i].entity.isActive)
+    {
       continue;
     }
     LevelEnemyRenderOneEnemy(&enemies[i], renderer, camera, enemyTexture);
   }
 }
 
-void LevelEnemyApplyDamage(LevelEnemy *enemy, int damage) {
-  if (!enemy->entity.isActive || damage == 0) {
-    return;
+bool LevelEnemyApplyDamage(LevelEnemy *enemy, int damage)
+{
+  if (!enemy->entity.isActive || damage <= 0)
+  {
+    return false;
   }
+
   enemy->hitPoints -= damage;
-  if (enemy->hitPoints <= 0) {
-    enemy->hitPoints = 0;
-    enemy->entity.isActive = false;
+  if (enemy->hitPoints > 0)
+  {
+    return false;
   }
+
+  enemy->hitPoints = 0;
+  LevelEnemyDie(enemy);
+  return true;
 }

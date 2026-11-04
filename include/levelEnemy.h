@@ -5,13 +5,15 @@
 #include "entity.h"
 #include "forwarddeclares.h"
 
-typedef enum LevelEnemyState {
+typedef enum LevelEnemyState
+{
   LEVELENEMY_STATE_GROUNDED,
   LEVELENEMY_STATE_FLYING,
   LEVELENEMY_STATE_TURNING
 } LevelEnemyState;
 
-typedef struct LevelEnemy {
+typedef struct LevelEnemy
+{
   Entity entity;
 
   int hitPoints;
@@ -27,9 +29,9 @@ void LevelEnemyInitialize(LevelEnemy *enemy, float x, float y,
                           LevelEnemyState initialState);
 
 /**
- * Applies damage and deactivates the enemy when its health reaches zero.
+ * Applies damage and deactivates the enemy when its health reaches zero. Returns true if it dies
  */
-void LevelEnemyApplyDamage(LevelEnemy *enemy, int damage);
+bool LevelEnemyApplyDamage(LevelEnemy *enemy, int damage);
 
 /**
  * Updates one active enemy.
