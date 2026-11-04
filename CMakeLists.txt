@@ -31,6 +31,7 @@ add_executable(sdl_man
     src/entity.c
     src/assetmanager.c
     src/gameworld.c
+    src/healthpickup.c
 )
 target_compile_options(sdl_man PRIVATE
     -Wall

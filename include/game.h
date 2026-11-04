@@ -11,19 +11,22 @@
 #include "player.h"
 #include "projectile.h"
 
-typedef enum GameState {
+typedef enum GameState
+{
   GAME_STATE_PLAYING,
   GAME_STATE_DYING,
   GAME_STATE_DEAD
 } GameState;
 
-typedef struct Game {
+typedef struct Game
+{
   SDL_Window *gameWindow;
   SDL_Renderer *gameRenderer;
   AssetManager assetManager;
   SDL_Texture *spriteSheetTexture;
   SDL_Texture *playerProjectileTexture;
   SDL_Texture *levelEnemyTexture;
+  SDL_Texture *healthPickupTexture;
   GameWorld gameWorld;
   Input input;
   bool isRunning;
