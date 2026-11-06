@@ -1,7 +1,6 @@
 #include "collision.h"
 #include "entity.h"
 #include "level.h"
-#include <cstddef>
 
 // ------------------------------------------------------------
 // Basic tile collision

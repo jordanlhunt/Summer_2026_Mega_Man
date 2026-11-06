@@ -165,8 +165,7 @@ static void GraphicsDrawBreakableTile(SDL_Renderer *renderer, SDL_FRect tile) {
                  tile.y + 2);
 }
 
-static void InvincibleFrameFlicker() {
-
+static void InvincibleFrameFlicker(const Player *player) {
   int phase = ((int)(player->invincibleFramesTimer * 20.0f)) % 2;
   if (phase == 0) {
     SDL_SetTextureAlphaMod(player->spriteSheetTexture, 100);
@@ -275,8 +274,9 @@ void GraphicsRenderPlayer(const Player *player, SDL_Renderer *renderer,
   }
   // If invincibleFramesTimer is up flicker
   if (player->invincibleFramesTimer > 0.0f) {
-    InvincibleFrameFlicker();
+    InvincibleFrameFlicker(player);
   } else {
     SDL_SetTextureAlphaMod(player->spriteSheetTexture, 255);
   }
-  void GraphicsPresent(SDL_Renderer * renderer) { SDL_RenderPresent(renderer); }
+}
+void GraphicsPresent(SDL_Renderer *renderer) { SDL_RenderPresent(renderer); }

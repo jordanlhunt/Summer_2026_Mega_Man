@@ -23,10 +23,11 @@ typedef struct HealthPickup {
 void HealthPickupInitialize(HealthPickup *healthPickUp, float x, float y);
 void HealthPickupUpdate(HealthPickup *healthPickUp, const Level *level,
                         float deltaTime);
-void HealthPickupUpDateAll(HealthPickup healthPickups[], int count,
+void HealthPickupUpdateAll(HealthPickup healthPickups[], int count,
                            const Level *level, float deltaTime);
 void HealthPickupCollectAll(HealthPickup pickups[], int count, Player *player);
 void HealthPickupRenderAll(const HealthPickup healthPickups[], int count,
-                           SDL_Renderer *sdlRenderer, const Camera *camera);
+                           SDL_Renderer *sdlRenderer, const Camera *camera,
+                           SDL_Texture *healthPickupTexture);
 
 #endif

@@ -61,7 +61,7 @@ void HealthPickupCollectAll(HealthPickup healthPickups[], int count,
       continue;
     }
     player->hitPoints += HEALTH_PICKUP_HP_RESTORE;
-    if (players->hitPoints > MAX_HITPOINTS) {
+    if (player->hitPoints > MAX_HITPOINTS) {
       player->hitPoints = MAX_HITPOINTS;
     }
     healthPickup->entity.isActive = false;

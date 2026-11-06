@@ -31,7 +31,7 @@ add_executable(sdl_man
     src/entity.c
     src/assetmanager.c
     src/gameworld.c
-    src/healthpickup.c
+    src/healthpickups.c
 )
 target_compile_options(sdl_man PRIVATE
     -Wall
@@ -47,7 +47,7 @@ target_link_libraries(sdl_man PRIVATE
     ${SDL3_IMAGE_LIBRARY}
     m
 )
-# Copy assets 
+# Copy assets
 add_custom_command(
     TARGET sdl_man
     POST_BUILD
