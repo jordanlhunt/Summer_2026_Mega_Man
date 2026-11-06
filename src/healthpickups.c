@@ -1,5 +1,6 @@
 #include "collision.h"
 #include "config.h"
+#include "graphics.h"
 #include "healthpickup.h"
 #include "level.h"
 #include "player.h"
@@ -32,7 +33,7 @@ void HealthPickupUpdate(HealthPickup *healthPickup, const Level *level,
   EntityMove(&healthPickup->entity, deltaTime);
   CollisionResolveTileAxis(&healthPickup->entity, level, false);
   // If the healthPickup falls of the map delete it
-  if (healthPickup->entity.y > LevelGetHeight(level)) {
+  if (healthPickup->entity.y > LevelGetHeightPixels(level)) {
     healthPickup->entity.isActive = false;
   }
 }
@@ -65,6 +66,20 @@ void HealthPickupCollectAll(HealthPickup healthPickups[], int count,
       player->hitPoints = MAX_HITPOINTS;
     }
     healthPickup->entity.isActive = false;
+  }
+}
+
+void HealthPickupRenderAll(const HealthPickup healthPickups[], int count,
+                           SDL_Renderer *sdlRenderer, const Camera *camera,
+                           SDL_Texture *healthPickupTexture) {
+  for (int i = 0; i < count; i++) {
+    const HealthPickup *healthPickup = &healthPickups[i];
+    if (!healthPickup->entity.isActive) {
+      continue;
+    }
+    float sinCurveBob =
+        sinf(healthPickup->sinCurveBobTimer * HEALTH_PICKUP_BOB_SPEED) *
+        HEALTH_PICKUP_BOB_HEIGHT;
   }
 }
 
