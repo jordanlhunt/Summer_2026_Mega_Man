@@ -4,6 +4,28 @@
 #include "healthpickup.h"
 #include "level.h"
 #include "player.h"
+#include <SDL3/SDL_rect.h>
+#include <SDL3/SDL_render.h>
+
+// Private Helpers
+static void HealthPickupRenderFallback(SDL_Renderer *renderer,
+                                       SDL_FRect destination) {
+  SDL_SetRenderDrawColor(renderer, 40, 220, 90, 255);
+  SDL_RenderFillRect(renderer, &destination);
+
+  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+  SDL_FRect vertical = {.x = destination.x + destination.w * 0.35f,
+                        .y = destination.y + destination.h * 0.10f,
+                        .w = destination.w * 0.30f,
+                        .h = destination.h * 0.80f};
+  SDL_FRect horizontal = {.x = destination.x + destination.w * 0.10f,
+                          .y = destination.y + destination.h * 0.35f,
+                          .w = destination.w * 0.80f,
+                          .h = destination.h * 0.30f};
+
+  SDL_RenderFillRect(renderer, &vertical);
+  SDL_RenderFillRect(renderer, &horizontal);
+}
 
 void HealthPickUpInitialize(HealthPickup *healthPickup, float x, float y) {
   *healthPickup = (HealthPickup){
@@ -80,25 +102,20 @@ void HealthPickupRenderAll(const HealthPickup healthPickups[], int count,
     float sinCurveBob =
         sinf(healthPickup->sinCurveBobTimer * HEALTH_PICKUP_BOB_SPEED) *
         HEALTH_PICKUP_BOB_HEIGHT;
+    SDL_FRect destinationRect = {.x = healthPickup->entity.x - camera->x,
+                                 .y = healthPickup->entity.y - camera->y +
+                                      sinCurveBob,
+                                 .w = healthPickup->entity.width,
+                                 .h = healthPickup->entity.height};
+    if (healthPickupTexture == NULL) {
+      HealthPickupRenderFallback(sdlRenderer, destinationRect);
+      continue;
+    }
+    SDL_FRect sourceRect = {.x = HEALTH_PICKUP_SIZE * HEALTH_PICKUP_FRAME_SIZE,
+                            .y = HEALTH_PICKUP_SIZE * HEALTH_PICKUP_FRAME_SIZE,
+                            .w = HEALTH_PICKUP_SIZE * HEALTH_PICKUP_FRAME_SIZE,
+                            .h = HEALTH_PICKUP_FRAME_SIZE};
+    SDL_RenderTexture(sdlRenderer, healthPickupTexture, &sourceRect,
+                      &destinationRect);
   }
-}
-
-// Private Helpers
-static void HealthPickupRenderFallback(SDL_Renderer *renderer,
-                                       SDL_FRect destination) {
-  SDL_SetRenderDrawColor(renderer, 40, 220, 90, 255);
-  SDL_RenderFillRect(renderer, &destination);
-
-  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-  SDL_FRect vertical = {.x = destination.x + destination.w * 0.35f,
-                        .y = destination.y + destination.h * 0.10f,
-                        .w = destination.w * 0.30f,
-                        .h = destination.h * 0.80f};
-  SDL_FRect horizontal = {.x = destination.x + destination.w * 0.10f,
-                          .y = destination.y + destination.h * 0.35f,
-                          .w = destination.w * 0.80f,
-                          .h = destination.h * 0.30f};
-
-  SDL_RenderFillRect(renderer, &vertical);
-  SDL_RenderFillRect(renderer, &horizontal);
 }
