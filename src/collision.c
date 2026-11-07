@@ -150,10 +150,14 @@ bool CollisionFindTileOfType(const Level *level, float x, float y, float width,
                              int *outTileX, int *outTileY) {
   int startTileX = (int)floorf(x / TILE_SIZE);
   int startTileY = (int)floorf(y / TILE_SIZE);
-  int endTileX = (int)floorf((x + width - 0.01f) / TILE_SIZE);
+  int endTileX = (int)floorf((x + width - .01f) / TILE_SIZE);
   int endTileY = (int)floorf((y + height - .01f) / TILE_SIZE);
   for (int tileY = startTileY; tileY <= endTileY; tileY++) {
     for (int tileX = startTileX; tileX <= endTileX; tileX++) {
+      if (LevelGetTile(level, tileX, tileY) != tileType) {
+
+        continue;
+      }
       if (outTileX != NULL) {
         *outTileX = tileX;
       }

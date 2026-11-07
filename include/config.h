@@ -13,7 +13,6 @@
 #define TILE_SIZE 32
 #define LEVEL_DIMENSIONS_X 40
 #define LEVEL_DIMENSIONS_Y 22
-#define SPIKE_DAMAGE 5
 
 /* -------------------------------------------------------------------- */
 /* Physics                                                              */

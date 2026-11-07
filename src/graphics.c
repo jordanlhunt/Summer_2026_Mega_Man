@@ -135,6 +135,26 @@ static void GraphicsDrawOneWayPlatformTile(SDL_Renderer *renderer,
   SDL_FRect bottomShadow = {tile.x, tile.y + tile.h - 2.0f, tile.w, 2.0f};
   SDL_RenderFillRect(renderer, &bottomShadow);
 }
+
+static void GraphicsDrawSpikeTile(SDL_Renderer *renderer, SDL_FRect tile) {
+
+  SDL_SetRenderDrawColor(renderer, 40, 40, 50, 255);
+  SDL_RenderFillRect(renderer, &tile);
+  const int spikeCount = 4;
+  float spikeWidth = tile.w / (float)spikeCount;
+  for (int i = 0; i < spikeCount; i++) {
+    float left = tile.x + i * spikeWidth;
+    float right = left + spikeWidth;
+    float tipX = left + spikeWidth * 0.5f;
+    SDL_SetRenderDrawColor(renderer, 220, 220, 230, 255);
+    SDL_RenderLine(renderer, left, tile.y + tile.h, tipX, tile.y);
+    SDL_RenderLine(renderer, tipX, tile.y, right, tile.y + tile.h);
+  }
+  SDL_SetRenderDrawColor(renderer, 255, 80, 80, 255);
+  SDL_RenderLine(renderer, tile.x, tile.y + tile.h - 1.0f, tile.x + tile.w,
+                 tile.y + tile.h - 1.0f);
+}
+
 static void GraphicsDrawSolidTile(SDL_Renderer *renderer, SDL_FRect tile,
                                   const Level *level, int x, int y) {
   bool isFloor = (y >= level->height - 3);
@@ -238,6 +258,8 @@ void GraphicsRenderLevel(const Level *level, SDL_Renderer *renderer,
         GraphicsDrawOneWayPlatformTile(renderer, tile);
       } else if (tileCharacter == TILE_BREAKABLE) {
         GraphicsDrawBreakableTile(renderer, tile);
+      } else if (tileCharacter == TILE_SPIKE) {
+        GraphicsDrawSpikeTile(renderer, tile);
       } else {
         GraphicsDrawSolidTile(renderer, tile, level, x, y);
       }
