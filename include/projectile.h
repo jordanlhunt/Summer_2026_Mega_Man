@@ -19,8 +19,7 @@
 #define PROJECTILE_SUBSTEP_SIZE (TILE_SIZE * 0.5f)
 #define PROJECTILE_MUZZLE_OFFSET_Y 7.0f
 #define PLAYER_PROJECTILE_BASE_DAMAGE 1
-typedef struct Projectile
-{
+typedef struct Projectile {
   Entity entity;
   float lifeTimer;
 } Projectile;
@@ -54,5 +53,6 @@ void ProjectileHandlePlayerShooting(Projectile projectiles[MAX_PROJECTILES],
  * Handles projectile collision from the player to a levelEnemy
  * TODO: Make this a general soultion for all projectiles
  */
-void HandleProjectileEntityCollision(Projectile projectiles[MAX_PROJECTILES], Level *level);
+void HandleProjectileEntityCollision(Projectile projectiles[MAX_PROJECTILES],
+                                     Level *level);
 #endif

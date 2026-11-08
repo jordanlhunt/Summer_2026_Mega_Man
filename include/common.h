@@ -1,7 +1,6 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-
 /* Standard C libraries */
 #include <math.h>
 #include <stdbool.h>

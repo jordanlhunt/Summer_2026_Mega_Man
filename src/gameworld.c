@@ -1,5 +1,6 @@
 #include "gameworld.h"
 #include "collision.h"
+#include "config.h"
 
 static void PlayerResetForRoomTransition(Player *player) {
   player->entity.velocityX = 0.0f;
@@ -102,18 +103,28 @@ static const char *EdgeTargetFor(const Level *level, Direction direction) {
   return NULL;
 }
 
-static void GameWorldHandleSpikeContact(GameWorld *gameWorld) {
-  const float inset = 3.0f;
-  if (!CollisionFindTileOfType(&gameWorld->level,
-                               gameWorld->player.entity.x + inset,
-                               gameWorld->player.entity.y + inset,
-                               gameWorld->player.entity.width - inset * 2.0f,
-                               gameWorld->player.entity.height - inset * 2.0f,
-                               TILE_SPIKE, NULL, NULL)) {
-    return;
+// static void GameWorldHandleSpikeContact(GameWorld *gameWorld) {
+//   const float inset = 3.0f;
+//   if (!CollisionFindTileOfType(&gameWorld->level,
+//                                gameWorld->player.entity.x + inset,
+//                                gameWorld->player.entity.y + inset,
+//                                gameWorld->player.entity.width - inset * 2.0f,
+//                                gameWorld->player.entity.height - inset
+//                                * 2.0f, TILE_SPIKE, NULL, NULL)) {
+//     return;
+//   }
+//   // Insta-kill the player just like old Mega-Man does
+//   gameWorld->player.hitPoints = 0;
+// }
+
+static bool GameWorldHandlePitfall(GameWorld *gameWorld) {
+
+  float killY = LevelGetHeightPixels(&gameWorld->level) + PITFALL_DEATH_MARGIN;
+  if (gameWorld->player.entity.y <= killY) {
+    return false;
   }
-  // Insta-kill the player just like old Mega-Man does
   gameWorld->player.hitPoints = 0;
+  return true;
 }
 
 static bool GameWorldHandleEdgeTransition(GameWorld *gameWorld) {
@@ -193,6 +204,7 @@ bool GameWorldLoadLevel(GameWorld *gameWorld, const char *levelPath) {
   // Spawn the player
   gameWorld->player.entity.x = gameWorld->level.playerSpawnX;
   gameWorld->player.entity.y = gameWorld->level.playerSpawnY;
+  PlayerResetForRoomTransition(&gameWorld->player);
   // Initialize the player projectile pool
   memset(gameWorld->projectiles, 0, sizeof(gameWorld->projectiles));
   // Remember currrent location so transitions can resolve relative path
@@ -208,6 +220,9 @@ void GameWorldUpdate(GameWorld *gameWorld, const Input *input,
   GameWorldHandleSpikeContact(gameWorld);
   GameWorldHandleEnemyContact(gameWorld);
   if (GameWorldHandleEdgeTransition(gameWorld)) {
+    return;
+  }
+  if (GameWorldHandlePitfall(gameWorld)) {
     return;
   }
   ProjectileHandlePlayerShooting(gameWorld->projectiles, &gameWorld->player,

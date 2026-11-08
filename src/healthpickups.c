@@ -27,7 +27,7 @@ static void HealthPickupRenderFallback(SDL_Renderer *renderer,
   SDL_RenderFillRect(renderer, &horizontal);
 }
 
-void HealthPickUpInitialize(HealthPickup *healthPickup, float x, float y) {
+void HealthPickupInitialize(HealthPickup *healthPickup, float x, float y) {
   *healthPickup = (HealthPickup){
       .entity = {.x = x,
                  .y = y,

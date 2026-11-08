@@ -9,8 +9,7 @@
 #include "levelEnemy.h"
 #include "player.h"
 #include "projectile.h"
-typedef struct GameWorld
-{
+typedef struct GameWorld {
   Player player;
   Level level;
   Camera camera;
@@ -18,13 +17,7 @@ typedef struct GameWorld
   char currentLevelPath[MAX_LEVEL_PATH_LENGTH];
 } GameWorld;
 
-typedef enum Direction
-{
-  LEFT,
-  RIGHT,
-  UP,
-  DOWN
-} Direction;
+typedef enum Direction { LEFT, RIGHT, UP, DOWN } Direction;
 
 /**
  * Loads 'levelPath' into the world, resets the camera, places the player at the
@@ -42,7 +35,8 @@ void GameWorldUpdate(GameWorld *gameWorld, const Input *input, float deltaTime);
  */
 void GameWorldRender(const GameWorld *gameWorld, SDL_Renderer *renderer,
                      SDL_Texture *projectileTexture,
-                     SDL_Texture *levelEnemyTexture, SDL_Texture *healthPickTexture);
+                     SDL_Texture *levelEnemyTexture,
+                     SDL_Texture *healthPickTexture);
 
 /**
  * If the player walks of the edge of a map

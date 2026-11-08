@@ -1,4 +1,5 @@
 #include "level.h"
+#include "healthpickup.h"
 typedef struct LevelParseState {
   bool *spawnPlayerFound;
 
@@ -181,7 +182,7 @@ bool LevelAddHealthPickup(Level *level, float x, float y) {
   for (int i = 0; i < level->healthPickupCount; i++) {
     if (!level->healthPickups[i].entity.isActive) {
       HealthPickupInitialize(&level->healthPickups[i], x, y);
-      return;
+      return true;
     }
   }
   if (level->healthPickupCount >= MAX_HEALTH_PICKUPS) {

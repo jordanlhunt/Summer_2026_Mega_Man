@@ -9,7 +9,7 @@
 #define HEALTH_PICKUP_ASSET_PATH "assets/potions.png"
 #define SPIKE_ASSET_PATH "assets/spike.png"
 #define SCREEN_WIDTH 1280
-#define SCREEN_HEIGHT 720
+#define SCREEN_HEIGHT 704
 #define TILE_SIZE 32
 #define LEVEL_DIMENSIONS_X 40
 #define LEVEL_DIMENSIONS_Y 22
@@ -19,6 +19,8 @@
 /* -------------------------------------------------------------------- */
 #define GRAVITY 2200.0f
 #define MAX_FALL_SPEED 900.0f
+#define PITFALL_DEATH_MARGIN 32.0f
+#define SPIKE_DAMAGE 4
 /* -------------------------------------------------------------------- */
 /* Sprite sheet layout: 52x44 per frame, 8 cols x 6 rows                */
 /* -------------------------------------------------------------------- */
