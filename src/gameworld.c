@@ -103,19 +103,19 @@ static const char *EdgeTargetFor(const Level *level, Direction direction) {
   return NULL;
 }
 
-// static void GameWorldHandleSpikeContact(GameWorld *gameWorld) {
-//   const float inset = 3.0f;
-//   if (!CollisionFindTileOfType(&gameWorld->level,
-//                                gameWorld->player.entity.x + inset,
-//                                gameWorld->player.entity.y + inset,
-//                                gameWorld->player.entity.width - inset * 2.0f,
-//                                gameWorld->player.entity.height - inset
-//                                * 2.0f, TILE_SPIKE, NULL, NULL)) {
-//     return;
-//   }
-//   // Insta-kill the player just like old Mega-Man does
-//   gameWorld->player.hitPoints = 0;
-// }
+static void GameWorldHandleSpikeContact(GameWorld *gameWorld) {
+  const float inset = 3.0f;
+  if (!CollisionFindTileOfType(&gameWorld->level,
+                               gameWorld->player.entity.x + inset,
+                               gameWorld->player.entity.y + inset,
+                               gameWorld->player.entity.width - inset * 2.0f,
+                               gameWorld->player.entity.height - inset * 2.0f,
+                               TILE_SPIKE, NULL, NULL)) {
+    return;
+  }
+  // Insta-kill the player just like old Mega-Man does
+  gameWorld->player.hitPoints = 0;
+}
 
 static bool GameWorldHandlePitfall(GameWorld *gameWorld) {
 
@@ -175,24 +175,24 @@ static void GameWorldHandleEnemyContact(GameWorld *gameWorld) {
   }
 }
 
-static void GameWorldHandleSpikeContact(GameWorld *gameWorld) {
-  int spikeTileX = 0;
+// static void GameWorldHandleSpikeContact(GameWorld *gameWorld) {
+//   int spikeTileX = 0;
 
-  /* Shrink the sample box so corner grazes don't kill. */
-  const float inset = 3.0f;
+//   /* Shrink the sample box so corner grazes don't kill. */
+//   const float inset = 3.0f;
 
-  if (!CollisionFindTileOfType(&gameWorld->level,
-                               gameWorld->player.entity.x + inset,
-                               gameWorld->player.entity.y + inset,
-                               gameWorld->player.entity.width - inset * 2.0f,
-                               gameWorld->player.entity.height - inset * 2.0f,
-                               TILE_SPIKE, &spikeTileX, NULL)) {
-    return;
-  }
+//   if (!CollisionFindTileOfType(&gameWorld->level,
+//                                gameWorld->player.entity.x + inset,
+//                                gameWorld->player.entity.y + inset,
+//                                gameWorld->player.entity.width - inset * 2.0f,
+//                                gameWorld->player.entity.height - inset
+//                                * 2.0f, TILE_SPIKE, &spikeTileX, NULL)) {
+//     return;
+//   }
 
-  float spikeCenterX = (float)(spikeTileX * TILE_SIZE) + TILE_SIZE * 0.5f;
-  PlayerTakeDamage(&gameWorld->player, SPIKE_DAMAGE, spikeCenterX);
-}
+//   float spikeCenterX = (float)(spikeTileX * TILE_SIZE) + TILE_SIZE * 0.5f;
+//   PlayerTakeDamage(&gameWorld->player, SPIKE_DAMAGE, spikeCenterX);
+// }
 
 bool GameWorldLoadLevel(GameWorld *gameWorld, const char *levelPath) {
   if (!LevelLoadFromFile(&gameWorld->level, levelPath)) {

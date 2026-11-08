@@ -20,7 +20,6 @@
 #define GRAVITY 2200.0f
 #define MAX_FALL_SPEED 900.0f
 #define PITFALL_DEATH_MARGIN 32.0f
-#define SPIKE_DAMAGE 4
 /* -------------------------------------------------------------------- */
 /* Sprite sheet layout: 52x44 per frame, 8 cols x 6 rows                */
 /* -------------------------------------------------------------------- */
