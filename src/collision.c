@@ -98,8 +98,7 @@ static bool FindFirstOverlappingTile(const Level *level, float x, float y,
 // ------------------------------------------------------------
 void CollisionResolveTileAxis(Entity *boundingBox, const Level *level,
                               bool isXAxis) {
-  const int MAX_ITERATIONS = 8;
-  for (int iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
+  for (int iteration = 0; iteration < MAX_COLLISION_ITERATIONS; iteration++) {
     int tileX, tileY;
     if (!FindFirstOverlappingTile(level, boundingBox->x, boundingBox->y,
                                   boundingBox->width, boundingBox->height,

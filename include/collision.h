@@ -5,6 +5,12 @@
 #include "entity.h"
 #include "forwarddeclares.h"
 
+// Constants
+#define TILE_EDGE_EPSILON .01f
+#define MAX_COLLISION_ITERATIONS 8
+#define WALL_PROBE_DISTANCE 1.0f
+#define WALL_PROBE_INSET 2.0f
+
 /**
  * Checks if a line of tiles along a single row or column contains any solid
  * tile. If isVerticalLine is true, edgeTile is the X coordinate,

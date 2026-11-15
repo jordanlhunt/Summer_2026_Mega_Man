@@ -122,7 +122,7 @@ static bool PlayerHandleDash(Player *player, const Input *input,
   DecreaseTimer(&player->dashTimer, deltaTime);
   if (player->dashTimer <= 0.0f) {
     player->isDashing = false;
-    player->entity.velocityX *= .3f;
+    player->entity.velocityX *= DASH_END_VELOCITY_SCALE;
     return false;
   }
   player->entity.velocityY += GRAVITY * deltaTime * DASH_GRAVITY_SCALE;
@@ -237,7 +237,7 @@ static void PlayerUpdateAnimationState(Player *player,
     } else {
       player->currentPlayerState = STATE_FALLING;
     }
-  } else if (fabsf(player->entity.velocityX) > 10.0f) {
+  } else if (fabsf(player->entity.velocityX) > RUNNING_VELOCITY_THRESHOLD) {
     player->currentPlayerState = STATE_RUNNING;
   } else {
     player->currentPlayerState = STATE_IDLE;

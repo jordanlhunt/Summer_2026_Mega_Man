@@ -59,14 +59,15 @@ static void RenderPlayerFallback(SDL_Renderer *renderer, const Player *player,
 static SDL_FRect PlayerGetSourceRect(const Player *player) {
   int frameColumn = 0;
   int frameRow = player->styleRow;
-  float animationSpeed = 8.0f;
+  float animationSpeed = DEFAULT_ANIMATION_SPEED;
   switch (player->currentPlayerState) {
   case STATE_IDLE:
     frameColumn = ANIMATION_IDLE_1;
     break;
   case STATE_RUNNING:
-    animationSpeed = 12.0f;
-    frameColumn = ((int)(player->animationTimer * animationSpeed) % 6);
+    animationSpeed = RUN_ANIMATION_SPEED;
+    frameColumn =
+        ((int)(player->animationTimer * animationSpeed) % RUN_ANIMATION_FRAMES);
     frameRow = player->styleRow + 1;
     break;
   case STATE_JUMPING:
@@ -269,13 +270,13 @@ void GraphicsRenderLevel(const Level *level, SDL_Renderer *renderer,
 void GraphicsRenderPlayer(const Player *player, SDL_Renderer *renderer,
                           const Camera *camera) {
   float drawX = floorf(player->entity.x - camera->x -
-                       (SPRITE_WIDTH * 2.0f - player->entity.width) /
-                           2.0f); // center horizontally
+                       (SPRITE_WIDTH * SPRITE_SCALE - player->entity.width) /
+                           SPRITE_SCALE); // center horizontally
   float drawY = floorf(player->entity.y - camera->y -
-                       (SPRITE_HEIGHT * 2.0f -
+                       (SPRITE_HEIGHT * SPRITE_SCALE -
                         player->entity.height)); // align feet to hitbox bottom
-  SDL_FRect destinationFRect = {drawX, drawY, SPRITE_WIDTH * 2.0f,
-                                SPRITE_HEIGHT * 2.0f};
+  SDL_FRect destinationFRect = {drawX, drawY, SPRITE_WIDTH * SPRITE_SCALE,
+                                SPRITE_HEIGHT * SPRITE_SCALE};
   if (player->spriteSheetTexture == NULL) {
     RenderPlayerFallback(renderer, player, destinationFRect);
   }

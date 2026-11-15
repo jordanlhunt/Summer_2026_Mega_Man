@@ -5,6 +5,12 @@
 #include "forwarddeclares.h"
 #include <SDL3/SDL_render.h>
 
+/* Rendering */
+#define SPRITE_SCALE 2.0f
+#define DEFAULT_ANIMATION_SPEED 8.0f
+#define RUN_ANIMATION_SPEED 12.0f
+#define RUN_ANIMATION_FRAMES 6
+
 typedef struct Camera {
   float x;
   float y;
