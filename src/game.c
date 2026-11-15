@@ -10,12 +10,29 @@
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_video.h>
+
+// Private Helpers
+
+static bool GameLoadTexture(Game *game, const char *texturePath,
+                            SDL_Texture **destination) {
+  bool isDestinationFound = true;
+  *destination = AssetManagerLoadTexture(&game->assetManager,
+                                         game->gameRenderer, texturePath);
+  if (*destination == NULL) {
+    SDL_Log("Failed to load texture: %s", texturePath);
+    isDestinationFound = false;
+  }
+  return isDestinationFound;
+}
+
+// End Private Helpers
+
 bool GameInitialize(Game *game) {
   if (!SDL_Init(SDL_INIT_VIDEO)) {
     SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
     return false;
   }
-  game->gameWindow = SDL_CreateWindow("SDL3 - Robot Hero Moby", SCREEN_WIDTH,
+  game->gameWindow = SDL_CreateWindow("SDL3 - Robot Hero Sara", SCREEN_WIDTH,
                                       SCREEN_HEIGHT, 0);
   if (game->gameWindow == NULL) {
     SDL_Log("Unable to create window: %s", SDL_GetError());
@@ -35,42 +52,14 @@ bool GameInitialize(Game *game) {
   }
   // Load Assets
   AssetManagerInitialize(&game->assetManager);
-  game->spriteSheetTexture = AssetManagerLoadTexture(
-      &game->assetManager, game->gameRenderer, SARABOT_ASSET_PATH);
-  if (!game->spriteSheetTexture) {
-    SDL_Log("Failed to load spritesheet texture");
-    AssetManagerShutdown(&game->assetManager);
-    SDL_DestroyRenderer(game->gameRenderer);
-    SDL_DestroyWindow(game->gameWindow);
-    return false;
-  }
-
-  game->levelEnemyTexture = AssetManagerLoadTexture(
-      &game->assetManager, game->gameRenderer, BIG_PROPELLER_BOT_ASSET_PATH);
-  if (!game->levelEnemyTexture) {
-    SDL_Log("Failed to load spritesheet texture");
-    AssetManagerShutdown(&game->assetManager);
-    SDL_DestroyRenderer(game->gameRenderer);
-    SDL_DestroyWindow(game->gameWindow);
-    return false;
-  }
-  game->playerProjectileTexture = AssetManagerLoadTexture(
-      &game->assetManager, game->gameRenderer, PLAYER_PROJECTILE_ASSET_PATH);
-  if (!game->playerProjectileTexture) {
-    SDL_Log("Failed to load player projectile texture");
-    AssetManagerShutdown(&game->assetManager);
-    SDL_DestroyRenderer(game->gameRenderer);
-    SDL_DestroyWindow(game->gameWindow);
-    return false;
-  }
-  game->healthPickupTexture = AssetManagerLoadTexture(
-      &game->assetManager, game->gameRenderer, HEALTH_PICKUP_ASSET_PATH);
-  if (!game->healthPickupTexture) {
-    SDL_Log("Failed to load health pickup texture");
-    AssetManagerShutdown(&game->assetManager);
-    SDL_DestroyRenderer(game->gameRenderer);
-    SDL_DestroyWindow(game->gameWindow);
-    return false;
+  if (!GameLoadTexture(game, SARABOT_ASSET_PATH, &game->spriteSheetTexture) ||
+      !GameLoadTexture(game, BIG_PROPELLER_BOT_ASSET_PATH,
+                       &game->levelEnemyTexture) ||
+      !GameLoadTexture(game, PLAYER_PROJECTILE_ASSET_PATH,
+                       &game->playerProjectileTexture) ||
+      !GameLoadTexture(game, HEALTH_PICKUP_ASSET_PATH,
+                       &game->healthPickupTexture)) {
+    goto textureLoadFailure;
   }
 
   game->gameWorld.player =
@@ -91,11 +80,7 @@ bool GameInitialize(Game *game) {
                .spriteSheetTexture = game->spriteSheetTexture};
   if (!GameWorldLoadLevel(&game->gameWorld, "assets/levels/testroom.txt")) {
     SDL_Log("Failed to load level file. %s", SDL_GetError());
-    AssetManagerShutdown(&game->assetManager);
-    SDL_DestroyRenderer(game->gameRenderer);
-    SDL_DestroyWindow(game->gameWindow);
-    SDL_Quit();
-    return false;
+    goto textureLoadFailure;
   }
   game->isRunning = true;
   game->previousTime = SDL_GetTicks();
@@ -103,6 +88,10 @@ bool GameInitialize(Game *game) {
   game->deathTimer = 0.0f;
   InputInitialize(&game->input);
   return true;
+
+textureLoadFailure:
+  GameShutdown(game);
+  return false;
 }
 void GameShutdown(Game *game) {
   if (game == NULL) {
@@ -114,10 +103,14 @@ void GameShutdown(Game *game) {
   game->spriteSheetTexture = NULL;
   game->healthPickupTexture = NULL;
   GameWorldShutdown(&game->gameWorld);
-  SDL_DestroyRenderer(game->gameRenderer);
-  game->gameRenderer = NULL;
-  SDL_DestroyWindow(game->gameWindow);
-  game->gameWindow = NULL;
+  if (game->gameRenderer != NULL) {
+    SDL_DestroyRenderer(game->gameRenderer);
+    game->gameRenderer = NULL;
+  }
+  if (game->gameWindow != NULL) {
+    SDL_DestroyWindow(game->gameWindow);
+    game->gameWindow = NULL;
+  }
   SDL_Quit();
 }
 void GameUpdate(Game *game, float deltaTime) {
